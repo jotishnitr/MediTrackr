@@ -1,0 +1,405 @@
+.login-page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(78, 222, 163, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.05) 0%, transparent 40%),
+    #070f1e;
+  padding: 40px 20px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #dae2fd;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* Header/Logo Styles */
+.login-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.register-page-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 100px;
+  height: 64px;
+  width: 64px;
+}
+
+
+.login-logo-icon {
+  color: #070f1e;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.login-brand-name {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+/* Card Container */
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(13, 22, 41, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 28px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-card-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.login-card-subtitle {
+  font-size: 14px;
+  color: rgba(218, 226, 253, 0.6);
+  line-height: 1.5;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+/* Form Styles */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.login-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.login-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.login-form-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(218, 226, 253, 0.6);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.forgot-password-link {
+  font-size: 12px;
+  color: #4edea3;
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.forgot-password-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+.login-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-input-icon-left {
+  position: absolute;
+  left: 16px;
+  color: rgba(218, 226, 253, 0.4);
+  font-size: 20px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-input-icon-right {
+  position: absolute;
+  right: 16px;
+  color: rgba(218, 226, 253, 0.4);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+}
+
+.login-input-icon-right:hover {
+  color: rgba(218, 226, 253, 0.8);
+}
+
+.login-form-input {
+  width: 100%;
+  background: rgba(7, 15, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px 14px 46px;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.login-form-input::placeholder {
+  color: rgba(218, 226, 253, 0.25);
+}
+
+.login-form-input:focus {
+  border-color: rgba(78, 222, 163, 0.5);
+  box-shadow: 0 0 0 4px rgba(78, 222, 163, 0.1);
+  background: rgba(7, 15, 30, 0.8);
+}
+
+/* Remember Me Checkbox */
+.remember-me-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.login-custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(218, 226, 253, 0.2);
+  border-radius: 4px;
+  background: rgba(7, 15, 30, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.login-custom-checkbox:checked {
+  background: #4edea3;
+  border-color: #4edea3;
+}
+
+.login-custom-checkbox:checked::after {
+  content: "check";
+  font-family: "Material Symbols Outlined";
+  font-size: 14px;
+  color: #070f1e;
+  font-weight: 900;
+}
+
+.remember-me-text {
+  font-size: 13px;
+  color: rgba(218, 226, 253, 0.7);
+}
+
+/* Submit Button */
+.login-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: #4edea3;
+  color: #071227;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(78, 222, 163, 0.2);
+  margin-top: 8px;
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  background: #3ec990;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(78, 222, 163, 0.35);
+}
+
+.login-submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-btn-arrow {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.login-submit-btn:hover .login-btn-arrow {
+  transform: translateX(3px);
+}
+
+/* Divider styling */
+.login-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: rgba(218, 226, 253, 0.3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin: 24px 0;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.login-divider:not(:empty)::before {
+  margin-right: 16px;
+}
+
+.login-divider:not(:empty)::after {
+  margin-left: 16px;
+}
+
+/* Social Buttons row */
+.social-buttons-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.social-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(7, 15, 30, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.social-button:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.social-icon-svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Redirect sign up styling */
+.signup-redirect {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(218, 226, 253, 0.6);
+}
+
+.signup-link {
+  color: #4edea3;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.signup-link:hover {
+  opacity: 0.85;
+}
+
+/* Bottom Outer Links */
+.login-outer-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: rgba(218, 226, 253, 0.4);
+}
+
+.outer-footer-link {
+  color: rgba(218, 226, 253, 0.4);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.outer-footer-link:hover {
+  color: rgba(218, 226, 253, 0.7);
+}
+
+.outer-footer-dot {
+  font-size: 16px;
+  line-height: 1;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+}
+
+/* Google Auth Button Wrapper Custom CSS */
+.google-auth-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 360px;
+  height: 44px;
+  margin: 16px auto;
+  border-radius: 6px; /* matches standard Google button corner radius */
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.google-auth-btn-wrapper:hover {
+  filter: drop-shadow(0 0 8px rgba(78, 222, 163, 0.35));
+  transform: translateY(-2px);
+}

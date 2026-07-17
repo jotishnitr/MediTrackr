@@ -1,0 +1,409 @@
+.register-page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(78, 222, 163, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.05) 0%, transparent 40%),
+    #070f1e;
+  padding: 40px 20px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #dae2fd;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* Header/Logo Styles */
+.register-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.logo-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(11, 19, 38, 0.8);
+  border: 1px solid rgba(78, 222, 163, 0.3);
+  box-shadow: 0 0 15px rgba(78, 222, 163, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.logo-box:hover {
+  transform: translateY(-2px);
+  border-color: rgba(78, 222, 163, 0.6);
+  box-shadow: 0 0 20px rgba(78, 222, 163, 0.3);
+}
+
+
+.register-page-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 100px;
+  height: 64px;
+  width: 64px;
+}
+
+
+.brand-name {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #4edea3;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+  text-shadow: 0 0 15px rgba(78, 222, 163, 0.2);
+}
+
+.tagline-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: #4edea3;
+  border: 1px solid rgba(78, 222, 163, 0.3);
+  padding: 4px 10px;
+  border-radius: 100px;
+  letter-spacing: 2px;
+  background: rgba(78, 222, 163, 0.04);
+}
+
+/* Card Container */
+.register-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(13, 22, 41, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 28px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  margin-bottom: 32px;
+}
+
+.card-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.card-subtitle {
+  font-size: 14px;
+  color: rgba(218, 226, 253, 0.6);
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+/* Form Styles */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(218, 226, 253, 0.5);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  color: rgba(15, 26, 48, 0.4);
+  font-size: 20px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-input {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 14px 16px 14px 46px;
+  color: #0d1629;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-input::placeholder {
+  color: rgba(15, 26, 48, 0.35);
+  font-weight: 400;
+}
+
+.form-input:focus {
+  border-color: #4edea3;
+  box-shadow: 0 0 0 4px rgba(78, 222, 163, 0.15);
+}
+
+/* Error/Success text helper */
+.error-text {
+  font-size: 12px;
+  color: #ff5e5e;
+  margin-top: 4px;
+}
+
+/* Checkbox Styles */
+.terms-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+  user-select: none;
+}
+
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(218, 226, 253, 0.3);
+  border-radius: 4px;
+  background: rgba(13, 22, 41, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.custom-checkbox:checked {
+  background: #4edea3;
+  border-color: #4edea3;
+}
+
+.custom-checkbox:checked::after {
+  content: "check";
+  font-family: "Material Symbols Outlined";
+  font-size: 12px;
+  color: #070f1e;
+  font-weight: 900;
+}
+
+.custom-checkbox:focus-visible {
+  outline: 2px solid rgba(78, 222, 163, 0.5);
+}
+
+.terms-text {
+  font-size: 12px;
+  color: rgba(218, 226, 253, 0.7);
+  line-height: 1.4;
+}
+
+.terms-link {
+  color: #4edea3;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.terms-link:hover {
+  opacity: 0.85;
+}
+
+/* Button Styles */
+.submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: #4edea3;
+  color: #071227;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(78, 222, 163, 0.25);
+  margin-top: 10px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #3ec990;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(78, 222, 163, 0.4);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-arrow {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.submit-btn:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
+/* Sign In Link styling */
+.signin-redirect {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(218, 226, 253, 0.6);
+  margin-top: 12px;
+}
+
+.signin-link {
+  color: #4edea3;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.signin-link:hover {
+  opacity: 0.85;
+}
+
+.signin-icon {
+  font-size: 14px;
+}
+
+/* Footer / Security Badges */
+.register-footer {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(13, 22, 41, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.badge-icon {
+  color: rgba(218, 226, 253, 0.4);
+  font-size: 16px;
+}
+
+.badge-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: rgba(218, 226, 253, 0.45);
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .register-card {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Divider styling */
+.register-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(218, 226, 253, 0.25);
+  letter-spacing: 0.1em;
+  margin: 24px 0;
+}
+
+.register-divider::before,
+.register-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.register-divider:not(:empty)::before {
+  margin-right: 16px;
+}
+
+.register-divider:not(:empty)::after {
+  margin-left: 16px;
+}
+
+/* Google Auth Button Wrapper Custom CSS */
+.google-auth-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 360px;
+  height: 44px;
+  margin: 16px auto;
+  border-radius: 6px; /* matches standard Google button corner radius */
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.google-auth-btn-wrapper:hover {
+  filter: drop-shadow(0 0 8px rgba(78, 222, 163, 0.35));
+  transform: translateY(-2px);
+}
