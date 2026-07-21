@@ -59,7 +59,9 @@ export default function Login({ onSignUpRedirect, setCurrentPage }) {
       setSuccess("Welcome back! Redirecting...");
       setCurrentPage("Dashboard");
     } catch (err) {
-      setError(err.message || "Something went wrong. Please check your connection.");
+      setError(
+        err.message || "Something went wrong. Please check your connection.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -69,8 +71,12 @@ export default function Login({ onSignUpRedirect, setCurrentPage }) {
     <div className="login-page-container">
       {/* Brand Header Row */}
       <div className="login-header-row">
-        <img className="register-page-logo-img" src="icon.png" alt="Register-page-brand-logo"></img>
-        <span className="login-brand-name">MediTrack</span>
+        <img
+          className="register-page-logo-img"
+          src="icon.png"
+          alt="Register-page-brand-logo"
+        ></img>
+        <span className="login-brand-name">MediTrackr</span>
       </div>
 
       {/* Main Login Card */}
@@ -183,7 +189,11 @@ export default function Login({ onSignUpRedirect, setCurrentPage }) {
           </div>
 
           {/* Login Button */}
-          <button type="submit" className="login-submit-btn" disabled={isLoading}>
+          <button
+            type="submit"
+            className="login-submit-btn"
+            disabled={isLoading}
+          >
             <span>{isLoading ? "Logging in..." : "Login to Dashboard"}</span>
             {!isLoading && (
               <span className="material-symbols-outlined login-btn-arrow">
@@ -204,16 +214,19 @@ export default function Login({ onSignUpRedirect, setCurrentPage }) {
             width="360"
             onSuccess={async (credentialResponse) => {
               try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/googleLogin`, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
+                const response = await fetch(
+                  `${import.meta.env.VITE_API_URL}/googleLogin`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                      credential: credentialResponse.credential,
+                    }),
                   },
-                  credentials: "include",
-                  body: JSON.stringify({
-                    credential: credentialResponse.credential,
-                  }),
-                });
+                );
 
                 const data = await response.json();
                 if (data.success) {

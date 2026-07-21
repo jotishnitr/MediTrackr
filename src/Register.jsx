@@ -112,7 +112,7 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
           ></img>
         </span>
 
-        <h1 className="brand-name">MediTrack</h1>
+        <h1 className="brand-name">MediTrackr</h1>
         <span className="tagline-badge">PRECISION HEALTH OS</span>
       </header>
 
