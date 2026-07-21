@@ -6,7 +6,7 @@ import Reminders from "./Reminders";
 import HealthLog from "./HealthLog";
 import ProfileModal from "./ProfileModal";
 import Login from "./logins";
-import Register from "./Register"
+import Register from "./Register";
 
 import React from "react";
 import { AnimatePresence } from "framer-motion";
@@ -21,11 +21,14 @@ export default function App() {
     async function init() {
       if ("serviceWorker" in navigator) {
         try {
-          await navigator.serviceWorker.register("/service-worker.js");
+          await navigator.serviceWorker.register("./service-worker.js");
           console.log("Service Worker Registered");
           await subscribeUser();
         } catch (err) {
-          console.error("Service Worker registration/subscription failed:", err);
+          console.error(
+            "Service Worker registration/subscription failed:",
+            err,
+          );
         }
       }
 
@@ -73,7 +76,10 @@ export default function App() {
   React.useEffect(() => {
     async function getCurrentUser() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/getCurrentUser`, { credentials: "include" });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/getCurrentUser`,
+          { credentials: "include" },
+        );
         const data = await response.json();
         if (data.success) {
           setCurrentPage("Dashboard");
@@ -90,7 +96,10 @@ export default function App() {
   React.useEffect(() => {
     async function loadMedicines() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/getMedicine`, { credentials: "include" });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/getMedicine`,
+          { credentials: "include" },
+        );
         if (response.status === 401) {
           setMedicines([]);
           return;
@@ -111,8 +120,6 @@ export default function App() {
       loadMedicines();
     }
   }, [currentPage]);
-
-
 
   // Profile modal states
   const [showProfileModal, setShowProfileModal] = React.useState(false);
@@ -137,7 +144,10 @@ export default function App() {
 
   async function getHealthLog() {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/healthLog/api`, { credentials: "include" });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/healthLog/api`,
+        { credentials: "include" },
+      );
       if (response.status === 401) return;
       const data = await response.json();
 
@@ -156,7 +166,10 @@ export default function App() {
 
   async function fetchHealthProfile() {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/getHealthProfile`, { credentials: "include" });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/getHealthProfile`,
+        { credentials: "include" },
+      );
       if (response.status === 401) return;
       const data = await response.json();
       if (data && data.success && data.profile) {

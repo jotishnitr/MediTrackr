@@ -29,10 +29,9 @@ const connectDB = require("./config/db.js");
 const app = express();
 connectDB();
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  process.env.CLIENT_URL,
-].filter(Boolean);
+const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL].filter(
+  Boolean,
+);
 
 const corsOption = {
   origin: allowedOrigins,
