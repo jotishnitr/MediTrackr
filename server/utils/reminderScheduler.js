@@ -8,12 +8,19 @@ cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
 
-    const currentTime =
-      String(now.getHours()).padStart(2, "0") +
-      ":" +
-      String(now.getMinutes()).padStart(2, "0");
+    const currentDate = now.toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
+    });
 
-    console.log(`Checking reminders: ${currentTime}`);
+    const currentTime = now.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    console.log(`Checking reminders: ${currentDate} ${currentTime} IST`);
 
     const medicines = await Medicine.find({
       reminder: true,
