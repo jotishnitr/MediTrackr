@@ -195,7 +195,7 @@ body {
   gap: 10px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 30px;
+  margin-bottom: 12px;
   cursor: pointer;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -303,6 +303,47 @@ body {
   flex-direction: row;
   gap: 10px;
   align-items: center;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 90%;
+  margin: 0 auto 30px auto;
+  padding: 10px 16px;
+  background: rgba(255, 94, 94, 0.03);
+  border: 1px dashed rgba(255, 94, 94, 0.25);
+  border-radius: 12px;
+  color: #ff6b6b;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logout-btn:hover {
+  background: rgba(255, 94, 94, 0.1);
+  border-color: #ff5e5e;
+  border-style: solid;
+  color: #ff5e5e;
+  box-shadow: 0 4px 15px rgba(255, 94, 94, 0.15), 0 0 10px rgba(255, 94, 94, 0.05);
+  transform: translateY(-1px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+.logout-icon {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.logout-btn:hover .logout-icon {
+  transform: translateX(-2px);
 }
 
 .dashboard,

@@ -41,7 +41,7 @@ export default function Login({ onSignUpRedirect, setCurrentPage }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/login", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -204,7 +204,7 @@ export default function Login({ onSignUpRedirect, setCurrentPage }) {
             width="360"
             onSuccess={async (credentialResponse) => {
               try {
-                const response = await fetch("http://localhost:5000/googleLogin", {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/googleLogin`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",

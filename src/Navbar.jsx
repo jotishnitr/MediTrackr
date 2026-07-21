@@ -121,6 +121,31 @@ export default function Navbar({ currentPage, setCurrentPage, profileDetails, se
             </div>
             <div className="sensors-container"><img src="sensors.png" className="sensors" alt="sensors"></img></div>
           </div>
+
+          <button
+            className="logout-btn"
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
+                  method: "POST",
+                  credentials: "include",
+                });
+                if (response.ok) {
+                  setCurrentPage("Login");
+                } else {
+                  console.error("Logout request failed");
+                  setCurrentPage("Login");
+                }
+              } catch (err) {
+                console.error("Logout failed:", err);
+                setCurrentPage("Login");
+              }
+            }}
+          >
+            <span className="material-symbols-outlined logout-icon">logout</span>
+            <span>Sign Out</span>
+          </button>
         </div>
       </section>
     </>

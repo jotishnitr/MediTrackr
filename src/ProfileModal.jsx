@@ -43,7 +43,7 @@ export default function ProfileModal({ profileDetails, setProfileDetails, onClos
     }
 
     // Sync to backend addHealthProfile
-    fetch("http://localhost:5000/addHealthProfile", {
+    fetch(`${import.meta.env.VITE_API_URL}/addHealthProfile`, {
       method: "POST",
       credentials: "include",
       headers: {

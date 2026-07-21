@@ -47,7 +47,7 @@ export default function HealthLog({
     setTimeout(async () => {
       setIsSaving(false);
       const today = new Date().toISOString().split("T")[0];
-      const response = await fetch("http://localhost:5000/healthLog", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/healthLog`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

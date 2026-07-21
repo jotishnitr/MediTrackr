@@ -30,7 +30,7 @@ export default function Dashboard({
   React.useEffect(() => {
     async function fetchWeeklyData() {
       try {
-        const response = await fetch("http://localhost:5000/weeklyAdherence", { credentials: "include" });
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/weeklyAdherence`, { credentials: "include" });
         if (response.status === 401) {
           setWeeklyData([]);
           return;
@@ -114,7 +114,7 @@ export default function Dashboard({
       alert("Please fill in medicine name and time");
       return;
     }
-    const response = await fetch("http://localhost:5000/addMedicine", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/addMedicine`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -163,7 +163,7 @@ export default function Dashboard({
 
   async function deleteMedicine(id) {
     const response = await fetch(
-      `http://localhost:5000/deleteMedicine?id=${id}`,
+      `${import.meta.env.VITE_API_URL}/deleteMedicine?id=${id}`,
       {
         method: "DELETE",
         credentials: "include",
@@ -175,9 +175,10 @@ export default function Dashboard({
 
   async function statusChange(id) {
     const response = await fetch(
-      `http://localhost:5000/statusMedicine?id=${id}`,
+      `${import.meta.env.VITE_API_URL}/statusMedicine?id=${id}`,
       {
         method: "PUT",
+        credentials: "include",
       },
     );
 

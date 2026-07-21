@@ -31,11 +31,12 @@ export async function subscribeUser() {
       clientId,
     };
 
-    await fetch("http://localhost:5000/subscribe", {
+    await fetch(`${import.meta.env.VITE_API_URL}/subscribe`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify(subscriptionData),
     });
 

@@ -31,7 +31,7 @@ export default function Reminders({
   React.useEffect(() => {
     async function fetchWeeklyData() {
       try {
-        const response = await fetch("http://localhost:5000/weeklyAdherence", { credentials: "include" });
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/weeklyAdherence`, { credentials: "include" });
         if (!response.ok) {
           throw new Error("Failed to fetch weekly adherence data");
         }
@@ -71,12 +71,13 @@ export default function Reminders({
 
   async function handleStatusChange(id) {
     const response = await fetch(
-      `http://localhost:5000/statusMedicine?id=${id}`,
+      `${import.meta.env.VITE_API_URL}/statusMedicine?id=${id}`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
       },
     );
     if (!response.ok) {
@@ -95,12 +96,13 @@ export default function Reminders({
   // Notification System
   async function toggleNotification(id) {
     const response = await fetch(
-      `http://localhost:5000/reminderMedicine?id=${id}`,
+      `${import.meta.env.VITE_API_URL}/reminderMedicine?id=${id}`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
       },
     );
     const updatedMedicine = await response.json();
@@ -114,7 +116,7 @@ export default function Reminders({
   const [soundStatus, setSoundStatus] = React.useState(false);
   React.useEffect(() => {
     async function getSettings() {
-      const response = await fetch("http://localhost:5000/getSettings");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/getSettings`, { credentials: "include" });
       const data = await response.json();
 
       setNotificationStatus(data.browserAlerts);
@@ -124,11 +126,12 @@ export default function Reminders({
     getSettings();
   }, []);
   async function toggleNotificationStatus() {
-    const response = await fetch("http://localhost:5000/setBrowserAlerts", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/setBrowserAlerts`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     const data = await response.json();
@@ -137,11 +140,12 @@ export default function Reminders({
   }
 
   async function toggleSoundStatus() {
-    const response = await fetch("http://localhost:5000/setNotificationSound", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/setNotificationSound`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     const data = await response.json();

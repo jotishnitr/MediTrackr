@@ -62,11 +62,12 @@ const googleLogin = async (req, res) => {
             }
         );
 
+        const isProduction = process.env.NODE_ENV === "production";
         // Set the SAME HTTP-only cookie with the SAME options
         return res.cookie("token", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000
         }).status(200).json({
             success: true,

@@ -21,6 +21,7 @@ const getCurrentUser = require("./routes/getCurrentUser");
 const addHealthProfile = require("./routes/addHealthProfile");
 const getHealthProfile = require("./routes/getHealthProfile");
 const googleLogin = require("./routes/googleLogin");
+const logout = require("./routes/logout");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
@@ -28,10 +29,15 @@ const connectDB = require("./config/db.js");
 const app = express();
 connectDB();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 const corsOption = {
-  origin: "http://localhost:5173",
+  origin: allowedOrigins,
   credentials: true,
-}
+};
 
 app.use(cors(corsOption));
 app.use(express.json());
@@ -55,6 +61,7 @@ app.use("/", getCurrentUser);
 app.use("/", addHealthProfile);
 app.use("/", getHealthProfile);
 app.use("/", googleLogin);
+app.use("/", logout);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

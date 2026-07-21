@@ -182,7 +182,8 @@ export default function SearchMedicine({ setCurrentPage, setShowAddMed }) {
       const query = encodeURIComponent(searchMed.trim());
       try {
         const response = await fetch(
-          `http://localhost:5000/searchMed/api?query=${query}`,
+          `${import.meta.env.VITE_API_URL}/searchMed/api?query=${query}`,
+          { credentials: "include" }
         );
         const data = await response.json();
 

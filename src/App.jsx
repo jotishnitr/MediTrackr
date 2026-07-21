@@ -73,7 +73,7 @@ export default function App() {
   React.useEffect(() => {
     async function getCurrentUser() {
       try {
-        const response = await fetch("http://localhost:5000/getCurrentUser", { credentials: "include" });
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/getCurrentUser`, { credentials: "include" });
         const data = await response.json();
         if (data.success) {
           setCurrentPage("Dashboard");
@@ -90,7 +90,7 @@ export default function App() {
   React.useEffect(() => {
     async function loadMedicines() {
       try {
-        const response = await fetch("http://localhost:5000/getMedicine", { credentials: "include" });
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/getMedicine`, { credentials: "include" });
         if (response.status === 401) {
           setMedicines([]);
           return;
@@ -137,7 +137,7 @@ export default function App() {
 
   async function getHealthLog() {
     try {
-      const response = await fetch("http://localhost:5000/healthLog/api", { credentials: "include" });
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/healthLog/api`, { credentials: "include" });
       if (response.status === 401) return;
       const data = await response.json();
 
@@ -156,7 +156,7 @@ export default function App() {
 
   async function fetchHealthProfile() {
     try {
-      const response = await fetch("http://localhost:5000/getHealthProfile", { credentials: "include" });
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/getHealthProfile`, { credentials: "include" });
       if (response.status === 401) return;
       const data = await response.json();
       if (data && data.success && data.profile) {

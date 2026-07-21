@@ -60,11 +60,12 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/register", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           name,
           email,
@@ -91,7 +92,9 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
 
       setCurrentPage("Login");
     } catch (err) {
-      setError(err.message || "An unexpected error occurred. Please try again.");
+      setError(
+        err.message || "An unexpected error occurred. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +104,13 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
     <div className="register-page-container">
       {/* Brand Header */}
       <header className="register-header">
-        <span className="logo-plus"><img className="register-page-logo-img" src="icon.png" alt="Register-page-brand-logo"></img></span>
+        <span className="logo-plus">
+          <img
+            className="register-page-logo-img"
+            src="icon.png"
+            alt="Register-page-brand-logo"
+          ></img>
+        </span>
 
         <h1 className="brand-name">MediTrack</h1>
         <span className="tagline-badge">PRECISION HEALTH OS</span>
@@ -114,15 +123,46 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
           Access the next generation of personalized health management tools.
         </p>
 
-        {error && <div className="error-text" style={{ marginBottom: "16px", background: "rgba(255, 94, 94, 0.1)", padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255, 94, 94, 0.2)" }}>{error}</div>}
-        {success && <div style={{ marginBottom: "16px", color: "#4edea3", background: "rgba(78, 222, 163, 0.1)", padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(78, 222, 163, 0.2)", fontSize: "14px" }}>{success}</div>}
+        {error && (
+          <div
+            className="error-text"
+            style={{
+              marginBottom: "16px",
+              background: "rgba(255, 94, 94, 0.1)",
+              padding: "10px 14px",
+              borderRadius: "8px",
+              border: "1px solid rgba(255, 94, 94, 0.2)",
+            }}
+          >
+            {error}
+          </div>
+        )}
+        {success && (
+          <div
+            style={{
+              marginBottom: "16px",
+              color: "#4edea3",
+              background: "rgba(78, 222, 163, 0.1)",
+              padding: "10px 14px",
+              borderRadius: "8px",
+              border: "1px solid rgba(78, 222, 163, 0.2)",
+              fontSize: "14px",
+            }}
+          >
+            {success}
+          </div>
+        )}
 
         <form className="register-form" onSubmit={handleSubmit}>
           {/* Full Name */}
           <div className="form-group">
-            <label className="form-label" htmlFor="name">Full Name</label>
+            <label className="form-label" htmlFor="name">
+              Full Name
+            </label>
             <div className="input-wrapper">
-              <span className="material-symbols-outlined input-icon">person</span>
+              <span className="material-symbols-outlined input-icon">
+                person
+              </span>
               <input
                 type="text"
                 id="name"
@@ -138,9 +178,13 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
 
           {/* Email Address */}
           <div className="form-group">
-            <label className="form-label" htmlFor="email">Email Address</label>
+            <label className="form-label" htmlFor="email">
+              Email Address
+            </label>
             <div className="input-wrapper">
-              <span className="material-symbols-outlined input-icon">alternate_email</span>
+              <span className="material-symbols-outlined input-icon">
+                alternate_email
+              </span>
               <input
                 type="email"
                 id="email"
@@ -157,9 +201,13 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
           {/* Password & Confirm Row */}
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label" htmlFor="password">Password</label>
+              <label className="form-label" htmlFor="password">
+                Password
+              </label>
               <div className="input-wrapper">
-                <span className="material-symbols-outlined input-icon">lock</span>
+                <span className="material-symbols-outlined input-icon">
+                  lock
+                </span>
                 <input
                   type="password"
                   id="password"
@@ -174,9 +222,13 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="confirmPassword">Confirm</label>
+              <label className="form-label" htmlFor="confirmPassword">
+                Confirm
+              </label>
               <div className="input-wrapper">
-                <span className="material-symbols-outlined input-icon">shield</span>
+                <span className="material-symbols-outlined input-icon">
+                  shield
+                </span>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -210,7 +262,11 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
           {/* Submit Button */}
           <button type="submit" className="submit-btn" disabled={isLoading}>
             <span>{isLoading ? "Creating..." : "Create Account"}</span>
-            {!isLoading && <span className="material-symbols-outlined btn-arrow">arrow_forward</span>}
+            {!isLoading && (
+              <span className="material-symbols-outlined btn-arrow">
+                arrow_forward
+              </span>
+            )}
           </button>
         </form>
 
@@ -226,16 +282,19 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
             width="360"
             onSuccess={async (credentialResponse) => {
               try {
-                const response = await fetch("http://localhost:5000/googleLogin", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
+                const response = await fetch(
+                  `${import.meta.env.VITE_API_URL}/googleLogin`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                      credential: credentialResponse.credential,
+                    }),
                   },
-                  credentials: "include",
-                  body: JSON.stringify({
-                    credential: credentialResponse.credential,
-                  }),
-                });
+                );
 
                 const data = await response.json();
                 if (data.success) {
@@ -260,7 +319,8 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
         <div className="signin-redirect">
           Already have an account?{" "}
           <span className="signin-link" onClick={onSignInRedirect}>
-            Sign In <span className="material-symbols-outlined signin-icon">login</span>
+            Sign In{" "}
+            <span className="material-symbols-outlined signin-icon">login</span>
           </span>
         </div>
       </main>
@@ -272,7 +332,9 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
           <span className="badge-text">END-TO-END ENCRYPTION</span>
         </div>
         <div className="badge-item">
-          <span className="material-symbols-outlined badge-icon">health_and_safety</span>
+          <span className="material-symbols-outlined badge-icon">
+            health_and_safety
+          </span>
           <span className="badge-text">HIPAA COMPLIANT</span>
         </div>
       </footer>
