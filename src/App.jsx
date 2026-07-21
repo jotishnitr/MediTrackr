@@ -21,8 +21,13 @@ export default function App() {
     async function init() {
       if ("serviceWorker" in navigator) {
         try {
-          await navigator.serviceWorker.register("./service-worker.js");
-          console.log("Service Worker Registered");
+          await navigator.serviceWorker.register(
+            `${import.meta.env.BASE_URL}service-worker.js`,
+            {
+              scope: import.meta.env.BASE_URL,
+            },
+          );
+
           await subscribeUser();
         } catch (err) {
           console.error(

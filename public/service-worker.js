@@ -24,8 +24,8 @@ self.addEventListener("push", (event) => {
 
   const notificationPromise = self.registration.showNotification(title, {
     body: body,
-    icon: "/icon.png",
-    badge: "/icon.png",
+    icon: "./icon.png",
+    badge: "./icon.png",
     vibrate: [200, 100, 200],
     requireInteraction: true,
     tag: "medicine-reminder",
