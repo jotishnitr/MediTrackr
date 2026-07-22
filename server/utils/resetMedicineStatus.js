@@ -7,7 +7,8 @@ cron.schedule("0 0 * * *", async () => {
         console.log("Resetting medicine status...");
 
         const medicines = await Medicine.find({});
-        const today = new Date();
+        const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+        const today = new Date(now);
         today.setHours(0, 0, 0, 0);
 
         let updatedCount = 0;
@@ -29,7 +30,7 @@ cron.schedule("0 0 * * *", async () => {
             }
 
             // 2. Backfill missed days (last 7 days) if there's no history entry
-            const createdDate = new Date(medicine._id.getTimestamp());
+            const createdDate = new Date(new Date(medicine._id.getTimestamp()).toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
             createdDate.setHours(0, 0, 0, 0);
 
             for (let i = 7; i >= 1; i--) {

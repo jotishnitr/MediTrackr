@@ -1,7 +1,11 @@
 const Medicine = require("../models/Medicine.js");
 const statusMedicine = async (req, res) => {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const localNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const year = localNow.getFullYear();
+    const month = String(localNow.getMonth() + 1).padStart(2, "0");
+    const day = String(localNow.getDate()).padStart(2, "0");
+    const today = `${year}-${month}-${day}`;
     const medicine = await Medicine.findOne({ _id: req.query.id });
     medicine.status = !medicine.status;
     if (medicine.status) {

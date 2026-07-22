@@ -3,10 +3,11 @@ const Medicine = require("../models/Medicine");
 const weeklyAdherence = async (req, res) => {
   try {
     const medicines = await Medicine.find({ userId: req.user.id });
-    const today = new Date();
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const today = new Date(now);
     today.setHours(23, 59, 59, 999);
 
-    const weekAgo = new Date();
+    const weekAgo = new Date(now);
     weekAgo.setDate(today.getDate() - 6);
     weekAgo.setHours(0, 0, 0, 0);
     const weeklyData = [
@@ -20,12 +21,12 @@ const weeklyAdherence = async (req, res) => {
     ];
 
     medicines.forEach((medicine) => {
-      const createdDate = new Date(medicine._id.getTimestamp());
+      const createdDate = new Date(new Date(medicine._id.getTimestamp()).toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       createdDate.setHours(0, 0, 0, 0);
 
       // 1. Process historical entries
       medicine.history.forEach((entry) => {
-        const entryDate = new Date(entry.date);
+        const entryDate = new Date(new Date(entry.date).toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
         if (entryDate < createdDate) {
           return;
         }
@@ -44,13 +45,12 @@ const weeklyAdherence = async (req, res) => {
       });
 
       // 2. Process today's live status (not yet in history)
-      const now = new Date();
       const todayIndex = now.getDay();
       const [hours, minutes] = medicine.time.split(":");
-      const medicineTime = new Date();
+      const medicineTime = new Date(now);
       medicineTime.setHours(Number(hours), Number(minutes), 0, 0);
 
-      const createdTimestamp = new Date(medicine._id.getTimestamp());
+      const createdTimestamp = new Date(new Date(medicine._id.getTimestamp()).toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
 
       if (createdDate.toDateString() === now.toDateString()) {
         // If created today, only count if it was created before the scheduled time

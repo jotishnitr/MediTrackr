@@ -5,7 +5,8 @@ const getMedicine = async (req, res) => {
     const userId = req.user.id;
 
     const medicines = await Medicine.find({ userId });
-    const today = new Date();
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const today = new Date(now);
     today.setHours(0, 0, 0, 0);
 
     for (let medicine of medicines) {
@@ -26,7 +27,7 @@ const getMedicine = async (req, res) => {
       }
 
       // 2. Backfill missed days (last 7 days) if there's no history entry
-      const createdDate = new Date(medicine._id.getTimestamp());
+      const createdDate = new Date(new Date(medicine._id.getTimestamp()).toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       createdDate.setHours(0, 0, 0, 0);
 
       for (let i = 7; i >= 1; i--) {
