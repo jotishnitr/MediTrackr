@@ -26,10 +26,17 @@ const getMedicine = async (req, res) => {
       }
 
       // 2. Backfill missed days (last 7 days) if there's no history entry
+      const createdDate = new Date(medicine._id.getTimestamp());
+      createdDate.setHours(0, 0, 0, 0);
+
       for (let i = 7; i >= 1; i--) {
         const checkDate = new Date(today);
         checkDate.setDate(checkDate.getDate() - i);
         checkDate.setHours(0, 0, 0, 0);
+
+        if (checkDate < createdDate) {
+          continue;
+        }
 
         const hasEntry = medicine.history.some(h => 
           new Date(h.date).toDateString() === checkDate.toDateString()

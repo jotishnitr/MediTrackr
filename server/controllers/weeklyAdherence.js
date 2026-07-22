@@ -23,6 +23,7 @@ const weeklyAdherence = async (req, res) => {
       const createdDate = new Date(medicine._id.getTimestamp());
       createdDate.setHours(0, 0, 0, 0);
 
+      // 1. Process historical entries
       medicine.history.forEach((entry) => {
         const entryDate = new Date(entry.date);
         if (entryDate < createdDate) {
@@ -41,6 +42,33 @@ const weeklyAdherence = async (req, res) => {
           weeklyData[dayIndex].missed++;
         }
       });
+
+      // 2. Process today's live status (not yet in history)
+      const now = new Date();
+      const todayIndex = now.getDay();
+      const [hours, minutes] = medicine.time.split(":");
+      const medicineTime = new Date();
+      medicineTime.setHours(Number(hours), Number(minutes), 0, 0);
+
+      const createdTimestamp = new Date(medicine._id.getTimestamp());
+
+      if (createdDate.toDateString() === now.toDateString()) {
+        // If created today, only count if it was created before the scheduled time
+        if (createdTimestamp <= medicineTime) {
+          if (medicine.status) {
+            weeklyData[todayIndex].taken++;
+          } else if (now > medicineTime) {
+            weeklyData[todayIndex].missed++;
+          }
+        }
+      } else if (createdDate < now) {
+        // If created before today
+        if (medicine.status) {
+          weeklyData[todayIndex].taken++;
+        } else if (now > medicineTime) {
+          weeklyData[todayIndex].missed++;
+        }
+      }
     });
 
     res.status(200).json(weeklyData);
