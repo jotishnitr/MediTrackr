@@ -20,15 +20,23 @@ const weeklyAdherence = async (req, res) => {
     ];
 
     medicines.forEach((medicine) => {
-      medicine.history.forEach((entry) => {
-        const dayIndex = new Date(entry.date).getDay();
+      const createdDate = new Date(medicine._id.getTimestamp());
+      createdDate.setHours(0, 0, 0, 0);
 
-        if (entry.status && entry.date >= weekAgo && entry.date <= today) {
+      medicine.history.forEach((entry) => {
+        const entryDate = new Date(entry.date);
+        if (entryDate < createdDate) {
+          return;
+        }
+
+        const dayIndex = entryDate.getDay();
+
+        if (entry.status && entryDate >= weekAgo && entryDate <= today) {
           weeklyData[dayIndex].taken++;
         } else if (
           !entry.status &&
-          entry.date >= weekAgo &&
-          entry.date <= today
+          entryDate >= weekAgo &&
+          entryDate <= today
         ) {
           weeklyData[dayIndex].missed++;
         }
