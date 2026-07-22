@@ -1,4 +1,5 @@
 const User = require("../models/user.js");
+const Settings = require("../models/Settings.js");
 const bcrypt = require("bcryptjs");
 
 const register = async (req, res) => {
@@ -24,6 +25,14 @@ const register = async (req, res) => {
           email,
           password: hashedPassword,
         });
+
+        // Create default settings for user
+        await Settings.create({
+          userId: user._id,
+          browserAlerts: true,
+          notificationSound: true,
+        });
+
         res.status(201).json({
           success: true,
           message: "User registered successfully",

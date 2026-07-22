@@ -2,16 +2,16 @@ const Settings = require("../models/Settings");
 
 const updateSettings = async (req, res) => {
   try {
-    let settings = await Settings.findOne();
+    let settings = await Settings.findOne({ userId: req.user.id });
 
     if (!settings) {
       settings = await Settings.create({
-        browserAlerts: true,
-        notificationSound: false,
+        userId: req.user.id,
+        browserAlerts: false,
+        notificationSound: true,
       });
     } else {
       settings.browserAlerts = !settings.browserAlerts;
-
       await settings.save();
     }
 

@@ -2,12 +2,13 @@ const Settings = require("../models/Settings");
 
 const setNotificationSound = async (req, res) => {
   try {
-    let settings = await Settings.findOne();
+    let settings = await Settings.findOne({ userId: req.user.id });
 
     if (!settings) {
       settings = await Settings.create({
+        userId: req.user.id,
         browserAlerts: true,
-        notificationSound: true,
+        notificationSound: false,
       });
     } else {
       settings.notificationSound = !settings.notificationSound;

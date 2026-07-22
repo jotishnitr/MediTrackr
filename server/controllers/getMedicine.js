@@ -4,28 +4,47 @@ const getMedicine = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Get current date normalized to start of today in local/UTC server time
+    const medicines = await Medicine.find({ userId });
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Update medicines where status is true and takenDate was before today
-    await Medicine.updateMany(
-      {
-        userId,
-        status: true,
-        takenDate: { $lt: today }
-      },
-      {
-        $set: {
-          status: false,
-          takenDate: null
+    for (let medicine of medicines) {
+      let changed = false;
+
+      // 1. Log taken medicines if status is true and takenDate was before today
+      if (medicine.status && medicine.takenDate && new Date(medicine.takenDate) < today) {
+        const takenDay = new Date(medicine.takenDate);
+        const dayExists = medicine.history.some(h => 
+          new Date(h.date).toDateString() === takenDay.toDateString()
+        );
+        if (!dayExists) {
+          medicine.history.push({ date: takenDay, status: true });
+        }
+        medicine.status = false;
+        medicine.takenDate = null;
+        changed = true;
+      }
+
+      // 2. Backfill missed days (last 7 days) if there's no history entry
+      for (let i = 7; i >= 1; i--) {
+        const checkDate = new Date(today);
+        checkDate.setDate(checkDate.getDate() - i);
+        checkDate.setHours(0, 0, 0, 0);
+
+        const hasEntry = medicine.history.some(h => 
+          new Date(h.date).toDateString() === checkDate.toDateString()
+        );
+
+        if (!hasEntry) {
+          medicine.history.push({ date: checkDate, status: false });
+          changed = true;
         }
       }
-    );
 
-    const medicines = await Medicine.find({
-      userId
-    });
+      if (changed) {
+        await medicine.save();
+      }
+    }
 
     res.status(200).json(medicines);
   } catch (err) {

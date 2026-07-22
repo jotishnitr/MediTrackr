@@ -2,15 +2,18 @@ const PushSubscription = require("../models/PushSubscription");
 
 const subscribe = async (req, res) => {
   try {
-    const subscription = req.body;
+    const subscriptionData = {
+      ...req.body,
+      userId: req.user.id
+    };
 
-    const query = subscription.clientId
-      ? { clientId: subscription.clientId }
-      : { endpoint: subscription.endpoint };
+    const query = subscriptionData.clientId
+      ? { clientId: subscriptionData.clientId }
+      : { endpoint: subscriptionData.endpoint };
 
     const savedSubscription = await PushSubscription.findOneAndUpdate(
       query,
-      subscription,
+      subscriptionData,
       {
         upsert: true,
         new: true,
