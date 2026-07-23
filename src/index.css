@@ -17,11 +17,9 @@ body {
 }
 
 .navbar {
-  background: radial-gradient(
-      circle at top left,
+  background: radial-gradient(circle at top left,
       rgba(78, 222, 163, 0.08),
-      transparent 30%
-    ),
+      transparent 30%),
     linear-gradient(180deg, #071227 0%, #060e20 40%, #030a17 100%);
   width: 280px;
   box-shadow: 20px 0 50px rgba(0, 0, 0, 0.25);
@@ -61,12 +59,10 @@ body {
   width: 1px;
   height: 100%;
 
-  background: linear-gradient(
-    to bottom,
-    rgba(78, 222, 163, 0.3),
-    rgba(78, 222, 163, 0.05),
-    transparent
-  );
+  background: linear-gradient(to bottom,
+      rgba(78, 222, 163, 0.3),
+      rgba(78, 222, 163, 0.05),
+      transparent);
 }
 
 .navbar-header-container {
@@ -151,11 +147,9 @@ body {
 }
 
 .navbar-link-container.active {
-  background: linear-gradient(
-    90deg,
-    rgba(78, 222, 163, 0.18),
-    rgba(78, 222, 163, 0.08)
-  );
+  background: linear-gradient(90deg,
+      rgba(78, 222, 163, 0.18),
+      rgba(78, 222, 163, 0.08));
 
   border-left: 4px solid #4edea3;
   border-radius: 0 12px 12px 0;
@@ -167,8 +161,7 @@ body {
 }
 
 .navbar-link-container.active .navbar-icons {
-  filter: brightness(0) saturate(100%) invert(73%) sepia(22%) saturate(748%)
-    hue-rotate(103deg) brightness(97%) contrast(90%);
+  filter: brightness(0) saturate(100%) invert(73%) sepia(22%) saturate(748%) hue-rotate(103deg) brightness(97%) contrast(90%);
 }
 
 .navbar-icons {
@@ -178,11 +171,9 @@ body {
 .profile-container {
   display: flex;
   flex-direction: row;
-  background: radial-gradient(
-      circle at top left,
+  background: radial-gradient(circle at top left,
       rgba(78, 222, 163, 0.1),
-      transparent 40%
-    ),
+      transparent 40%),
     linear-gradient(135deg, #1a2440 0%, #18213a 50%, #151d32 100%);
 
   border: 1px solid rgba(78, 222, 163, 0.12);
@@ -219,11 +210,9 @@ body {
 .profile-container:hover {
   transform: translateY(-2px);
 
-  background: radial-gradient(
-      circle at top left,
+  background: radial-gradient(circle at top left,
       rgba(78, 222, 163, 0.12),
-      transparent 35%
-    ),
+      transparent 35%),
     linear-gradient(135deg, #1d2944 0%, #1a2338 50%, #172032 100%);
 
   border-color: rgba(78, 222, 163, 0.15);
@@ -273,8 +262,7 @@ body {
 }
 
 .sensors {
-  filter: brightness(0) saturate(100%) invert(73%) sepia(22%) saturate(748%)
-    hue-rotate(103deg) brightness(97%) contrast(90%);
+  filter: brightness(0) saturate(100%) invert(73%) sepia(22%) saturate(748%) hue-rotate(103deg) brightness(97%) contrast(90%);
   height: 20px;
   width: 20px;
   animation: pulse 2s infinite;
@@ -349,11 +337,9 @@ body {
 .dashboard,
 .my-medicines,
 .searchMedicine {
-  background: radial-gradient(
-      circle at top right,
+  background: radial-gradient(circle at top right,
       rgba(78, 222, 163, 0.08),
-      transparent 35%
-    ),
+      transparent 35%),
     linear-gradient(135deg, #0b1326 0%, #101a31 50%, #0b1326 100%);
   min-height: 100vh;
   margin-left: 280px;
@@ -365,11 +351,9 @@ body {
   inset: 0;
   pointer-events: none;
 
-  background: radial-gradient(
-    circle at 80% 15%,
-    rgba(78, 222, 163, 0.1),
-    transparent 25%
-  );
+  background: radial-gradient(circle at 80% 15%,
+      rgba(78, 222, 163, 0.1),
+      transparent 25%);
 
   filter: blur(120px);
 }
@@ -384,11 +368,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: linear-gradient(
-    180deg,
-    rgba(11, 19, 38, 0.85),
-    rgba(11, 19, 38, 0.55)
-  );
+  background: linear-gradient(180deg,
+      rgba(11, 19, 38, 0.85),
+      rgba(11, 19, 38, 0.55));
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -419,6 +401,7 @@ body {
   font-size: 14px;
   font-weight: 400;
   color: #bbcabf;
+  white-space: normal;
 }
 
 .dashboard-header-right {
@@ -850,11 +833,9 @@ body {
 
   font-size: 30px;
 
-  background: linear-gradient(
-    135deg,
-    rgba(43, 62, 112, 0.8),
-    rgba(22, 34, 60, 0.8)
-  );
+  background: linear-gradient(135deg,
+      rgba(43, 62, 112, 0.8),
+      rgba(22, 34, 60, 0.8));
 
   flex-shrink: 0;
 }
@@ -1123,11 +1104,9 @@ body {
   z-index: 100;
   padding-bottom: 60px;
   top: 80px;
-  background: linear-gradient(
-    135deg,
-    rgba(25, 35, 58, 0.96),
-    rgba(15, 25, 45, 0.96)
-  );
+  background: linear-gradient(135deg,
+      rgba(25, 35, 58, 0.96),
+      rgba(15, 25, 45, 0.96));
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 28px;
   overflow-y: auto;
@@ -1261,11 +1240,9 @@ body {
   width: 100%;
   height: 60px;
 
-  background: linear-gradient(
-    135deg,
-    rgba(29, 42, 71, 0.95),
-    rgba(21, 33, 58, 0.95)
-  );
+  background: linear-gradient(135deg,
+      rgba(29, 42, 71, 0.95),
+      rgba(21, 33, 58, 0.95));
 
   color: #ffffff;
 
@@ -1785,11 +1762,9 @@ body {
   grid-column: 1 / -1;
   text-align: center;
   padding: 60px 40px;
-  background: linear-gradient(
-    135deg,
-    rgba(26, 36, 64, 0.3) 0%,
-    rgba(15, 23, 42, 0.3) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(26, 36, 64, 0.3) 0%,
+      rgba(15, 23, 42, 0.3) 100%);
   border: 1px dashed rgba(78, 222, 163, 0.15);
   border-radius: 24px;
   backdrop-filter: blur(16px);
@@ -1810,11 +1785,9 @@ body {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(78, 222, 163, 0.08) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle,
+      rgba(78, 222, 163, 0.08) 0%,
+      transparent 70%);
   border: 1px solid rgba(78, 222, 163, 0.15);
   display: flex;
   align-items: center;
@@ -1842,6 +1815,7 @@ body {
 }
 
 @keyframes floatIcon {
+
   0%,
   100% {
     transform: translateY(0);
@@ -1874,11 +1848,9 @@ body {
 
   border-radius: 18px;
 
-  background: linear-gradient(
-    135deg,
-    rgba(43, 62, 112, 0.8),
-    rgba(22, 34, 60, 0.8)
-  );
+  background: linear-gradient(135deg,
+      rgba(43, 62, 112, 0.8),
+      rgba(22, 34, 60, 0.8));
 }
 
 .status-badge {
@@ -1953,11 +1925,9 @@ body {
 }
 
 .medicine-info-card {
-  background: linear-gradient(
-    135deg,
-    rgba(15, 23, 42, 0.95),
-    rgba(30, 41, 59, 0.85)
-  );
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.95),
+      rgba(30, 41, 59, 0.85));
 
   border: 1px solid rgba(66, 245, 197, 0.08);
 
@@ -1977,11 +1947,9 @@ body {
 }
 
 .medicine-card-myMed {
-  background: linear-gradient(
-    135deg,
-    rgba(15, 23, 42, 0.95),
-    rgba(30, 41, 59, 0.85)
-  );
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.95),
+      rgba(30, 41, 59, 0.85));
 
   border: 1px solid rgba(66, 245, 197, 0.08);
 
@@ -2055,10 +2023,7 @@ body {
   height: 36px;
   object-fit: contain;
 
-  filter: brightness(0) saturate(100%) invert(83%) sepia(38%) saturate(1172%)
-    hue-rotate(112deg) brightness(98%) contrast(101%)
-    drop-shadow(0 0 8px rgba(66, 245, 197, 0.6))
-    drop-shadow(0 0 16px rgba(66, 245, 197, 0.35));
+  filter: brightness(0) saturate(100%) invert(83%) sepia(38%) saturate(1172%) hue-rotate(112deg) brightness(98%) contrast(101%) drop-shadow(0 0 8px rgba(66, 245, 197, 0.6)) drop-shadow(0 0 16px rgba(66, 245, 197, 0.35));
 
   transition: all 0.3s ease;
 }
@@ -2066,10 +2031,7 @@ body {
 .fda-icon:hover {
   transform: scale(1.08);
 
-  filter: brightness(0) saturate(100%) invert(83%) sepia(38%) saturate(1172%)
-    hue-rotate(112deg) brightness(115%) contrast(105%)
-    drop-shadow(0 0 12px rgba(66, 245, 197, 0.8))
-    drop-shadow(0 0 24px rgba(66, 245, 197, 0.5));
+  filter: brightness(0) saturate(100%) invert(83%) sepia(38%) saturate(1172%) hue-rotate(112deg) brightness(115%) contrast(105%) drop-shadow(0 0 12px rgba(66, 245, 197, 0.8)) drop-shadow(0 0 24px rgba(66, 245, 197, 0.5));
 }
 
 .generic-name {
@@ -2160,11 +2122,9 @@ body {
 
   border-radius: 18px;
 
-  background: linear-gradient(
-    135deg,
-    rgba(255, 184, 0, 0.06),
-    rgba(255, 107, 107, 0.04)
-  );
+  background: linear-gradient(135deg,
+      rgba(255, 184, 0, 0.06),
+      rgba(255, 107, 107, 0.04));
 
   border: 1px solid rgba(255, 184, 0, 0.18);
 
@@ -2251,11 +2211,9 @@ body {
   flex: 1;
   height: 1px;
 
-  background: linear-gradient(
-    90deg,
-    rgba(66, 245, 197, 0.25),
-    rgba(255, 255, 255, 0.05)
-  );
+  background: linear-gradient(90deg,
+      rgba(66, 245, 197, 0.25),
+      rgba(255, 255, 255, 0.05));
 }
 
 .results-subtitle {
@@ -2280,11 +2238,9 @@ body {
   padding: 32px;
 
   border-radius: 20px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 107, 107, 0.08),
-    rgba(15, 23, 42, 0.5)
-  );
+  background: linear-gradient(135deg,
+      rgba(255, 107, 107, 0.08),
+      rgba(15, 23, 42, 0.5));
 
   border: 1px solid rgba(255, 107, 107, 0.2);
 
@@ -2385,11 +2341,9 @@ body {
 
   border-radius: 24px;
 
-  background: linear-gradient(
-    135deg,
-    rgba(22, 31, 52, 0.95),
-    rgba(17, 25, 44, 0.95)
-  );
+  background: linear-gradient(135deg,
+      rgba(22, 31, 52, 0.95),
+      rgba(17, 25, 44, 0.95));
 
   border: 1px solid rgba(255, 255, 255, 0.06);
 
@@ -2644,11 +2598,9 @@ body {
 }
 
 .discover-card {
-  background: linear-gradient(
-    145deg,
-    rgba(21, 32, 60, 0.95),
-    rgba(11, 19, 41, 0.95)
-  );
+  background: linear-gradient(145deg,
+      rgba(21, 32, 60, 0.95),
+      rgba(11, 19, 41, 0.95));
 
   border: 1px solid rgba(255, 255, 255, 0.06);
 
@@ -2829,6 +2781,7 @@ body {
 }
 
 @keyframes search-glow {
+
   0%,
   100% {
     border-color: rgba(24, 217, 168, 0.2);
@@ -2844,20 +2797,16 @@ body {
 .skeleton-card {
   pointer-events: none;
   border-color: rgba(255, 255, 255, 0.04) !important;
-  background: linear-gradient(
-    135deg,
-    rgba(15, 23, 42, 0.85),
-    rgba(30, 41, 59, 0.75)
-  ) !important;
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.85),
+      rgba(30, 41, 59, 0.75)) !important;
 }
 
 .skeleton-element {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.02) 25%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.02) 75%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.02) 25%,
+      rgba(255, 255, 255, 0.06) 50%,
+      rgba(255, 255, 255, 0.02) 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.6s infinite ease-in-out;
   border-radius: 8px;
@@ -2924,11 +2873,9 @@ body {
    ========================================================================== */
 
 .reminders {
-  background: radial-gradient(
-      circle at top right,
+  background: radial-gradient(circle at top right,
       rgba(78, 222, 163, 0.08),
-      transparent 35%
-    ),
+      transparent 35%),
     linear-gradient(135deg, #0b1326 0%, #101a31 50%, #0b1326 100%);
   min-height: 100vh;
   margin-left: 280px;
@@ -2944,11 +2891,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: linear-gradient(
-    180deg,
-    rgba(11, 19, 38, 0.85),
-    rgba(11, 19, 38, 0.55)
-  );
+  background: linear-gradient(180deg,
+      rgba(11, 19, 38, 0.85),
+      rgba(11, 19, 38, 0.55));
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -3362,12 +3307,12 @@ body {
   border-radius: 50%;
 }
 
-.toggle-switch input:checked + .slider-round {
+.toggle-switch input:checked+.slider-round {
   background-color: rgba(78, 222, 163, 0.18);
   border-color: rgba(78, 222, 163, 0.3);
 }
 
-.toggle-switch input:checked + .slider-round:before {
+.toggle-switch input:checked+.slider-round:before {
   transform: translateX(20px);
   background-color: #4edea3;
   box-shadow: 0 0 8px rgba(78, 222, 163, 0.6);
@@ -3600,11 +3545,9 @@ body {
   bottom: -20px;
   width: 120px;
   height: 120px;
-  background: radial-gradient(
-    circle,
-    rgba(78, 222, 163, 0.18) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle,
+      rgba(78, 222, 163, 0.18) 0%,
+      transparent 70%);
   pointer-events: none;
 }
 
@@ -3635,11 +3578,9 @@ body {
    HEALTH LOG SECTION
    =========================== */
 .health-log {
-  background: radial-gradient(
-      circle at top right,
+  background: radial-gradient(circle at top right,
       rgba(78, 222, 163, 0.08),
-      transparent 35%
-    ),
+      transparent 35%),
     linear-gradient(135deg, #0b1326 0%, #101a31 50%, #0b1326 100%);
   min-height: 100vh;
   margin-left: 280px;
@@ -3988,11 +3929,9 @@ body {
 }
 
 .profile-modal {
-  background: linear-gradient(
-    135deg,
-    rgba(22, 31, 52, 0.98),
-    rgba(17, 25, 44, 0.98)
-  );
+  background: linear-gradient(135deg,
+      rgba(22, 31, 52, 0.98),
+      rgba(17, 25, 44, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 28px;
   width: 500px;
@@ -4329,6 +4268,7 @@ body {
 
 /* Media Query: Tablets & Mobile (Width < 1024px) */
 @media (max-width: 1024px) {
+
   /* Align modals to the top and allow page-level scrolling on the overlay */
   .addMed-overlay,
   .profile-modal-overlay {
@@ -4599,6 +4539,7 @@ body {
 
 /* Media Query: Tablets & Small Screen Widths (< 768px) */
 @media (max-width: 768px) {
+
   /* Medicine Card Grid adjustments */
   .medicine-grid-myMedicines {
     grid-template-columns: 1fr;
@@ -4687,6 +4628,7 @@ body {
 
 /* Media Query: Compact Mobile Screens (< 600px) */
 @media (max-width: 600px) {
+
   /* Reminders timeline cards stacked layout to avoid squishing */
   .timeline-wrapper {
     padding-left: 20px;
@@ -4756,6 +4698,7 @@ body {
 
 /* Media Query: Extra Small Mobile Screens (< 480px) */
 @media (max-width: 480px) {
+
   /* Profile Vitals & Forms columns count */
   .profile-form-row,
   .profile-details-grid {
