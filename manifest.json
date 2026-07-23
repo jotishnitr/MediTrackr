@@ -1,0 +1,33 @@
+{
+  "short_name": "MediTrackr",
+  "name": "MediTrackr: Your Health, Organized",
+  "description": "A comprehensive personal health and medication tracker.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "icon-384.png",
+      "type": "image/png",
+      "sizes": "384x384"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/MediTrackr/",
+  "background_color": "#0c0f17",
+  "theme_color": "#0c0f17",
+  "display": "standalone",
+  "orientation": "portrait"
+}
