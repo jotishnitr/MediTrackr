@@ -73,7 +73,7 @@ The project focuses on solving a real problem — missed medication doses — wi
 
 The web version is live at:
 
-- **🔗 [https://jotishnitr.github.io/MediTrackr/](https://jotishnitr.github.io/MediTrackr/)**
+- **🔗 [https://jotishnitr.github.io/MediTrackr/](https://jotishnitr.github.io/MediTrackr/)** (Most preferable)
 
 - **🔗 [https://medi-trackr--djotishkumar202.replit.app/](https://medi-trackr--djotishkumar202.replit.app/)**
 
