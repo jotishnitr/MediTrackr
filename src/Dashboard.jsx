@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { getMedicineStatus } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
+import { requestFCMToken, listenForForegroundMessages } from "./firebase";
+
 export default function Dashboard({
   setCurrentPage,
   showAddMed,
@@ -14,6 +16,24 @@ export default function Dashboard({
   notes,
   profileDetails,
 }) {
+
+
+  useEffect(() => {
+    const setupFCM = async () => {
+      const token = await requestFCMToken();
+      if (token) {
+        await fetch(`${import.meta.env.VITE_API_URL}/save-fcm-token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ token }),
+        });
+      }
+    };
+    setupFCM();
+    listenForForegroundMessages();
+  }, []);
+
   const [medDetails, setMedDetails] = React.useState({
     id: "",
     name: "",
@@ -30,7 +50,10 @@ export default function Dashboard({
   React.useEffect(() => {
     async function fetchWeeklyData() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/weeklyAdherence`, { credentials: "include" });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/weeklyAdherence`,
+          { credentials: "include" },
+        );
         if (response.status === 401) {
           setWeeklyData([]);
           return;
@@ -114,14 +137,17 @@ export default function Dashboard({
       alert("Please fill in medicine name and time");
       return;
     }
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/addMedicine`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/addMedicine`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(medicine),
       },
-      body: JSON.stringify(medicine),
-    });
+    );
     const data = await response.json();
     setMedicines((prev) => [...prev, data.medicine]);
     setMedDetails({
@@ -207,12 +233,12 @@ export default function Dashboard({
     sleepHours < 5
       ? "─ Very Poor"
       : sleepHours < 7
-        ? "─ Poor"
-        : sleepHours < 9
-          ? "─ Healthy"
-          : sleepHours <= 10
-            ? "─ Good (Long Sleep)"
-            : "─ Excessive";
+      ? "─ Poor"
+      : sleepHours < 9
+      ? "─ Healthy"
+      : sleepHours <= 10
+      ? "─ Good (Long Sleep)"
+      : "─ Excessive";
 
   function getBloodPressureStatus(bp) {
     const [sys, dia] = bp.split("/").map(Number);
@@ -491,8 +517,8 @@ export default function Dashboard({
                       getMedicineStatus(medicine) === "TAKEN"
                         ? "status-taken"
                         : getMedicineStatus(medicine) === "MISSED"
-                          ? "status-missed"
-                          : "status-pending"
+                        ? "status-missed"
+                        : "status-pending"
                     }
                   >
                     {getMedicineStatus(medicine)}
@@ -536,8 +562,10 @@ export default function Dashboard({
               <div className="weeklyAdherence-bar">
                 {weeklyData.map((item) => {
                   const total = item.taken + item.missed;
-                  const takenPercentage = total === 0 ? 0 : Math.round((item.taken / total) * 100);
-                  const missedPercentage = total === 0 ? 0 : Math.round((item.missed / total) * 100);
+                  const takenPercentage =
+                    total === 0 ? 0 : Math.round((item.taken / total) * 100);
+                  const missedPercentage =
+                    total === 0 ? 0 : Math.round((item.missed / total) * 100);
                   return (
                     <div className="day-column" key={item.day}>
                       <div className="day-bars">

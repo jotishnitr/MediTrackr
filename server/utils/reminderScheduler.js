@@ -1,18 +1,15 @@
 const cron = require("node-cron");
 const Medicine = require("../models/Medicine");
-const PushSubscription = require("../models/PushSubscription");
 const Settings = require("../models/Settings");
-const webpush = require("./webPush");
+const User = require("../models/user");
+const admin = require("../config/firebase");
 
-// Runs every minute
 cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
-
     const currentDate = now.toLocaleDateString("en-IN", {
       timeZone: "Asia/Kolkata",
     });
-
     const currentTime = now.toLocaleTimeString("en-IN", {
       timeZone: "Asia/Kolkata",
       hour: "2-digit",
@@ -27,84 +24,85 @@ cron.schedule("* * * * *", async () => {
       time: currentTime,
       status: false,
     });
-
-    if (medicines.length === 0) {
-      return;
-    }
+    if (medicines.length === 0) return;
 
     console.log(`${medicines.length} medicine(s) due.`);
 
-    // Group due medicines by userId
     const userMedicines = {};
     medicines.forEach((medicine) => {
       const uId = medicine.userId.toString();
-      if (!userMedicines[uId]) {
-        userMedicines[uId] = [];
-      }
+      if (!userMedicines[uId]) userMedicines[uId] = [];
       userMedicines[uId].push(medicine);
     });
 
-    // Send reminders to each user
     for (const uId of Object.keys(userMedicines)) {
       try {
-        // 1. Check user settings if browserAlerts is enabled
         const settings = await Settings.findOne({ userId: uId });
         if (settings && !settings.browserAlerts) {
-          console.log(`User ${uId} has disabled browser alerts. Skipping.`);
+          console.log(`User ${uId} disabled alerts. Skipping.`);
           continue;
         }
 
-        // 2. Find subscriptions for this user
-        const subscriptions = await PushSubscription.find({ userId: uId });
-        if (subscriptions.length === 0) {
-          console.log(`No subscribed devices for user ${uId}.`);
+        const user = await User.findById(uId);
+        if (!user || !user.fcmTokens || user.fcmTokens.length === 0) {
+          console.log(`No FCM tokens for user ${uId}.`);
           continue;
         }
 
         const userMeds = userMedicines[uId];
         const body = userMeds
-          .map(
-            (medicine) =>
-              `• ${medicine.name} (${medicine.dosage} ${medicine.unit})`,
-          )
+          .map((m) => `• ${m.name} (${m.dosage} ${m.unit})`)
           .join("\n");
 
-        const payload = JSON.stringify({
-          title: "💊 Medicine Reminder",
-          body:
-            userMeds.length === 1
-              ? `Time to take\n\n${body}`
-              : `You have ${userMeds.length} medicines to take.\n\n${body}`,
-
-          data: {
-            medicines: userMeds.map((medicine) => ({
-              id: medicine._id,
-              name: medicine.name,
-              dosage: medicine.dosage,
-              unit: medicine.unit,
-              time: medicine.time,
-            })),
+        const message = {
+          notification: {
+            title: "💊 Medicine Reminder",
+            body:
+              userMeds.length === 1
+                ? `Time to take\n\n${body}`
+                : `You have ${userMeds.length} medicines to take.\n\n${body}`,
           },
+          data: {
+            medicines: JSON.stringify(
+              userMeds.map((m) => ({
+                id: m._id.toString(),
+                name: m.name,
+                dosage: m.dosage,
+                unit: m.unit,
+                time: m.time,
+              })),
+            ),
+          },
+          tokens: user.fcmTokens,
+        };
+
+        const response = await admin.messaging().sendEachForMulticast(message);
+
+        const deadTokens = [];
+        response.responses.forEach((res, idx) => {
+          if (!res.success) {
+            const code = res.error.code;
+            if (
+              code === "messaging/registration-token-not-registered" ||
+              code === "messaging/invalid-registration-token"
+            ) {
+              deadTokens.push(user.fcmTokens[idx]);
+            }
+          }
         });
 
-        await Promise.all(
-          subscriptions.map(async (subscription) => {
-            try {
-              await webpush.sendNotification(subscription.toObject(), payload);
-            } catch (err) {
-              console.log(
-                `Notification failed for user ${uId}: ${err.statusCode || ""} ${err.message}`,
-              );
+        if (deadTokens.length) {
+          user.fcmTokens = user.fcmTokens.filter(
+            (t) => !deadTokens.includes(t),
+          );
+          await user.save();
+          console.log(
+            `Removed ${deadTokens.length} dead token(s) for user ${uId}.`,
+          );
+        }
 
-              if (err.statusCode === 404 || err.statusCode === 410) {
-                await PushSubscription.deleteOne({
-                  endpoint: subscription.endpoint,
-                });
-
-                console.log("Expired subscription removed.");
-              }
-            }
-          }),
+        console.log(
+          `User ${uId}: sent ${response.successCount}, failed ${response.failureCount}`,
         );
       } catch (userErr) {
         console.error(`Error processing reminders for user ${uId}:`, userErr);

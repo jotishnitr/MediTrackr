@@ -22,6 +22,7 @@ const addHealthProfile = require("./routes/addHealthProfile");
 const getHealthProfile = require("./routes/getHealthProfile");
 const googleLogin = require("./routes/googleLogin");
 const logout = require("./routes/logout");
+const fcmtoken = require("./routes/fcmtoken");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
@@ -61,6 +62,7 @@ app.use("/", addHealthProfile);
 app.use("/", getHealthProfile);
 app.use("/", googleLogin);
 app.use("/", logout);
+app.use("/", fcmtoken);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
