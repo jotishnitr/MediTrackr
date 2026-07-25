@@ -18,13 +18,29 @@ const medicineSchema = new mongoose.Schema({
 
   unit: {
     type: String,
-    enum: ["mg", "ml", "g"],
+    enum: ["mg", "ml", "g", "mcg", "tablet", "pill", "capsule", "drop", "puff", "spray", "patch", "spoon", "unit", "IU"],
     required: true,
   },
 
   type: {
     type: String,
-    enum: ["Oral Tablet", "Capsule", "Syrup", "Injection"],
+    enum: [
+      "Oral Tablet",
+      "Capsule",
+      "Syrup",
+      "Injection",
+      "Inhaler",
+      "Drops",
+      "Cream / Ointment",
+      "Spray",
+      "Liquid (Oral)",
+      "Suspension",
+      "Powder",
+      "Patch",
+      "Suppository",
+      "Lotion",
+      "Gel"
+    ],
     required: true,
   },
 

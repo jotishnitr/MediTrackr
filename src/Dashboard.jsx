@@ -233,12 +233,12 @@ export default function Dashboard({
     sleepHours < 5
       ? "─ Very Poor"
       : sleepHours < 7
-      ? "─ Poor"
-      : sleepHours < 9
-      ? "─ Healthy"
-      : sleepHours <= 10
-      ? "─ Good (Long Sleep)"
-      : "─ Excessive";
+        ? "─ Poor"
+        : sleepHours < 9
+          ? "─ Healthy"
+          : sleepHours <= 10
+            ? "─ Good (Long Sleep)"
+            : "─ Excessive";
 
   function getBloodPressureStatus(bp) {
     const [sys, dia] = bp.split("/").map(Number);
@@ -357,6 +357,17 @@ export default function Dashboard({
                     <option>mg</option>
                     <option>ml</option>
                     <option>g</option>
+                    <option>mcg</option>
+                    <option>tablet</option>
+                    <option>pill</option>
+                    <option>capsule</option>
+                    <option>drop</option>
+                    <option>puff</option>
+                    <option>spray</option>
+                    <option>patch</option>
+                    <option>spoon</option>
+                    <option>unit</option>
+                    <option>IU</option>
                   </select>
                 </div>
               </div>
@@ -373,6 +384,17 @@ export default function Dashboard({
                   <option>Capsule</option>
                   <option>Syrup</option>
                   <option>Injection</option>
+                  <option>Inhaler</option>
+                  <option>Drops</option>
+                  <option>Cream / Ointment</option>
+                  <option>Spray</option>
+                  <option>Liquid (Oral)</option>
+                  <option>Suspension</option>
+                  <option>Powder</option>
+                  <option>Patch</option>
+                  <option>Suppository</option>
+                  <option>Lotion</option>
+                  <option>Gel</option>
                 </select>
               </div>
 
@@ -517,8 +539,8 @@ export default function Dashboard({
                       getMedicineStatus(medicine) === "TAKEN"
                         ? "status-taken"
                         : getMedicineStatus(medicine) === "MISSED"
-                        ? "status-missed"
-                        : "status-pending"
+                          ? "status-missed"
+                          : "status-pending"
                     }
                   >
                     {getMedicineStatus(medicine)}
