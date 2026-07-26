@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/genai": "^2.13.0",
     "@react-oauth/google": "^0.13.5",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
