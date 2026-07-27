@@ -7,6 +7,7 @@ import HealthLog from "./HealthLog";
 import ProfileModal from "./ProfileModal";
 import Login from "./logins";
 import Register from "./Register";
+import HelpBot from "./HelpBot";
 
 import React from "react";
 import { AnimatePresence } from "framer-motion";
@@ -16,6 +17,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = React.useState("Dashboard");
   const [showAddMed, setShowAddMed] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [showHelpBot, setShowHelpBot] = React.useState(false);
 
   React.useEffect(() => {
     async function init() {
@@ -305,6 +307,18 @@ export default function App() {
           setCurrentPage={setCurrentPage}
           onSignUpRedirect={() => setCurrentPage("Register")}
         />
+      )}
+
+      {currentPage !== "Register" && currentPage !== "Login" && (
+        <>
+          {showHelpBot ? (
+            <HelpBot setShowHelpBot={setShowHelpBot} showHelpBot={showHelpBot} />
+          ) : (
+            <div className="chatbot-launcher" onClick={() => setShowHelpBot(true)}>
+              <img src="helpBot.png" alt="Help Bot Launcher" />
+            </div>
+          )}
+        </>
       )}
     </>
   );
