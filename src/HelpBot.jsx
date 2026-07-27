@@ -58,7 +58,7 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
             Here to Help, Listen, and Resolve.
           </div>
         </div>
-        <div className="close-btn" onClick={() => setShowHelpBot(false)}>
+        <div className="bot-close-btn" onClick={() => setShowHelpBot(false)}>
           ✕
         </div>
       </div>
