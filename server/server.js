@@ -24,7 +24,7 @@ const googleLogin = require("./routes/googleLogin");
 const logout = require("./routes/logout");
 const fcmtoken = require("./routes/fcmtoken");
 const geminiAi = require("./routes/geminiAi");
-const getChatHistory = require("./routes/getChatHIstory");
+const getChatHistory = require("./routes/getChatHistory");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
