@@ -13,30 +13,31 @@ const geminiAi = async (req, res) => {
   try {
     let chatDoc = await ChatHistory.findOne({ userId });
     if (!chatDoc) {
-      chatDoc = new ChatHistory({ userId, message: [] });
+      chatDoc = new ChatHistory({ userId, messages: [] });
     }
 
-    const historyForGemini=chatDoc.message.map((m)=>({
-      role:m.role,
-      parts:[{text:m.text}],
-    }))
-    
+    const historyForGemini = chatDoc.messages.map((m) => ({
+      role: m.role,
+      parts: [{ text: m.text }],
+    }));
+
     const chat = ai.chats.create({
-      model: "gemini-flash-latest",
+      model: "gemini-2.5-flash",
       history: historyForGemini,
     });
     const response = await chat.sendMessage({ message });
 
-    chatDoc.message.push({role:"user",text:message});
-    chatDoc.message.push({role:"model",text:response.text});
+    chatDoc.messages.push({ role: "user", text: message });
+    chatDoc.messages.push({ role: "model", text: response.text });
 
     await chatDoc.save();
 
-    res.status(200).json({reply:response.text})
+    res.status(200).json({ reply: response.text });
   } catch (err) {
+    console.error(err);
     res.status(500).json({
       error: "Something went wrong",
-      message: err,
+      message: err.message || err,
     });
   }
 };
