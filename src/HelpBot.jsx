@@ -8,6 +8,31 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const chatEndRef = useRef(null);
 
   useEffect(() => {
+    async function loadHistory() {
+      try {
+        const res = await fetch(
+          "https://meditrackr.onrender.com/getChatHistory",
+          {
+            credentials: "include",
+          },
+        );
+        const data = await res.json();
+
+        const formatted = data.messages.map((m) => ({
+          sender: m.role === "user" ? "user" : "bot",
+          text: m.text,
+        }));
+
+        setMessages(formatted);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadHistory();
+  }, []);
+
+  useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -23,6 +48,7 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
     try {
       const res = await fetch("https://meditrackr.onrender.com/api/chat", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
       });
