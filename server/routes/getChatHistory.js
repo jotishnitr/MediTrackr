@@ -3,5 +3,5 @@ const auth = require("../middleware/auth");
 const express = require("express");
 const router = express.Router();
 
-router.router("/getChatHistory").get(auth, getChatHistory);
+router.route("/getChatHistory").get(auth, getChatHistory);
 module.exports = router;
