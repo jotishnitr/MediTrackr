@@ -22,7 +22,7 @@ const geminiAi = async (req, res) => {
     }));
 
     const chat = ai.chats.create({
-      model: "gemini-model-latest",
+      model: "gemini-flash-latest",
       history: historyForGemini,
     });
     const response = await chat.sendMessage({ message });
