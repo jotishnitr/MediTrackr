@@ -1,7 +1,7 @@
 const ChatHistory = require("../models/ChatHistory");
 const getChatHistory = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const chatDoc = await ChatHistory.findOne({ userId });
 
     res.status(200).json({ messages: chatDoc ? chatDoc.messages : [] });

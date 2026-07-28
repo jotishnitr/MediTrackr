@@ -3,7 +3,7 @@ const ChatHistory = require("../models/ChatHistory");
 
 const geminiAi = async (req, res) => {
   const { message } = req.body;
-  const userId = req.user.userId;
+  const userId = req.user.id;
 
   if (!message) {
     return res.status(400).json({
