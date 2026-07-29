@@ -172,7 +172,7 @@
 .msg-bot code,
 .msg-user code {
   background: rgba(255, 255, 255, 0.1);
-  padding: 2px 5px;
+  padding: 10px 5px;
   border-radius: 4px;
   font-size: 12px;
 }

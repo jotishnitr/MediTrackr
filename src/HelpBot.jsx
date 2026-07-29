@@ -9,6 +9,16 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const chatEndRef = useRef(null);
 
   useEffect(() => {
+    setMessages([
+      {
+        sender: "bot",
+        text: "Hi! I'm MediTrackr Bot 👋 Ask me anything about adding medicines, reminders, or using the app.",
+      },
+    ]);
+  }, []);
+  // runs once when popup mounts, sets first message before user types anything
+
+  useEffect(() => {
     async function loadHistory() {
       try {
         const res = await fetch(
