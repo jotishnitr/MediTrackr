@@ -4,7 +4,11 @@
   right: 24px;
   width: 380px;
   height: 520px;
-  background: linear-gradient(135deg, rgba(21, 32, 54, 0.96), rgba(11, 18, 32, 0.98));
+  background: linear-gradient(
+    135deg,
+    rgba(21, 32, 54, 0.96),
+    rgba(11, 18, 32, 0.98)
+  );
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -13,7 +17,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(78, 222, 163, 0.05);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   color: #dae2fd;
   z-index: 10000;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -147,6 +151,32 @@
   animation: messageSlideBot 0.25s ease-out;
 }
 
+.msg-bot p,
+.msg-user p {
+  margin: 0;
+  /* remove default paragraph spacing, markdown wraps text in <p> automatically */
+}
+
+.msg-bot ul,
+.msg-user ul {
+  margin: 4px 0;
+  padding-left: 18px;
+  /* proper indent for bullet lists */
+}
+
+.msg-bot strong,
+.msg-user strong {
+  font-weight: 700;
+}
+
+.msg-bot code,
+.msg-user code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
 @keyframes messageSlideUser {
   from {
     opacity: 0;
@@ -182,8 +212,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .input-container {
@@ -226,7 +261,8 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 6px 24px rgba(78, 222, 163, 0.3);
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.3s ease;
   z-index: 9999;
 }
 

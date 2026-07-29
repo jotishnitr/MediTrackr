@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./helpBot.css";
+import ReactMarkdown from "react-markdown";
 
 export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const [messages, setMessages] = useState([]);
@@ -95,7 +96,7 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
             key={index}
             className={msg.sender === "user" ? "msg-user" : "msg-bot"}
           >
-            {msg.text}
+            <ReactMarkdown>{msg.text}</ReactMarkdown>
           </div>
         ))}
 
