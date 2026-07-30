@@ -8,6 +8,7 @@ import ProfileModal from "./ProfileModal";
 import Login from "./logins";
 import Register from "./Register";
 import HelpBot from "./HelpBot";
+import AiAssistance from "./AiAssistant";
 
 import React from "react";
 import { AnimatePresence } from "framer-motion";
@@ -283,6 +284,13 @@ export default function App() {
             setLastSaved={setLastSaved}
           />
         )}
+
+        {currentPage === "aiHealthAssistance" && (
+          <AiAssistance
+            key="aiHealthAssistance"
+            profileDetails={profileDetails}
+          />
+        )}
       </AnimatePresence>
 
       {showProfileModal && (
@@ -312,10 +320,16 @@ export default function App() {
       {currentPage !== "Register" && currentPage !== "Login" && (
         <>
           {showHelpBot ? (
-            <HelpBot setShowHelpBot={setShowHelpBot} showHelpBot={showHelpBot} />
+            <HelpBot
+              setShowHelpBot={setShowHelpBot}
+              showHelpBot={showHelpBot}
+            />
           ) : (
-            <div className="chatbot-launcher" onClick={() => setShowHelpBot(true)}>
-              <img src="helpBot.png" alt="Help Bot Launcher" />
+            <div
+              className="chatbot-launcher"
+              onClick={() => setShowHelpBot(true)}
+            >
+              <img src="forum.png" alt="Help Bot Launcher" />
             </div>
           )}
         </>

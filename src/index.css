@@ -4418,7 +4418,8 @@ body {
   .my-medicines,
   .searchMedicine,
   .reminders,
-  .health-log {
+  .health-log,
+  .ai-assistant {
     margin-left: 0 !important;
     padding-top: 85px;
     /* Offset the 70px mobile sticky header + spacing */
