@@ -14,8 +14,12 @@ export default function AiAssistance({ profileDetails }) {
   const fileInputRef = useRef(null);
 
   // Helper to get message timestamp
-  function getCurrentTime() {
-    const now = new Date();
+  function getCurrentTime(dateInput) {
+    const now = dateInput ? new Date(dateInput) : new Date();
+    
+    const dateOptions = { month: "short", day: "numeric", year: "numeric" };
+    const dateStr = now.toLocaleDateString("en-US", dateOptions);
+
     let hours = now.getHours();
     const minutes = now.getMinutes();
     const ampm = hours >= 12 ? "PM" : "AM";
@@ -24,7 +28,7 @@ export default function AiAssistance({ profileDetails }) {
     hours = hours ? hours : 12; // convert 0 to 12
     const minutesStr = minutes < 10 ? "0" + minutes : minutes;
 
-    return `${hours}:${minutesStr} ${ampm}`;
+    return `${dateStr}, ${hours}:${minutesStr} ${ampm}`;
   }
 
   // Load chat history from backend
@@ -39,7 +43,7 @@ export default function AiAssistance({ profileDetails }) {
           const formatted = data.messages.map((m) => ({
             sender: m.role === "user" ? "user" : "assistant",
             text: m.text,
-            time: getCurrentTime(), // approximate for history
+            time: getCurrentTime(m.timeStamp), // use stored timestamp from MongoDB
           }));
           setMessages(formatted);
         } else {
@@ -100,14 +104,23 @@ export default function AiAssistance({ profileDetails }) {
 
       if (response.ok) {
         const data = await response.json();
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: "assistant",
-            text: data.reply,
-            time: getCurrentTime(),
-          },
-        ]);
+        setMessages((prev) => {
+          const updated = [...prev];
+          if (updated.length > 0 && data.userTime) {
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              time: getCurrentTime(data.userTime),
+            };
+          }
+          return [
+            ...updated,
+            {
+              sender: "assistant",
+              text: data.reply,
+              time: getCurrentTime(data.modelTime),
+            },
+          ];
+        });
       } else {
         throw new Error("Chat request failed");
       }
