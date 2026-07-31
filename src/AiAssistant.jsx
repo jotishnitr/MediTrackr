@@ -16,7 +16,7 @@ export default function AiAssistance({ profileDetails }) {
   // Helper to get message timestamp
   function getCurrentTime(dateInput) {
     const now = dateInput ? new Date(dateInput) : new Date();
-    
+
     const dateOptions = { month: "short", day: "numeric", year: "numeric" };
     const dateStr = now.toLocaleDateString("en-US", dateOptions);
 
@@ -34,9 +34,12 @@ export default function AiAssistance({ profileDetails }) {
   // Load chat history from backend
   const loadChatHistory = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/getChatHistory`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/getAssistantHistory`,
+        {
+          credentials: "include",
+        },
+      );
       if (response.ok) {
         const data = await response.json();
         if (data.messages && data.messages.length > 0) {
@@ -51,7 +54,9 @@ export default function AiAssistance({ profileDetails }) {
           setMessages([
             {
               sender: "assistant",
-              text: `Hello ${profileDetails?.name || "there"}! I noticed your morning dose of Lisinopril hasn't been logged yet. Would you like to mark it as taken now, or should I snooze the reminder?`,
+              text: `Hello ${
+                profileDetails?.name || "there"
+              }! I noticed your morning dose of Lisinopril hasn't been logged yet. Would you like to mark it as taken now, or should I snooze the reminder?`,
               time: getCurrentTime(),
             },
           ]);
@@ -95,12 +100,15 @@ export default function AiAssistance({ profileDetails }) {
 
     try {
       // API request to backend
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: currentMsgText }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/assitant`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: currentMsgText }),
+        },
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -170,18 +178,28 @@ export default function AiAssistance({ profileDetails }) {
   // Quick Action suggestion chips
   const suggestionChips = [
     { text: "Log Symptoms", action: "I'd like to log my symptoms for today." },
-    { text: "Check next dose", action: "What is my next scheduled medicine dose?" },
+    {
+      text: "Check next dose",
+      action: "What is my next scheduled medicine dose?",
+    },
     { text: "Health trends", action: "Show me my recent health log trends." },
-    { text: "Pharmacy refill", action: "How do I request a refill for my prescriptions?" },
+    {
+      text: "Pharmacy refill",
+      action: "How do I request a refill for my prescriptions?",
+    },
   ];
 
   // Render assistant message bubbles with custom support for "Recommended Action" cards
   const renderMessageContent = (msg) => {
-    const isRecAction = msg.text.includes("Recommended Action") || msg.text.includes("recommended action");
+    const isRecAction =
+      msg.text.includes("Recommended Action") ||
+      msg.text.includes("recommended action");
 
     if (isRecAction) {
       // Split the message if it has a Recommended Action section to format it beautifully as a sub-card
-      const parts = msg.text.split(/(Recommended Action|recommended action):?/i);
+      const parts = msg.text.split(
+        /(Recommended Action|recommended action):?/i,
+      );
       const mainText = parts[0];
       const recContent = parts.slice(2).join("");
 
@@ -190,7 +208,12 @@ export default function AiAssistance({ profileDetails }) {
           <ReactMarkdown>{mainText}</ReactMarkdown>
           <div className="recommendation-box">
             <div className="recommendation-title">
-              <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>info</span>
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "16px" }}
+              >
+                info
+              </span>
               Recommended Action
             </div>
             <div className="recommendation-content">
@@ -205,7 +228,11 @@ export default function AiAssistance({ profileDetails }) {
       <>
         <ReactMarkdown>{msg.text}</ReactMarkdown>
         {msg.image && (
-          <img src={msg.image} alt="User upload" className="message-bubble-attachment" />
+          <img
+            src={msg.image}
+            alt="User upload"
+            className="message-bubble-attachment"
+          />
         )}
       </>
     );
@@ -229,7 +256,10 @@ export default function AiAssistance({ profileDetails }) {
         </div>
 
         <div className="ai-header-right">
-          <button className="feedback-btn" onClick={() => setShowFeedback(true)}>
+          <button
+            className="feedback-btn"
+            onClick={() => setShowFeedback(true)}
+          >
             Give feedback
           </button>
         </div>
@@ -241,14 +271,18 @@ export default function AiAssistance({ profileDetails }) {
           {messages.map((msg, index) => (
             <div key={index} className={`message-wrapper ${msg.sender}`}>
               <div className="message-header">
-                <span className={msg.sender === "user" ? "sender-label-user" : "sender-label-assistant"}>
+                <span
+                  className={
+                    msg.sender === "user"
+                      ? "sender-label-user"
+                      : "sender-label-assistant"
+                  }
+                >
                   {msg.sender === "user" ? "YOU" : "ASSISTANT"}
                 </span>
                 <span className="time-stamp">{msg.time}</span>
               </div>
-              <div className="message-bubble">
-                {renderMessageContent(msg)}
-              </div>
+              <div className="message-bubble">{renderMessageContent(msg)}</div>
             </div>
           ))}
 
@@ -289,18 +323,29 @@ export default function AiAssistance({ profileDetails }) {
               <div className="selected-image-preview-bar">
                 {selectedImage.name.endsWith(".pdf") ? (
                   <div className="preview-thumb">
-                    <span className="material-symbols-outlined">picture_as_pdf</span>
+                    <span className="material-symbols-outlined">
+                      picture_as_pdf
+                    </span>
                   </div>
-                ) : selectedImage.name.endsWith(".doc") || selectedImage.name.endsWith(".docx") ? (
+                ) : selectedImage.name.endsWith(".doc") ||
+                  selectedImage.name.endsWith(".docx") ? (
                   <div className="preview-thumb">
-                    <span className="material-symbols-outlined">description</span>
+                    <span className="material-symbols-outlined">
+                      description
+                    </span>
                   </div>
                 ) : selectedImage.name.endsWith(".txt") ? (
                   <div className="preview-thumb">
-                    <span className="material-symbols-outlined">text_snippet</span>
+                    <span className="material-symbols-outlined">
+                      text_snippet
+                    </span>
                   </div>
                 ) : (
-                  <img src={imagePreview} className="preview-thumb" alt="Preview" />
+                  <img
+                    src={imagePreview}
+                    className="preview-thumb"
+                    alt="Preview"
+                  />
                 )}
                 <div className="preview-info">
                   <div className="preview-name">{selectedImage?.name}</div>
@@ -308,7 +353,10 @@ export default function AiAssistance({ profileDetails }) {
                     {(selectedImage?.size / 1024).toFixed(1)} KB
                   </div>
                 </div>
-                <button className="remove-preview-btn" onClick={removeImagePreview}>
+                <button
+                  className="remove-preview-btn"
+                  onClick={removeImagePreview}
+                >
                   ✕
                 </button>
               </div>
@@ -356,7 +404,10 @@ export default function AiAssistance({ profileDetails }) {
           </div>
         </div>
       </div>
-      <FeedbackForm isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
+      <FeedbackForm
+        isOpen={showFeedback}
+        onClose={() => setShowFeedback(false)}
+      />
     </section>
   );
 }
