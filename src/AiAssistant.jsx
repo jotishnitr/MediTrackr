@@ -56,7 +56,7 @@ export default function AiAssistance({ profileDetails }) {
               sender: "assistant",
               text: `Hello ${
                 profileDetails?.name || "there"
-              }! I noticed your morning dose of Lisinopril hasn't been logged yet. Would you like to mark it as taken now, or should I snooze the reminder?`,
+              }How can I help you today?`,
               time: getCurrentTime(),
             },
           ]);
@@ -101,7 +101,7 @@ export default function AiAssistance({ profileDetails }) {
     try {
       // API request to backend
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/assitant`,
+        `${import.meta.env.VITE_API_URL}/api/assistant`,
         {
           method: "POST",
           credentials: "include",

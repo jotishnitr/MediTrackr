@@ -45,11 +45,12 @@ const AssistantHistory = require("../models/AssistantHistory");
 
 const geminiAiAssistant = async (req, res) => {
   const { message } = req.body;
-  const { userId } = req.user.id;
+  const userId = req.user.id;
 
   if (!message) {
     return res.status(400).json({
       error: "Message required",
+      message: "Message required",
     });
   }
 
@@ -57,7 +58,7 @@ const geminiAiAssistant = async (req, res) => {
     let chatDoc = await AssistantHistory.findOne({ userId });
 
     if (!chatDoc) {
-      chatDoc = new ChatHistory({ userId, messages: [] });
+      chatDoc = new AssistantHistory({ userId, messages: [] });
     }
 
     const historyForGemini = chatDoc.messages.map((m) => ({
@@ -80,7 +81,7 @@ const geminiAiAssistant = async (req, res) => {
 
     await chatDoc.save();
 
-    const userMsg = chatDoc.messages[chatDoc.messages.length - 1];
+    const userMsg = chatDoc.messages[chatDoc.messages.length - 2];
     const assistantMsg = chatDoc.messages[chatDoc.messages.length - 1];
 
     res.status(200).json({
@@ -89,7 +90,7 @@ const geminiAiAssistant = async (req, res) => {
       modelTime: assistantMsg.timeStamp,
     });
   } catch (err) {
-    console.err(err);
+    console.error(err);
     res.status(500).json({
       error: "something went wrong",
       message: err.message || err,
