@@ -68,7 +68,7 @@ const geminiAiAssistant = async (req, res) => {
     }));
 
     const chat = MediTrackrAssistant.chats.create({
-      model: file ? "gemini-2.5-flash" : "gemini-flash-latest",
+      model: "gemini-flash-latest",
       history: historyForGemini,
       config: {
         systemInstruction: ASSISTANT_SYSTEM_PROMPT,
