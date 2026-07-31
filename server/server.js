@@ -32,7 +32,6 @@ const getAssistantHistory = require("./routes/getAssistantHistory");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
-const getAssistantHistory = require("./controllers/getAssistantHistory.js");
 
 const app = express();
 connectDB();
