@@ -1,8 +1,8 @@
 require("dotenv");
 
-const { geminiAssistant } = require("@google/genai");
+const { GoogleGenAI } = require("@google/genai");
 
-const MediTrackrAssistant = new geminiAssistant({
+const MediTrackrAssistant = new GoogleGenAI({
   apiKey: process.env.GEMINI_ASSISTANT_API_KEY,
 });
 
