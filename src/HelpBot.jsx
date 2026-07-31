@@ -8,6 +8,30 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
 
+  const handleDeleteHistory = async () => {
+    if (!window.confirm("Are you sure you want to clear your chat history?")) return;
+
+    try {
+      const url = `${import.meta.env.VITE_API_URL || "https://meditrackr.onrender.com"}/getChatHistory`;
+      const response = await fetch(url, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (response.ok) {
+        setMessages([
+          {
+            sender: "bot",
+            text: "Hi! I'm MediTrackr Bot 👋 Ask me anything about adding medicines, reminders, or using the app.",
+          },
+        ]);
+      } else {
+        console.error("Failed to delete chat history");
+      }
+    } catch (err) {
+      console.error("Error clearing chat history:", err);
+    }
+  };
+
   useEffect(() => {
     setMessages([
       {
@@ -95,8 +119,29 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
             Here to Help, Listen, and Resolve.
           </div>
         </div>
-        <div className="bot-close-btn" onClick={() => setShowHelpBot(false)}>
-          ✕
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <button
+            onClick={handleDeleteHistory}
+            title="Clear Chat History"
+            style={{
+              background: "rgba(255, 75, 75, 0.1)",
+              border: "1px solid rgba(255, 75, 75, 0.2)",
+              color: "#ff4b4b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              transition: "all 0.2s ease"
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>delete</span>
+          </button>
+          <div className="bot-close-btn" onClick={() => setShowHelpBot(false)}>
+            ✕
+          </div>
         </div>
       </div>
 

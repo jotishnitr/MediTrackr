@@ -78,6 +78,35 @@ export default function AiAssistance({ profileDetails }) {
     }
   };
 
+  const handleDeleteHistory = async () => {
+    if (!window.confirm("Are you sure you want to clear your chat history?")) return;
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/getAssistantHistory`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+      if (response.ok) {
+        setMessages([
+          {
+            sender: "assistant",
+            text: `Hello ${
+              profileDetails?.name || "there"
+            }! How can I help you today?`,
+            time: getCurrentTime(),
+          },
+        ]);
+      } else {
+        console.error("Failed to delete chat history");
+      }
+    } catch (err) {
+      console.error("Error clearing chat history:", err);
+    }
+  };
+
   useEffect(() => {
     loadChatHistory();
   }, []);
@@ -278,7 +307,28 @@ export default function AiAssistance({ profileDetails }) {
           </div>
         </div>
 
-        <div className="ai-header-right">
+        <div className="ai-header-right" style={{ display: "flex", gap: "10px" }}>
+          <button
+            className="delete-history-btn"
+            onClick={handleDeleteHistory}
+            style={{
+              background: "rgba(255, 75, 75, 0.1)",
+              color: "#ff4b4b",
+              border: "1px solid rgba(255, 75, 75, 0.2)",
+              padding: "6px 12px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "14px",
+              fontWeight: "500",
+              transition: "all 0.2s ease"
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>delete</span>
+            Clear Chat
+          </button>
           <button
             className="feedback-btn"
             onClick={() => setShowFeedback(true)}
