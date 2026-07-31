@@ -26,7 +26,8 @@ const logout = require("./routes/logout");
 const fcmtoken = require("./routes/fcmtoken");
 const geminiAi = require("./routes/geminiAi");
 const getChatHistory = require("./routes/getChatHistory");
-const feedback = require('./routes/feedback')
+const feedback = require("./routes/feedback");
+const geminiAiAssistant = require("./routes/geminiAiAssistant");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
@@ -70,6 +71,7 @@ app.use("/", fcmtoken);
 app.use("/", geminiAi);
 app.use("/", getChatHistory);
 app.use("/", feedback);
+app.use("/", geminiAiAssistant);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
