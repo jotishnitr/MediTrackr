@@ -74,7 +74,7 @@ const geminiAiAssistant = async (req, res) => {
       },
     });
 
-    const response = await chat.sendMessages({ message });
+    const response = await chat.sendMessage({ message });
 
     chatDoc.messages.push({ role: "user", text: message });
     chatDoc.messages.push({ role: "assistant", text: response.text });
