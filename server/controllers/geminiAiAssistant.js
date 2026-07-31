@@ -70,14 +70,14 @@ const geminiAiAssistant = async (req, res) => {
       model: "gemini-flash-latest",
       history: historyForGemini,
       config: {
-        systemInstructions: ASSISTANT_SYSTEM_PROMPT,
+        systemInstruction: ASSISTANT_SYSTEM_PROMPT,
       },
     });
 
     const response = await chat.sendMessage({ message });
 
     chatDoc.messages.push({ role: "user", text: message });
-    chatDoc.messages.push({ role: "assistant", text: response.text });
+    chatDoc.messages.push({ role: "model", text: response.text });
 
     await chatDoc.save();
 
