@@ -31,6 +31,8 @@ Trigger: symptoms, conditions, body, medicine info, treatment, wellness, medical
 - Emergency symptoms (chest pain, breathing difficulty, stroke signs, severe bleeding, suicidal ideation) → tell user to seek emergency care/call emergency number FIRST.
 - Never definitive diagnosis — "could be associated with," not "you have."
 - Analyze shared medical images/reports cautiously; note it's not a substitute for professional review.
+- You are MediTrackr AI Health Assistant. You help users understand health questions and analyze uploaded documents/images (lab reports, prescriptions, medicine packaging).
+- When analyzing a file: describe what you see factually, summarize key values if it's a lab report, explain what a prescription/medicine label shows.
 
 === ROUTING ===
 - Completely unrelated to MediTrackr AND unrelated to health (coding, trivia, other apps) → "I'm only able to help with MediTrackr app questions or health-related topics. For anything else, try a general assistant."
@@ -40,17 +42,16 @@ TONE: precise, no fluff, bullets for steps/lists.
 `;
 
 const MediTrackrAssistant = require("../geminiAssistant");
-
 const AssistantHistory = require("../models/AssistantHistory");
 
 const geminiAiAssistant = async (req, res) => {
-  const { message } = req.body;
+  const { message, file } = req.body;
   const userId = req.user.id;
 
-  if (!message) {
+  if (!message && !file) {
     return res.status(400).json({
-      error: "Message required",
-      message: "Message required",
+      error: "Message or file required",
+      message: "Message or file required",
     });
   }
 
@@ -67,16 +68,35 @@ const geminiAiAssistant = async (req, res) => {
     }));
 
     const chat = MediTrackrAssistant.chats.create({
-      model: "gemini-flash-latest",
+      model: file ? "gemini-2.5-flash" : "gemini-flash-latest",
       history: historyForGemini,
       config: {
         systemInstruction: ASSISTANT_SYSTEM_PROMPT,
       },
     });
 
-    const response = await chat.sendMessage({ message });
+    const messageParts = [];
+    // declared here now, fixes Bug 1
 
-    chatDoc.messages.push({ role: "user", text: message });
+    if (file) {
+      messageParts.push({
+        inlineData: {
+          mimeType: file.mimeType,
+          data: file.base64,
+        },
+      });
+    }
+
+    if (message) {
+      messageParts.push({ text: message });
+    }
+
+    const response = await chat.sendMessage({
+      message: file ? messageParts : message,
+      // fixes Bug 2 — actually uses messageParts when file present
+    });
+
+    chatDoc.messages.push({ role: "user", text: message || "[uploaded file]" });
     chatDoc.messages.push({ role: "model", text: response.text });
 
     await chatDoc.save();

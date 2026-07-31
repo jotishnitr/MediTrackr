@@ -13,6 +13,17 @@ export default function AiAssistance({ profileDetails }) {
   const chatEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  //convert file to base64
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = reject;
+    });
+  };
+
   // Helper to get message timestamp
   function getCurrentTime(dateInput) {
     const now = dateInput ? new Date(dateInput) : new Date();
@@ -94,6 +105,12 @@ export default function AiAssistance({ profileDetails }) {
 
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+
+    let fileData = null;
+    if (selectedImage) {
+      const base64 = await fileToBase64(selectedImage);
+      fileData = { base64, mimeType: selectedImage.type };
+    }
     setSelectedImage(null);
     setImagePreview("");
     setLoading(true);
@@ -106,7 +123,7 @@ export default function AiAssistance({ profileDetails }) {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: currentMsgText }),
+          body: JSON.stringify({ message: currentMsgText, file: fileData }),
         },
       );
 
@@ -177,15 +194,21 @@ export default function AiAssistance({ profileDetails }) {
 
   // Quick Action suggestion chips
   const suggestionChips = [
-    { text: "Log Symptoms", action: "I'd like to log my symptoms for today." },
     {
-      text: "Check next dose",
-      action: "What is my next scheduled medicine dose?",
+      text: "Log symptoms",
+      action: "How do I use the Health Log to record daily symptoms?",
     },
-    { text: "Health trends", action: "Show me my recent health log trends." },
     {
-      text: "Pharmacy refill",
-      action: "How do I request a refill for my prescriptions?",
+      text: "Add a medicine",
+      action: "How do I add a new medicine to my schedule?",
+    },
+    {
+      text: "Drug side effects",
+      action: "What are the common side effects of Lisinopril?",
+    },
+    {
+      text: "Symptom advice",
+      action: "What should I do if I experience mild headaches and fatigue?",
     },
   ];
 
