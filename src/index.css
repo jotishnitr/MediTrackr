@@ -1385,6 +1385,14 @@ body {
   gap: 24px;
 }
 
+.adherence-refills {
+  flex: 1.2;
+  min-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .weekly-adherence {
   box-sizing: border-box;
   background: linear-gradient(135deg, #131c30 0%, #171f33 50%, #1a2238 100%);
@@ -1427,6 +1435,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  gap: 8px;
 
   height: 150px;
 
@@ -1443,25 +1452,39 @@ body {
 .day-bars {
   display: flex;
   align-items: flex-end;
-  gap: 5px;
+  justify-content: center;
+  gap: 4px;
 
   height: 120px;
+  width: 34px;
 }
 
 .taken-bar {
-  width: 22px;
+  width: 14px;
 
   background: linear-gradient(180deg, #16e0b3, #12c99c);
 
   border-radius: 8px 8px 0 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.taken-bar:hover {
+  transform: scaleY(1.05);
+  filter: brightness(1.15);
 }
 
 .missed-bar {
-  width: 22px;
+  width: 14px;
 
   background: linear-gradient(180deg, #ff6b6b, #d94a4a);
 
   border-radius: 8px 8px 0 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.missed-bar:hover {
+  transform: scaleY(1.05);
+  filter: brightness(1.15);
 }
 
 .day-label {
@@ -4734,6 +4757,7 @@ body {
   .day-bars {
     height: 90px;
     gap: 3px;
+    width: 23px;
   }
 
   .taken-bar,

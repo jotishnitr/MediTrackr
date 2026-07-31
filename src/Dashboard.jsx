@@ -591,19 +591,23 @@ export default function Dashboard({
                   return (
                     <div className="day-column" key={item.day}>
                       <div className="day-bars">
-                        <div
-                          className="taken-bar"
-                          style={{
-                            height: `${takenPercentage}%`,
-                          }}
-                        ></div>
+                        {takenPercentage > 0 && (
+                          <div
+                            className="taken-bar"
+                            style={{
+                              height: `${takenPercentage}%`,
+                            }}
+                          ></div>
+                        )}
 
-                        <div
-                          className="missed-bar"
-                          style={{
-                            height: `${missedPercentage}%`,
-                          }}
-                        ></div>
+                        {missedPercentage > 0 && (
+                          <div
+                            className="missed-bar"
+                            style={{
+                              height: `${missedPercentage}%`,
+                            }}
+                          ></div>
+                        )}
                       </div>
 
                       <div className="day-label">{item.day}</div>
