@@ -43,7 +43,7 @@ const MediTrackrAssistant = require("../geminiAssistant");
 
 const AssistantHistory = require("../models/AssistantHistory");
 
-const geminiAssistant = async (req, res) => {
+const geminiAiAssistant = async (req, res) => {
   const { message } = req.body;
   const { userId } = req.user.id;
 
