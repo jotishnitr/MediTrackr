@@ -51,3 +51,5 @@ export const listenForForegroundMessages = () => {
     console.log("Foreground message received:", payload);
   });
 };
+
+console.log("notification system activated");
