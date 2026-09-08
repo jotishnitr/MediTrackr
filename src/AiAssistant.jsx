@@ -13,7 +13,7 @@ export default function AiAssistance({ profileDetails }) {
   const [copilotMessages, setCopilotMessages] = useState([
     {
       sender: "assistant",
-      text: `👋 Hi ${profileDetails?.name || "there"}! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 AM after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
+      text: `👋 Hi ${profileDetails?.name || "there"}! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
       time: getCurrentTime(),
     },
   ]);
@@ -56,6 +56,20 @@ export default function AiAssistance({ profileDetails }) {
     const minutesStr = minutes < 10 ? "0" + minutes : minutes;
 
     return `${dateStr}, ${hours}:${minutesStr} ${ampm}`;
+  }
+
+  // Helper to ensure 24-hour HH:MM format
+  function normalizeTo24Hour(timeStr) {
+    if (!timeStr || typeof timeStr !== "string") return "08:00";
+    const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+    if (!match) return timeStr.trim();
+    let [_, hours, minutes, modifier] = match;
+    let h = parseInt(hours, 10);
+    if (modifier) {
+      if (modifier.toUpperCase() === "PM" && h < 12) h += 12;
+      if (modifier.toUpperCase() === "AM" && h === 12) h = 0;
+    }
+    return `${String(h).padStart(2, "0")}:${minutes}`;
   }
 
   // Load chat history for Health Advisor from backend
@@ -120,7 +134,7 @@ export default function AiAssistance({ profileDetails }) {
               sender: "assistant",
               text: `👋 Hi ${
                 profileDetails?.name || "there"
-              }! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 AM after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
+              }! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
               time: getCurrentTime(),
             },
           ]);
@@ -329,7 +343,7 @@ export default function AiAssistance({ profileDetails }) {
               dosage: med.dosage,
               unit: med.unit,
               type: med.type,
-              time: med.time,
+              time: normalizeTo24Hour(med.time),
               instructions: med.instructions || "",
               reminder: med.reminder ?? true,
             }),
@@ -411,9 +425,9 @@ export default function AiAssistance({ profileDetails }) {
   ];
 
   const copilotChips = [
-    { text: "Add 500mg Amoxicillin", action: "Add 500mg Amoxicillin Oral Tablet at 08:00 AM with food" },
+    { text: "Add 500mg Amoxicillin", action: "Add 500mg Amoxicillin Oral Tablet at 08:00 with food" },
     { text: "Log BP & Vitals", action: "Log my vitals: Blood Pressure 120/80, 7.5 hours sleep, and weight 70kg" },
-    { text: "Add Paracetamol 650mg", action: "Add Paracetamol 650mg tablet at 02:00 PM for fever" },
+    { text: "Add Paracetamol 650mg", action: "Add Paracetamol 650mg tablet at 14:00 for fever" },
     { text: "Optimize Schedule", action: "Optimize my daily medication schedule for morning, afternoon, and bedtime" },
   ];
 

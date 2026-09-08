@@ -9,6 +9,7 @@ You act as the MediTrackr Copilot with direct access to database tools (getMedic
 --------------------------------------------------
 Trigger: User uploads prescription/medicine strip/box, or asks to add/schedule medicines.
 Instruction: Extract all medicines found and provide the response in clean, valid JSON format.
+TIME RULE: Always format the "time" field in strict 24-hour 'HH:MM' format (e.g., '08:00', '13:30', '20:00', '22:00'). NEVER include 'AM' or 'PM'.
 
 JSON Schema:
 \`\`\`json
@@ -20,7 +21,7 @@ JSON Schema:
       "dosage": "number (required, e.g., 500)",
       "unit": "string (enum: ['mg', 'ml', 'g', 'mcg', 'tablet', 'pill', 'capsule', 'drop', 'puff', 'spray', 'patch', 'spoon', 'unit', 'IU'])",
       "type": "string (enum: ['Oral Tablet', 'Capsule', 'Syrup', 'Injection', 'Inhaler', 'Drops', 'Cream / Ointment', 'Spray', 'Liquid (Oral)', 'Suspension', 'Powder', 'Patch', 'Suppository', 'Lotion', 'Gel'])",
-      "time": "string (required, format 'HH:MM AM/PM' or 'HH:MM', e.g., '08:00 AM')",
+      "time": "string (required, strict 24-hour format 'HH:MM', e.g., '08:00', '14:00', '20:00')",
       "instructions": "string (optional, e.g., 'Take after food with plenty of water')",
       "reminder": true
     }
@@ -53,7 +54,7 @@ JSON Schema:
 3. FUNCTION: SCHEDULE & REMINDER OPTIMIZER
 --------------------------------------------------
 Trigger: User asks to organize, rearrange, or optimize their daily medication timetable.
-Instruction: Generate a structured schedule avoiding overlapping conflicting doses.
+Instruction: Generate a structured schedule avoiding overlapping conflicting doses with times in 24-hour 'HH:MM' format.
 
 JSON Schema:
 \`\`\`json
@@ -61,16 +62,16 @@ JSON Schema:
   "action": "OPTIMIZE_SCHEDULE",
   "schedule": {
     "morning": [
-      { "name": "string", "dosage": "number", "unit": "string", "time": "08:00 AM", "withFood": true }
+      { "name": "string", "dosage": "number", "unit": "string", "time": "08:00", "withFood": true }
     ],
     "afternoon": [
-      { "name": "string", "dosage": "number", "unit": "string", "time": "01:00 PM", "withFood": true }
+      { "name": "string", "dosage": "number", "unit": "string", "time": "13:00", "withFood": true }
     ],
     "evening": [
-      { "name": "string", "dosage": "number", "unit": "string", "time": "07:00 PM", "withFood": false }
+      { "name": "string", "dosage": "number", "unit": "string", "time": "19:00", "withFood": false }
     ],
     "bedtime": [
-      { "name": "string", "dosage": "number", "unit": "string", "time": "10:00 PM", "withFood": false }
+      { "name": "string", "dosage": "number", "unit": "string", "time": "22:00", "withFood": false }
     ]
   }
 }
@@ -79,12 +80,27 @@ JSON Schema:
 === GENERAL RULES ===
 1. When generating JSON output for functional actions (ADD_MEDICINES, LOG_HEALTH_VITALS, OPTIMIZE_SCHEDULE), ensure valid JSON syntax without extra conversational filler around the JSON block.
 2. For informational queries about saved records, use tools to fetch data and respond concisely and clearly in natural language.
+3. CRITICAL FOR MEDICINE TIME: All medication times MUST be in strict 24-hour 'HH:MM' format (e.g., '08:00', '13:30', '21:00'). NEVER output 'AM' or 'PM' in time fields.
 `;
 
 const gemini = require('../geminiAssistant');
 const openrouter = require('../openrouter');
 const tools = require('../toolsCalling');
 const CopilotHistory = require('../models/CopilotHistory');
+
+// Helper to guarantee 24-hour format HH:MM
+const normalizeTo24Hour = (timeStr) => {
+  if (!timeStr || typeof timeStr !== "string") return "08:00";
+  const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+  if (!match) return timeStr.trim();
+  let [_, hours, minutes, modifier] = match;
+  let h = parseInt(hours, 10);
+  if (modifier) {
+    if (modifier.toUpperCase() === "PM" && h < 12) h += 12;
+    if (modifier.toUpperCase() === "AM" && h === 12) h = 0;
+  }
+  return `${String(h).padStart(2, "0")}:${minutes}`;
+};
 
 // Tool definitions for Gemini
 const geminiTools = [
@@ -300,6 +316,23 @@ const copilot = async (req, res) => {
       parsedData = JSON.parse(rawJson.trim());
     } catch {
       parsedData = null;
+    }
+
+    // Normalize medicine times to 24-hour format
+    if (parsedData?.action === "ADD_MEDICINES" && Array.isArray(parsedData.medicines)) {
+      parsedData.medicines = parsedData.medicines.map((med) => ({
+        ...med,
+        time: normalizeTo24Hour(med.time),
+      }));
+    } else if (parsedData?.action === "OPTIMIZE_SCHEDULE" && parsedData?.schedule) {
+      for (const slot of Object.keys(parsedData.schedule)) {
+        if (Array.isArray(parsedData.schedule[slot])) {
+          parsedData.schedule[slot] = parsedData.schedule[slot].map((med) => ({
+            ...med,
+            time: normalizeTo24Hour(med.time),
+          }));
+        }
+      }
     }
 
     const action = parsedData?.action || null;
