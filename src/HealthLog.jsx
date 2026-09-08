@@ -157,7 +157,7 @@ export default function HealthLog({
             <textarea
               className="notes-textarea"
               placeholder="List any other symptoms or details..."
-              value={notes}
+              value={notes || ""}
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
@@ -190,8 +190,8 @@ export default function HealthLog({
                 <input
                   type="text"
                   className="vital-input"
-                  placeholder="e.g. 72"
-                  value={sleepHours}
+                  placeholder="e.g. 7.5"
+                  value={sleepHours ?? ""}
                   onChange={(e) => setSleepHours(e.target.value)}
                 />
               </div>
@@ -202,7 +202,7 @@ export default function HealthLog({
                   type="text"
                   className="vital-input"
                   placeholder="e.g. 120/80"
-                  value={bloodPressure}
+                  value={bloodPressure || ""}
                   onChange={(e) => setBloodPressure(e.target.value)}
                 />
               </div>
@@ -213,7 +213,7 @@ export default function HealthLog({
                   type="text"
                   className="vital-input"
                   placeholder="e.g. 70.5"
-                  value={weight}
+                  value={weight ?? ""}
                   onChange={(e) => setWeight(e.target.value)}
                 />
               </div>

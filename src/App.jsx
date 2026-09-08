@@ -142,10 +142,10 @@ export default function App() {
     email: "",
   });
 
-  // Lifted vitals and symptoms state with safe initializers
-  const [sleepHours, setSleepHours] = React.useState(0);
-  const [bloodPressure, setBloodPressure] = React.useState("0/0");
-  const [weight, setWeight] = React.useState(0);
+  // Lifted vitals and symptoms state with safe initializers (null if not logged today)
+  const [sleepHours, setSleepHours] = React.useState(null);
+  const [bloodPressure, setBloodPressure] = React.useState(null);
+  const [weight, setWeight] = React.useState(null);
   const [selectedSymptoms, setSelectedSymptoms] = React.useState([]);
   const [notes, setNotes] = React.useState("");
   const [lastSaved, setLastSaved] = React.useState("");
@@ -159,16 +159,30 @@ export default function App() {
       if (response.status === 401) return;
       const data = await response.json();
 
-      if (!data || data.success === false) return;
+      if (!data || data.success === false || data === null) {
+        setSleepHours(null);
+        setBloodPressure(null);
+        setWeight(null);
+        setSelectedSymptoms([]);
+        setNotes("");
+        setLastSaved("");
+        return;
+      }
 
-      setSleepHours(data.sleepHours || 0);
-      setBloodPressure(data.bloodPressure || "0/0");
-      setWeight(data.weight || 0);
+      setSleepHours(data.sleepHours ?? null);
+      setBloodPressure(data.bloodPressure || null);
+      setWeight(data.weight ?? null);
       setSelectedSymptoms(data.symptoms || []);
       setNotes(data.notes || "");
       setLastSaved(data.date || "");
     } catch (err) {
       console.error("Failed to load health log:", err);
+      setSleepHours(null);
+      setBloodPressure(null);
+      setWeight(null);
+      setSelectedSymptoms([]);
+      setNotes("");
+      setLastSaved("");
     }
   }
 

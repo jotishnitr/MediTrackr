@@ -230,18 +230,26 @@ export default function Dashboard({
   }));
 
   const sleepHealth =
-    sleepHours < 5
-      ? "─ Very Poor"
-      : sleepHours < 7
-        ? "─ Poor"
-        : sleepHours < 9
-          ? "─ Healthy"
-          : sleepHours <= 10
-            ? "─ Good (Long Sleep)"
-            : "─ Excessive";
+    sleepHours == null || sleepHours === "" || sleepHours === 0
+      ? null
+      : sleepHours < 5
+        ? "─ Very Poor"
+        : sleepHours < 7
+          ? "─ Poor"
+          : sleepHours < 9
+            ? "─ Healthy"
+            : sleepHours <= 10
+              ? "─ Good (Long Sleep)"
+              : "─ Excessive";
 
   function getBloodPressureStatus(bp) {
-    const [sys, dia] = bp.split("/").map(Number);
+    if (!bp || bp === "0/0" || typeof bp !== "string") {
+      return null;
+    }
+    const parts = bp.split("/");
+    if (parts.length !== 2) return null;
+    const [sys, dia] = parts.map(Number);
+    if (isNaN(sys) || isNaN(dia) || (sys === 0 && dia === 0)) return null;
 
     if (sys < 90 || dia < 60) {
       return {
@@ -687,11 +695,19 @@ export default function Dashboard({
               <div className="health-card-label">BLOOD PRESSURE</div>
 
               <div className="health-card-value">
-                {bloodPressure} <span>mmHg</span>
+                {bloodPressure && bloodPressure !== "0/0" ? (
+                  <>
+                    {bloodPressure} <span>mmHg</span>
+                  </>
+                ) : (
+                  "null"
+                )}
               </div>
 
               <div className="health-card-status stable">
-                <p style={{ color: bpInfo.color }}>{bpInfo.tagline}</p>
+                <p style={{ color: bpInfo ? bpInfo.color : "#9ca3af" }}>
+                  {bpInfo ? bpInfo.tagline : "No log for today"}
+                </p>
               </div>
             </div>
 
@@ -703,10 +719,18 @@ export default function Dashboard({
               <div className="health-card-label">SLEEP DURATION</div>
 
               <div className="health-card-value">
-                {sleepHours} <span>HRS</span>
+                {sleepHours != null && sleepHours !== "" && sleepHours > 0 ? (
+                  <>
+                    {sleepHours} <span>HRS</span>
+                  </>
+                ) : (
+                  "null"
+                )}
               </div>
 
-              <div className="health-card-status neutral">{sleepHealth}</div>
+              <div className="health-card-status neutral">
+                {sleepHealth || "No log for today"}
+              </div>
             </div>
 
             <div className="health-card-icon heart-icon">🌙</div>
@@ -717,10 +741,18 @@ export default function Dashboard({
               <div className="health-card-label">WEIGHT</div>
 
               <div className="health-card-value">
-                {weight} <span>kg</span>
+                {weight != null && weight !== "" && weight > 0 ? (
+                  <>
+                    {weight} <span>kg</span>
+                  </>
+                ) : (
+                  "null"
+                )}
               </div>
 
-              <div className="health-card-status warning">Current Weight</div>
+              <div className="health-card-status warning">
+                {weight != null && weight !== "" && weight > 0 ? "Current Weight" : "No log for today"}
+              </div>
             </div>
 
             <div className="health-card-icon weight-icon">⚖️</div>
@@ -747,14 +779,16 @@ export default function Dashboard({
                     ))}
                   </div>
                 ) : (
-                  <span className="no-symptoms">No symptoms reported</span>
+                  <span className="no-symptoms">
+                    {notes ? "No symptoms reported" : "null"}
+                  </span>
                 )}
 
-                {notes && (
+                {notes ? (
                   <div className="dashboard-notes-preview">
                     <strong>Notes:</strong> {notes}
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
 
