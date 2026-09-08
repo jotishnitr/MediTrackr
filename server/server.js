@@ -29,6 +29,7 @@ const getChatHistory = require("./routes/getChatHistory");
 const feedback = require("./routes/feedback");
 const geminiAiAssistant = require("./routes/geminiAiAssistant");
 const getAssistantHistory = require("./routes/getAssistantHistory");
+const copilot = require("./routes/copilot");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
@@ -76,6 +77,7 @@ app.use("/", getChatHistory);
 app.use("/", feedback);
 app.use("/", geminiAiAssistant);
 app.use("/", getAssistantHistory);
+app.use("/", copilot);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

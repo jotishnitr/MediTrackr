@@ -198,7 +198,7 @@ export default function Navbar({
                   alt="health log"
                 ></img>
               </div>
-              <div className="navbar-link">AI Health Assistant</div>
+              <div className="navbar-link">AI Advisor & Copilot</div>
             </div>
           </div>
         </div>

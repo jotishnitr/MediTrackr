@@ -4,17 +4,33 @@ import FeedbackForm from "./feedbackform";
 import "./aiAssistant.css";
 
 export default function AiAssistance({ profileDetails }) {
-  const [messages, setMessages] = useState([]);
+  // Mode toggle: "advisor" (Health Advisor - text Q&A only) or "copilot" (MediTrackr Copilot - functional actions)
+  const [activeMode, setActiveMode] = useState("advisor");
+
+  // Health Advisor messages
+  const [advisorMessages, setAdvisorMessages] = useState([]);
+  // Copilot messages
+  const [copilotMessages, setCopilotMessages] = useState([
+    {
+      sender: "assistant",
+      text: `👋 Hi ${profileDetails?.name || "there"}! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 AM after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
+      time: getCurrentTime(),
+    },
+  ]);
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Track action execution states by message index: { [index]: { status: 'executed' | 'discarded', loading: boolean } }
+  const [actionStates, setActionStates] = useState({});
+
   const chatEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  //convert file to base64
-
+  // Helper to convert file to base64
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -24,7 +40,7 @@ export default function AiAssistance({ profileDetails }) {
     });
   };
 
-  // Helper to get message timestamp
+  // Helper to format message timestamp
   function getCurrentTime(dateInput) {
     const now = dateInput ? new Date(dateInput) : new Date();
 
@@ -42,8 +58,8 @@ export default function AiAssistance({ profileDetails }) {
     return `${dateStr}, ${hours}:${minutesStr} ${ampm}`;
   }
 
-  // Load chat history from backend
-  const loadChatHistory = async () => {
+  // Load chat history for Health Advisor from backend
+  const loadAdvisorHistory = async () => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/getAssistantHistory`,
@@ -57,17 +73,16 @@ export default function AiAssistance({ profileDetails }) {
           const formatted = data.messages.map((m) => ({
             sender: m.role === "user" ? "user" : "assistant",
             text: m.text,
-            time: getCurrentTime(m.timeStamp), // use stored timestamp from MongoDB
+            time: getCurrentTime(m.timeStamp),
           }));
-          setMessages(formatted);
+          setAdvisorMessages(formatted);
         } else {
-          // Default greeting if no history
-          setMessages([
+          setAdvisorMessages([
             {
               sender: "assistant",
               text: `Hello ${
                 profileDetails?.name || "there"
-              }How can I help you today?`,
+              }! I am your **Health Advisor**. How can I assist with your health questions or document reviews today?`,
               time: getCurrentTime(),
             },
           ]);
@@ -79,44 +94,56 @@ export default function AiAssistance({ profileDetails }) {
   };
 
   const handleDeleteHistory = async () => {
-    if (!window.confirm("Are you sure you want to clear your chat history?")) return;
+    if (activeMode === "advisor") {
+      if (!window.confirm("Are you sure you want to clear Health Advisor chat history?")) return;
 
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/getAssistantHistory`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
-      if (response.ok) {
-        setMessages([
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/getAssistantHistory`,
           {
-            sender: "assistant",
-            text: `Hello ${
-              profileDetails?.name || "there"
-            }! How can I help you today?`,
-            time: getCurrentTime(),
+            method: "DELETE",
+            credentials: "include",
           },
-        ]);
-      } else {
-        console.error("Failed to delete chat history");
+        );
+        if (response.ok) {
+          setAdvisorMessages([
+            {
+              sender: "assistant",
+              text: `Hello ${
+                profileDetails?.name || "there"
+              }! How can I help you today?`,
+              time: getCurrentTime(),
+            },
+          ]);
+        }
+      } catch (err) {
+        console.error("Error clearing chat history:", err);
       }
-    } catch (err) {
-      console.error("Error clearing chat history:", err);
+    } else {
+      // Clear Copilot session
+      if (!window.confirm("Are you sure you want to clear Copilot chat?")) return;
+      setCopilotMessages([
+        {
+          sender: "assistant",
+          text: `👋 Copilot chat cleared! Tell me what medicine to add or health data to log.`,
+          time: getCurrentTime(),
+        },
+      ]);
+      setActionStates({});
     }
   };
 
   useEffect(() => {
-    loadChatHistory();
+    loadAdvisorHistory();
   }, []);
 
   // Scroll to bottom on new messages
+  const activeMessages = activeMode === "advisor" ? advisorMessages : copilotMessages;
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [activeMessages, loading]);
 
-  // Send message action
+  // Send message handler
   const sendMessage = async (textToSend = input) => {
     const trimmedText = textToSend.trim();
     if (!trimmedText && !selectedImage) return;
@@ -124,15 +151,19 @@ export default function AiAssistance({ profileDetails }) {
     const currentMsgText = trimmedText;
     const time = getCurrentTime();
 
-    // Create user message object
     const userMsg = {
       sender: "user",
       text: currentMsgText,
       time: time,
-      image: imagePreview, // Include local preview if exists
+      image: imagePreview,
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    if (activeMode === "advisor") {
+      setAdvisorMessages((prev) => [...prev, userMsg]);
+    } else {
+      setCopilotMessages((prev) => [...prev, userMsg]);
+    }
+
     setInput("");
 
     let fileData = null;
@@ -145,52 +176,150 @@ export default function AiAssistance({ profileDetails }) {
     setLoading(true);
 
     try {
-      // API request to backend
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/assistant`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: currentMsgText, file: fileData }),
-        },
-      );
+      if (activeMode === "advisor") {
+        // Mode 1: Health Advisor (Text / Medical Q&A)
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/assistant`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: currentMsgText, file: fileData }),
+          },
+        );
 
-      if (response.ok) {
-        const data = await response.json();
-        setMessages((prev) => {
-          const updated = [...prev];
-          if (updated.length > 0 && data.userTime) {
-            updated[updated.length - 1] = {
-              ...updated[updated.length - 1],
-              time: getCurrentTime(data.userTime),
-            };
-          }
-          return [
-            ...updated,
+        if (response.ok) {
+          const data = await response.json();
+          setAdvisorMessages((prev) => {
+            const updated = [...prev];
+            if (updated.length > 0 && data.userTime) {
+              updated[updated.length - 1] = {
+                ...updated[updated.length - 1],
+                time: getCurrentTime(data.userTime),
+              };
+            }
+            return [
+              ...updated,
+              {
+                sender: "assistant",
+                text: data.reply,
+                time: getCurrentTime(data.modelTime),
+              },
+            ];
+          });
+        } else {
+          throw new Error("Advisor request failed");
+        }
+      } else {
+        // Mode 2: MediTrackr Copilot (Functional Utility & Actions)
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/copilot`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: currentMsgText }),
+          },
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setCopilotMessages((prev) => [
+            ...prev,
             {
               sender: "assistant",
               text: data.reply,
-              time: getCurrentTime(data.modelTime),
+              action: data.action,
+              actionData: data.actionData,
+              requiresConfirmation: data.requiresConfirmation,
+              usedModel: data.usedModel,
+              time: getCurrentTime(),
             },
-          ];
-        });
-      } else {
-        throw new Error("Chat request failed");
+          ]);
+        } else {
+          throw new Error("Copilot request failed");
+        }
       }
     } catch (err) {
       console.error(err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "assistant",
-          text: "I encountered an issue processing your request. Please try again.",
-          time: getCurrentTime(),
-        },
-      ]);
+      const errorMsg = {
+        sender: "assistant",
+        text: "I encountered an issue processing your request. Please try again.",
+        time: getCurrentTime(),
+      };
+      if (activeMode === "advisor") {
+        setAdvisorMessages((prev) => [...prev, errorMsg]);
+      } else {
+        setCopilotMessages((prev) => [...prev, errorMsg]);
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Confirm Action Handler (Option 2 flow: User clicks Confirm on Preview Card)
+  const handleConfirmAction = async (msgIndex, action, actionData) => {
+    setActionStates((prev) => ({
+      ...prev,
+      [msgIndex]: { loading: true },
+    }));
+
+    try {
+      if (action === "ADD_MEDICINES" && actionData?.medicines) {
+        // Add each medicine via addMedicine controller
+        for (const med of actionData.medicines) {
+          await fetch(`${import.meta.env.VITE_API_URL}/addMedicine`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: med.name,
+              dosage: med.dosage,
+              unit: med.unit,
+              type: med.type,
+              time: med.time,
+              instructions: med.instructions || "",
+              reminder: med.reminder ?? true,
+            }),
+          });
+        }
+      } else if (action === "LOG_HEALTH_VITALS" && actionData?.data) {
+        // Save health log via healthLog controller
+        const v = actionData.data;
+        await fetch(`${import.meta.env.VITE_API_URL}/healthLog`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date: v.date || new Date().toISOString().split("T")[0],
+            bloodPressure: v.bloodPressure || "0/0",
+            sleepHours: v.sleepHours || 0,
+            weight: v.weight || 0,
+            symptoms: v.symptoms || [],
+            notes: v.notes || "",
+          }),
+        });
+      }
+
+      setActionStates((prev) => ({
+        ...prev,
+        [msgIndex]: { status: "executed", loading: false },
+      }));
+    } catch (err) {
+      console.error("Action execution failed:", err);
+      alert("Failed to complete action. Please check your network and try again.");
+      setActionStates((prev) => ({
+        ...prev,
+        [msgIndex]: { status: "error", loading: false },
+      }));
+    }
+  };
+
+  const handleDiscardAction = (msgIndex) => {
+    setActionStates((prev) => ({
+      ...prev,
+      [msgIndex]: { status: "discarded", loading: false },
+    }));
   };
 
   const handleKeyDown = (e) => {
@@ -221,64 +350,139 @@ export default function AiAssistance({ profileDetails }) {
     }
   };
 
-  // Quick Action suggestion chips
-  const suggestionChips = [
-    {
-      text: "Log symptoms",
-      action: "How do I use the Health Log to record daily symptoms?",
-    },
-    {
-      text: "Add a medicine",
-      action: "How do I add a new medicine to my schedule?",
-    },
-    {
-      text: "Drug side effects",
-      action: "What are the common side effects of Lisinopril?",
-    },
-    {
-      text: "Symptom advice",
-      action: "What should I do if I experience mild headaches and fatigue?",
-    },
+  // Quick Suggestion Chips based on mode
+  const advisorChips = [
+    { text: "Drug side effects", action: "What are the common side effects of Lisinopril?" },
+    { text: "Symptom advice", action: "What should I do if I have a mild headache and fatigue?" },
+    { text: "Blood pressure range", action: "What is a healthy blood pressure range for an adult?" },
+    { text: "Missed dose guide", action: "What should I do if I missed my morning medication?" },
   ];
 
-  // Render assistant message bubbles with custom support for "Recommended Action" cards
-  const renderMessageContent = (msg) => {
-    const isRecAction =
-      msg.text.includes("Recommended Action") ||
-      msg.text.includes("recommended action");
+  const copilotChips = [
+    { text: "Add 500mg Amoxicillin", action: "Add 500mg Amoxicillin Oral Tablet at 08:00 AM with food" },
+    { text: "Log BP & Vitals", action: "Log my vitals: Blood Pressure 120/80, 7.5 hours sleep, and weight 70kg" },
+    { text: "Add Paracetamol 650mg", action: "Add Paracetamol 650mg tablet at 02:00 PM for fever" },
+    { text: "Optimize Schedule", action: "Optimize my daily medication schedule for morning, afternoon, and bedtime" },
+  ];
 
-    if (isRecAction) {
-      // Split the message if it has a Recommended Action section to format it beautifully as a sub-card
-      const parts = msg.text.split(
-        /(Recommended Action|recommended action):?/i,
-      );
-      const mainText = parts[0];
-      const recContent = parts.slice(2).join("");
+  const currentChips = activeMode === "advisor" ? advisorChips : copilotChips;
 
+  // Render Confirmation Preview Card for Copilot Actions (Option 2 Flow)
+  const renderActionPreviewCard = (msg, msgIndex) => {
+    if (!msg.actionData || !msg.action) return null;
+
+    const actionState = actionStates[msgIndex];
+    if (actionState?.status === "discarded") {
       return (
-        <>
-          <ReactMarkdown>{mainText}</ReactMarkdown>
-          <div className="recommendation-box">
-            <div className="recommendation-title">
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "16px" }}
-              >
-                info
-              </span>
-              Recommended Action
-            </div>
-            <div className="recommendation-content">
-              <ReactMarkdown>{recContent.trim()}</ReactMarkdown>
-            </div>
-          </div>
-        </>
+        <div className="action-discarded-msg">
+          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>close</span>
+          Action discarded
+        </div>
+      );
+    }
+
+    if (actionState?.status === "executed") {
+      return (
+        <div className="action-executed-msg">
+          <span className="material-symbols-outlined">check_circle</span>
+          {msg.action === "ADD_MEDICINES" ? "Medicines added to your schedule!" : "Health Log saved successfully!"}
+        </div>
       );
     }
 
     return (
+      <div className="action-confirmation-card">
+        <div className="action-card-header">
+          <div className="action-card-title">
+            <span className="material-symbols-outlined">
+              {msg.action === "ADD_MEDICINES" ? "medication" : "monitor_heart"}
+            </span>
+            {msg.action === "ADD_MEDICINES" ? "Preview Medicines" : "Preview Health Log"}
+          </div>
+          <span className="action-card-badge">Requires Confirmation</span>
+        </div>
+
+        <div className="action-card-body">
+          {/* Case 1: ADD_MEDICINES */}
+          {msg.action === "ADD_MEDICINES" && msg.actionData?.medicines && (
+            msg.actionData.medicines.map((med, idx) => (
+              <div key={idx} className="action-item-card">
+                <div className="action-item-main">
+                  <span>{med.name}</span>
+                  <span style={{ color: "#4edea3" }}>{med.time}</span>
+                </div>
+                <div className="action-item-tags">
+                  <span className="action-tag">{med.dosage} {med.unit}</span>
+                  <span className="action-tag">{med.type}</span>
+                  {med.reminder && <span className="action-tag">🔔 Reminder ON</span>}
+                </div>
+                {med.instructions && (
+                  <div className="action-item-notes">{med.instructions}</div>
+                )}
+              </div>
+            ))
+          )}
+
+          {/* Case 2: LOG_HEALTH_VITALS */}
+          {msg.action === "LOG_HEALTH_VITALS" && msg.actionData?.data && (
+            <div className="action-item-card">
+              <div className="action-item-main">
+                <span>Date: {msg.actionData.data.date || "Today"}</span>
+                <span style={{ color: "#4edea3" }}>BP: {msg.actionData.data.bloodPressure || "N/A"}</span>
+              </div>
+              <div className="action-item-tags">
+                {msg.actionData.data.sleepHours && (
+                  <span className="action-tag">💤 {msg.actionData.data.sleepHours} hrs sleep</span>
+                )}
+                {msg.actionData.data.weight && (
+                  <span className="action-tag">⚖️ {msg.actionData.data.weight} kg</span>
+                )}
+                {msg.actionData.data.symptoms?.map((s, i) => (
+                  <span key={i} className="action-tag">⚠️ {s}</span>
+                ))}
+              </div>
+              {msg.actionData.data.notes && (
+                <div className="action-item-notes">{msg.actionData.data.notes}</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="action-card-buttons">
+          <button
+            className="action-btn-discard"
+            onClick={() => handleDiscardAction(msgIndex)}
+            disabled={actionState?.loading}
+          >
+            Discard
+          </button>
+          <button
+            className="action-btn-confirm"
+            onClick={() => handleConfirmAction(msgIndex, msg.action, msg.actionData)}
+            disabled={actionState?.loading}
+          >
+            {actionState?.loading ? (
+              <span>Saving...</span>
+            ) : (
+              <>
+                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>check</span>
+                Confirm & Add
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Render message content
+  const renderMessageContent = (msg, index) => {
+    // If it's a raw JSON reply from copilot, display clean text or action preview
+    const isJsonBlock = msg.text.trim().startsWith("```json") || msg.text.trim().startsWith("{");
+
+    return (
       <>
-        <ReactMarkdown>{msg.text}</ReactMarkdown>
+        {!isJsonBlock && <ReactMarkdown>{msg.text}</ReactMarkdown>}
         {msg.image && (
           <img
             src={msg.image}
@@ -286,6 +490,8 @@ export default function AiAssistance({ profileDetails }) {
             className="message-bubble-attachment"
           />
         )}
+        {/* Render Option 2 Confirmation Card for Copilot */}
+        {msg.requiresConfirmation && renderActionPreviewCard(msg, index)}
       </>
     );
   };
@@ -302,9 +508,35 @@ export default function AiAssistance({ profileDetails }) {
             <div className="ai-status-indicator"></div>
           </div>
           <div className="ai-header-info">
-            <div className="ai-header-title">MediTrackr Assistant</div>
-            <div className="ai-header-status">Online | Always active</div>
+            <div className="ai-header-title">
+              {activeMode === "advisor" ? "MediTrackr Health Advisor" : "MediTrackr Copilot"}
+            </div>
+            <div className="ai-header-status">
+              {activeMode === "advisor"
+                ? "Medical Q&A & Document Analysis"
+                : "Functional Utility & Smart Actions"}
+            </div>
           </div>
+        </div>
+
+        {/* Center Mode Toggle */}
+        <div className="ai-mode-toggle">
+          <button
+            className={`ai-mode-tab ${activeMode === "advisor" ? "active" : ""}`}
+            onClick={() => setActiveMode("advisor")}
+            type="button"
+          >
+            <span className="material-symbols-outlined">health_and_safety</span>
+            Health Advisor
+          </button>
+          <button
+            className={`ai-mode-tab ${activeMode === "copilot" ? "active" : ""}`}
+            onClick={() => setActiveMode("copilot")}
+            type="button"
+          >
+            <span className="material-symbols-outlined">smart_toy</span>
+            MediTrackr Copilot
+          </button>
         </div>
 
         <div className="ai-header-right" style={{ display: "flex", gap: "10px" }}>
@@ -323,7 +555,7 @@ export default function AiAssistance({ profileDetails }) {
               gap: "6px",
               fontSize: "14px",
               fontWeight: "500",
-              transition: "all 0.2s ease"
+              transition: "all 0.2s ease",
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>delete</span>
@@ -341,7 +573,7 @@ export default function AiAssistance({ profileDetails }) {
       {/* Main chat window */}
       <div className="ai-chat-area">
         <div className="ai-messages-list">
-          {messages.map((msg, index) => (
+          {activeMessages.map((msg, index) => (
             <div key={index} className={`message-wrapper ${msg.sender}`}>
               <div className="message-header">
                 <span
@@ -351,18 +583,24 @@ export default function AiAssistance({ profileDetails }) {
                       : "sender-label-assistant"
                   }
                 >
-                  {msg.sender === "user" ? "YOU" : "ASSISTANT"}
+                  {msg.sender === "user"
+                    ? "YOU"
+                    : activeMode === "advisor"
+                    ? "HEALTH ADVISOR"
+                    : "COPILOT"}
                 </span>
                 <span className="time-stamp">{msg.time}</span>
               </div>
-              <div className="message-bubble">{renderMessageContent(msg)}</div>
+              <div className="message-bubble">{renderMessageContent(msg, index)}</div>
             </div>
           ))}
 
           {loading && (
             <div className="message-wrapper assistant">
               <div className="message-header">
-                <span className="sender-label-assistant">ASSISTANT</span>
+                <span className="sender-label-assistant">
+                  {activeMode === "advisor" ? "HEALTH ADVISOR" : "COPILOT"}
+                </span>
                 <span className="time-stamp">{getCurrentTime()}</span>
               </div>
               <div className="typing-indicator">
@@ -379,7 +617,7 @@ export default function AiAssistance({ profileDetails }) {
         <div className="ai-input-wrapper">
           {/* Quick suggestions */}
           <div className="chips-container">
-            {suggestionChips.map((chip, index) => (
+            {currentChips.map((chip, index) => (
               <button
                 key={index}
                 className="suggestion-chip"
@@ -394,20 +632,20 @@ export default function AiAssistance({ profileDetails }) {
           <div className="ai-input-row-container">
             {imagePreview && (
               <div className="selected-image-preview-bar">
-                {selectedImage.name.endsWith(".pdf") ? (
+                {selectedImage?.name.endsWith(".pdf") ? (
                   <div className="preview-thumb">
                     <span className="material-symbols-outlined">
                       picture_as_pdf
                     </span>
                   </div>
-                ) : selectedImage.name.endsWith(".doc") ||
-                  selectedImage.name.endsWith(".docx") ? (
+                ) : selectedImage?.name.endsWith(".doc") ||
+                  selectedImage?.name.endsWith(".docx") ? (
                   <div className="preview-thumb">
                     <span className="material-symbols-outlined">
                       description
                     </span>
                   </div>
-                ) : selectedImage.name.endsWith(".txt") ? (
+                ) : selectedImage?.name.endsWith(".txt") ? (
                   <div className="preview-thumb">
                     <span className="material-symbols-outlined">
                       text_snippet
@@ -436,15 +674,17 @@ export default function AiAssistance({ profileDetails }) {
             )}
 
             <div className="ai-input-inner">
-              {/* Image upload paperclip icon */}
-              <button
-                className="ai-attachment-btn"
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-                title="Attach medical report or image"
-              >
-                <span className="material-symbols-outlined">attach_file</span>
-              </button>
+              {/* Attachment button for Health Advisor mode */}
+              {activeMode === "advisor" && (
+                <button
+                  className="ai-attachment-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  type="button"
+                  title="Attach medical report or prescription image"
+                >
+                  <span className="material-symbols-outlined">attach_file</span>
+                </button>
+              )}
 
               <input
                 type="file"
@@ -457,7 +697,11 @@ export default function AiAssistance({ profileDetails }) {
               <input
                 className="ai-text-input"
                 type="text"
-                placeholder="Message MediTrackr Bot..."
+                placeholder={
+                  activeMode === "advisor"
+                    ? "Ask Health Advisor about symptoms, medicines, lab reports..."
+                    : "Tell Copilot to add medicines, log vitals, optimize schedule..."
+                }
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -473,7 +717,9 @@ export default function AiAssistance({ profileDetails }) {
             </div>
           </div>
           <div className="ai-footer-text">
-            MEDITRACKR AI ASSISTANT • CLINICAL OS V2.4
+            {activeMode === "advisor"
+              ? "MEDITRACKR HEALTH ADVISOR • MEDICAL GUIDANCE & ANALYSIS"
+              : "MEDITRACKR COPILOT • FUNCTIONAL ACTIONS & SMART SCHEDULING"}
           </div>
         </div>
       </div>
