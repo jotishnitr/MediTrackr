@@ -1,35 +1,21 @@
-const User = require('./models/User')
-const HealthProfile = require('./models/HealthProfile')
-const HealthLog = require('./models/HealthLog')
-const HealthReport = require('./models/HealthReport')
-const Medicine = require('./models/Medicine')
-const Alert = require('./models/Alert')
+const User = require("./models/user");
+const HealthProfile = require("./models/HealthProfile");
+const HealthLog = require("./models/HealthLog");
+const Medicine = require("./models/Medicine");
 
 const tools = {
-    getUserProfile: async ({ userId }) => {
-        const user = await User.findById(userId)
-        return user
-    },
-    getHealthProfile: async ({ userId }) => {
-        const healthProfile = await HealthProfile.findOne({ userId })
-        return healthProfile
-    },
-    getHealthLog: async ({ userId }) => {
-        const healthLog = await HealthLog.findOne({ userId })
-        return healthLog
-    },
-    getHealthReport: async ({ userId }) => {
-        const healthReport = await HealthReport.findOne({ userId })
-        return healthReport
-    },
-    getMedicines: async ({ userId }) => {
-        const medicines = await Medicine.find({ userId })
-        return medicines
-    },
-    getAlerts: async ({ userId }) => {
-        const alerts = await Alert.find({ userId })
-        return alerts
-    }
-}
+  getUserProfile: async ({ userId }) => {
+    return await User.findById(userId).select("-password");
+  },
+  getHealthProfile: async ({ userId }) => {
+    return await HealthProfile.findOne({ user: userId });
+  },
+  getHealthLog: async ({ userId }) => {
+    return await HealthLog.find({ userId }).sort({ date: -1 }).limit(7);
+  },
+  getMedicines: async ({ userId }) => {
+    return await Medicine.find({ userId });
+  },
+};
 
-module.exports = tools
+module.exports = tools;

@@ -93,6 +93,44 @@ export default function AiAssistance({ profileDetails }) {
     }
   };
 
+  // Load chat history for Copilot from backend
+  const loadCopilotHistory = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/getCopilotHistory`,
+        {
+          credentials: "include",
+        },
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.messages && data.messages.length > 0) {
+          const formatted = data.messages.map((m) => ({
+            sender: m.role === "user" ? "user" : "assistant",
+            text: m.text,
+            action: m.action || null,
+            actionData: m.actionData || null,
+            requiresConfirmation: Boolean(m.action),
+            time: getCurrentTime(m.timeStamp),
+          }));
+          setCopilotMessages(formatted);
+        } else {
+          setCopilotMessages([
+            {
+              sender: "assistant",
+              text: `👋 Hi ${
+                profileDetails?.name || "there"
+              }! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 AM after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
+              time: getCurrentTime(),
+            },
+          ]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load Copilot history:", err);
+    }
+  };
+
   const handleDeleteHistory = async () => {
     if (activeMode === "advisor") {
       if (!window.confirm("Are you sure you want to clear Health Advisor chat history?")) return;
@@ -121,20 +159,34 @@ export default function AiAssistance({ profileDetails }) {
       }
     } else {
       // Clear Copilot session
-      if (!window.confirm("Are you sure you want to clear Copilot chat?")) return;
-      setCopilotMessages([
-        {
-          sender: "assistant",
-          text: `👋 Copilot chat cleared! Tell me what medicine to add or health data to log.`,
-          time: getCurrentTime(),
-        },
-      ]);
-      setActionStates({});
+      if (!window.confirm("Are you sure you want to clear Copilot chat history?")) return;
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/getCopilotHistory`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          },
+        );
+        if (response.ok) {
+          setCopilotMessages([
+            {
+              sender: "assistant",
+              text: `👋 Copilot chat cleared! Tell me what medicine to add or health data to log.`,
+              time: getCurrentTime(),
+            },
+          ]);
+          setActionStates({});
+        }
+      } catch (err) {
+        console.error("Error clearing Copilot chat history:", err);
+      }
     }
   };
 
   useEffect(() => {
     loadAdvisorHistory();
+    loadCopilotHistory();
   }, []);
 
   // Scroll to bottom on new messages

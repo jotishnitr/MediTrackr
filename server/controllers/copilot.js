@@ -1,7 +1,8 @@
 const copilotPrompt = `=== MODE C: Functional Utility & Copilot Actions ===
-You act as the MediTrackr Copilot with direct understanding of the MediTrackr database models, workflows, and health tracking capabilities.
+You act as the MediTrackr Copilot with direct access to database tools (getMedicines, getHealthLog, getHealthProfile, getUserProfile) for querying saved records.
 
-When the user asks you to extract, log, add, or organize health data (from uploaded documents, images, prescriptions, vitals slips, or text requests), identify the intent and respond using the exact structured formats specified below.
+1. When the user asks about their scheduled medicines, today's medications, health logs, vitals, or profile, call the appropriate tool to retrieve real data and answer clearly in conversational text.
+2. When the user asks you to extract, log, add, or organize health data (from uploaded documents, images, prescriptions, vitals slips, or text requests), identify the intent and respond using the exact structured formats specified below.
 
 --------------------------------------------------
 1. FUNCTION: SCAN & ADD MEDICINES (Prescription / Image / Doc / Text)
@@ -76,13 +77,46 @@ JSON Schema:
 \`\`\`
 
 === GENERAL RULES ===
-1. When generating JSON output for functional actions, ensure valid JSON syntax without extra conversational filler around the JSON block.
-2. Always validate that units and types conform to the enums specified in the MediTrackr schemas.
-3. Include clear instructions and dosage timing where applicable.
+1. When generating JSON output for functional actions (ADD_MEDICINES, LOG_HEALTH_VITALS, OPTIMIZE_SCHEDULE), ensure valid JSON syntax without extra conversational filler around the JSON block.
+2. For informational queries about saved records, use tools to fetch data and respond concisely and clearly in natural language.
 `;
 
 const gemini = require('../geminiAssistant');
 const openrouter = require('../openrouter');
+const tools = require('../toolsCalling');
+const CopilotHistory = require('../models/CopilotHistory');
+
+// Tool definitions for Gemini
+const geminiTools = [
+  {
+    functionDeclarations: [
+      { name: "getMedicines", description: "Fetch all medicines and schedule for the current user", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getHealthLog", description: "Fetch latest health logs and vitals for the user", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getHealthProfile", description: "Fetch user health profile (allergies, medical conditions)", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getUserProfile", description: "Fetch basic user profile information", parameters: { type: "OBJECT", properties: {} } }
+    ]
+  }
+];
+
+// Tool definitions for OpenRouter
+const openrouterTools = [
+  { type: "function", function: { name: "getMedicines", description: "Fetch all medicines and schedule for the current user", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getHealthLog", description: "Fetch latest health logs and vitals for the user", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getHealthProfile", description: "Fetch user health profile (allergies, medical conditions)", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getUserProfile", description: "Fetch basic user profile information", parameters: { type: "object", properties: {} } } }
+];
+
+const executeTool = async (name, userId) => {
+  if (typeof tools[name] === "function") {
+    try {
+      return await tools[name]({ userId });
+    } catch (err) {
+      console.error(`[Tool Execution Error] ${name}:`, err);
+      return { error: err.message };
+    }
+  }
+  return { error: `Tool ${name} not found` };
+};
 
 const gemini_models = [
   "gemini-2.5-flash",
@@ -98,34 +132,27 @@ const gemini_models = [
 ];
 
 const openrouter_models = [
-  // === TIER 1: MAX TOKENS (1,000,000 Context Window) & ADVANCED REASONING ===
   "google/gemini-2.5-flash",
   "google/gemini-flash-1.5",
-  "nvidia/nemotron-3-ultra:free",             // 1,000,000 context, ultra-scale reasoning
-  "nvidia/nemotron-3.5-lightning:free",       // 1,000,000 context, fast but high quality 3.5 gen
-  "minimax/minimax-m3:free",                  // 1,048,576 context, highly-capable flagship MoE
-  "thinking-machines/inkling:free",           // 1,048,576 context, advanced coding & logic
-  "thinking-machines/inkling-small:free",     // 1,048,576 context, optimized fast variation
-
-  // === TIER 2: HIGH TOKENS (512,000 Context Window) & LARGE MOE ===
-  "dots-studio/dots3-note-preview:free",       // 512,000 context, 280B massive MoE architecture
-
-  // === TIER 3: STANDARD TOKENS (196,000 - 262,144 Context Window) & PREMIUM MID-SIZE ===
-  "google/gemma-4-31b:free",                  // 262,144 context, top-tier dense 31B reasoning model
-  "google/gemma-4-26b-a4b:free",              // 262,144 context, native multimodal agentic model
-  "inclusionai/ling-3.0-flash-fin:free",      // 262,144 context, 124B parameter expert financial model
-  "inclusionai/ling-3.0-flash-sante:free",    // 262,144 context, multi-step healthcare reasoning MoE
-  "cohere/north-mini-code:free",              // 256,000 context, dedicated software engineering engine
-  "z-ai/glm5.2:free",                         // 256,000 context, elite conversational agent model
-  "nvidia/nemotron-3-super:free",             // 262,144 context, versatile standard generation baseline
-  "poolside/laguna-s2.1:free",                // 262,144 context, medium-tier web coding specialist
-  "minimax/minimax-m2.7:free",                // 196,608 context, fast structured output variant
-
-  // === TIER 4: LOW TOKENS & ULTRA-LIGHTWEIGHT MODELS ===
-  "nvidia/nemotron-3-nano-omni:free",         // 256,000 context, but tiny low-complexity nano model
-  "nvidia/nemotron-3.5-content-safety:free",  // 128,000 context, filtered guardrail model
-  "poolside/laguna-xs2.1:free",               // 262,144 context, but extra-small lightweight logic
-  "liquidai/lfm2.5-2.6b:free"                 // 65,536 context, smallest baseline parameter footprint
+  "nvidia/nemotron-3-ultra:free",
+  "nvidia/nemotron-3.5-lightning:free",
+  "minimax/minimax-m3:free",
+  "thinking-machines/inkling:free",
+  "thinking-machines/inkling-small:free",
+  "dots-studio/dots3-note-preview:free",
+  "google/gemma-4-31b:free",
+  "google/gemma-4-26b-a4b:free",
+  "inclusionai/ling-3.0-flash-fin:free",
+  "inclusionai/ling-3.0-flash-sante:free",
+  "cohere/north-mini-code:free",
+  "z-ai/glm5.2:free",
+  "nvidia/nemotron-3-super:free",
+  "poolside/laguna-s2.1:free",
+  "minimax/minimax-m2.7:free",
+  "nvidia/nemotron-3-nano-omni:free",
+  "nvidia/nemotron-3.5-content-safety:free",
+  "poolside/laguna-xs2.1:free",
+  "liquidai/lfm2.5-2.6b:free"
 ];
 
 // Helper function to enforce a 15-second timeout per model request
@@ -147,13 +174,12 @@ const copilot = async (req, res) => {
     }
 
     let aiResponse = "";
-    let rawResponse = null;
     let usedModel = "";
     let providerUsed = "";
     let lastError = null;
 
     // ==========================================================
-    // STAGE 1: Try Native Google Gemini Models First (15s Timeout)
+    // STAGE 1: Try Native Google Gemini Models First (with Tools)
     // ==========================================================
     const candidateGeminiModels = model && gemini_models.includes(model)
       ? [model, ...gemini_models.filter(m => m !== model)]
@@ -161,25 +187,36 @@ const copilot = async (req, res) => {
 
     for (const gm of candidateGeminiModels) {
       try {
-        console.log(`[Copilot] Attempting Gemini model: ${gm}`);
         const chat = gemini.chats.create({
           model: gm,
           config: {
-            systemInstruction: copilotPrompt
+            systemInstruction: copilotPrompt,
+            tools: geminiTools
           }
         });
 
-        const geminiRes = await withTimeout(
-          chat.sendMessage({ message: text }),
-          15000
-        );
+        const geminiRes = await withTimeout(chat.sendMessage({ message: text }), 15000);
 
-        if (geminiRes?.text) {
+        if (geminiRes?.functionCalls?.length > 0) {
+          const call = geminiRes.functionCalls[0];
+          const toolResult = await executeTool(call.name, userId);
+          const followUpRes = await withTimeout(
+            chat.sendMessage({
+              message: [{ functionResponse: { name: call.name, response: { output: toolResult } } }]
+            }),
+            15000
+          );
+          if (followUpRes?.text) {
+            aiResponse = followUpRes.text;
+            usedModel = gm;
+            providerUsed = "gemini";
+            break;
+          }
+        } else if (geminiRes?.text) {
           aiResponse = geminiRes.text;
-          rawResponse = geminiRes;
           usedModel = gm;
           providerUsed = "gemini";
-          break; // Success with Gemini, exit loop
+          break;
         }
       } catch (err) {
         console.warn(`[Copilot Gemini] Model "${gm}" failed (${err.message}). Trying next...`);
@@ -188,7 +225,7 @@ const copilot = async (req, res) => {
     }
 
     // ==========================================================
-    // STAGE 2: If Gemini Models Failed -> Fallback to OpenRouter (15s Timeout)
+    // STAGE 2: If Gemini Models Failed -> Fallback to OpenRouter
     // ==========================================================
     if (!aiResponse) {
       console.warn("[Copilot] All Gemini models failed or timed out. Routing to OpenRouter fallback models...");
@@ -199,25 +236,50 @@ const copilot = async (req, res) => {
 
       for (const om of candidateOpenRouterModels) {
         try {
-          console.log(`[Copilot] Attempting OpenRouter model: ${om}`);
           const response = await withTimeout(
             openrouter.chat.completions.create({
               model: om,
               messages: [
                 { role: "system", content: copilotPrompt },
                 { role: "user", content: text }
-              ]
+              ],
+              tools: openrouterTools
             }),
             15000
           );
 
-          const content = response.choices?.[0]?.message?.content;
-          if (content) {
-            aiResponse = content;
-            rawResponse = response;
+          const msg = response.choices?.[0]?.message;
+          if (msg?.tool_calls?.length > 0) {
+            const toolCall = msg.tool_calls[0];
+            const toolResult = await executeTool(toolCall.function.name, userId);
+            const followUpRes = await withTimeout(
+              openrouter.chat.completions.create({
+                model: om,
+                messages: [
+                  { role: "system", content: copilotPrompt },
+                  { role: "user", content: text },
+                  msg,
+                  {
+                    role: "tool",
+                    tool_call_id: toolCall.id,
+                    content: JSON.stringify(toolResult)
+                  }
+                ]
+              }),
+              15000
+            );
+            const followUpText = followUpRes.choices?.[0]?.message?.content;
+            if (followUpText) {
+              aiResponse = followUpText;
+              usedModel = om;
+              providerUsed = "openrouter";
+              break;
+            }
+          } else if (msg?.content) {
+            aiResponse = msg.content;
             usedModel = om;
             providerUsed = "openrouter";
-            break; // Success with OpenRouter, exit loop
+            break;
           }
         } catch (err) {
           console.warn(`[Copilot OpenRouter] Model "${om}" failed (${err.message}). Trying next...`);
@@ -226,12 +288,11 @@ const copilot = async (req, res) => {
       }
     }
 
-    // If both Gemini and OpenRouter models failed
     if (!aiResponse) {
       throw lastError || new Error("All AI models across Gemini and OpenRouter failed to respond within timeout.");
     }
 
-    // Attempt to parse structured JSON if returned (Scenario B)
+    // Attempt to parse structured JSON if returned
     let parsedData = null;
     try {
       const jsonMatch = aiResponse.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
@@ -241,9 +302,33 @@ const copilot = async (req, res) => {
       parsedData = null;
     }
 
-    // Format response for Option 2 (Frontend Preview & Confirmation Flow)
     const action = parsedData?.action || null;
     const hasAction = Boolean(action);
+
+    // Save interaction to CopilotHistory
+    if (userId) {
+      try {
+        let copilotDoc = await CopilotHistory.findOne({ userId });
+        if (!copilotDoc) {
+          copilotDoc = new CopilotHistory({ userId, messages: [] });
+        }
+        copilotDoc.messages.push({
+          role: "user",
+          text,
+          timeStamp: new Date(),
+        });
+        copilotDoc.messages.push({
+          role: "model",
+          text: aiResponse,
+          action,
+          actionData: parsedData,
+          timeStamp: new Date(),
+        });
+        await copilotDoc.save();
+      } catch (historyErr) {
+        console.warn("[CopilotHistory] Failed to save history:", historyErr.message);
+      }
+    }
 
     res.status(200).json({
       success: true,
