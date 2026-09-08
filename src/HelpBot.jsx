@@ -110,8 +110,9 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   return (
     <section className="chatbot-popup">
       <div className="header-container">
-        <div>
-          <img src="./forum.png" alt="Help Bot Logo"></img>
+        <div className="bot-header-avatar">
+          <span className="material-symbols-outlined bot-avatar-icon">support_agent</span>
+          <span className="bot-status-dot"></span>
         </div>
         <div className="header-title-container">
           <div className="header-title">MediTrackr Bot</div>
