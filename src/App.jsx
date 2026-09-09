@@ -156,18 +156,32 @@ export default function App() {
           { credentials: "include" },
         );
         const data = await response.json();
+        const path = location.pathname.toLowerCase();
+        const isAuthRoute =
+          path.includes("login") ||
+          path.includes("register") ||
+          path.includes("forgot-password") ||
+          path.includes("reset-password");
+
         if (data.success) {
-          if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") {
+          if (isAuthRoute || path === "/") {
             navigate("/dashboard");
           }
         } else {
-          if (location.pathname !== "/login" && location.pathname !== "/register") {
-            navigate("/register");
+          if (!isAuthRoute) {
+            navigate("/login");
           }
         }
       } catch (err) {
-        if (location.pathname !== "/login" && location.pathname !== "/register") {
-          navigate("/register");
+        const path = location.pathname.toLowerCase();
+        const isAuthRoute =
+          path.includes("login") ||
+          path.includes("register") ||
+          path.includes("forgot-password") ||
+          path.includes("reset-password");
+
+        if (!isAuthRoute) {
+          navigate("/login");
         }
       }
     }
