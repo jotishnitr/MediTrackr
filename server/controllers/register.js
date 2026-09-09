@@ -3,9 +3,11 @@ const Settings = require("../models/Settings.js");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 
-// Create transporter using environment variables
+// Create transporter using SMTP with explicit host and SSL port 465
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -77,8 +79,10 @@ const register = async (req, res) => {
             </div>
           `,
         })
-        .then((info) => console.log("Welcome email sent successfully:", info.messageId))
-        .catch((err) => console.error("Welcome email delivery failed:", err.message));
+        .then((info) => console.log(`[Welcome Email] Sent successfully to ${email}. MessageId: ${info.messageId}`))
+        .catch((err) => console.error(`[Welcome Email Error] Failed to send to ${email}:`, err.message));
+    } else {
+      console.warn("[Welcome Email] Skipped: EMAIL_USER or EMAIL_PASS not set in environment variables.");
     }
 
     return res.status(201).json({
