@@ -9,6 +9,8 @@ import Login from "./logins";
 import Register from "./Register";
 import HelpBot from "./HelpBot";
 import AiAssistance from "./AiAssistant";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
 
 import React from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
@@ -30,6 +32,7 @@ const pathToPageMap = {
   "/ai-assistant": "aiHealthAssistance",
   "/register": "Register",
   "/login": "Login",
+  "/forgot-password": "ForgotPassword",
 };
 
 const pageToPathMap = {
@@ -41,6 +44,7 @@ const pageToPathMap = {
   aiHealthAssistance: "/aiHealthAssistance",
   Register: "/register",
   Login: "/login",
+  ForgotPassword: "/forgot-password",
 };
 
 export default function App() {
@@ -51,7 +55,11 @@ export default function App() {
   const normalizedPath = location.pathname.toLowerCase();
   const currentPage =
     pathToPageMap[location.pathname] ||
-    (normalizedPath.includes("login")
+    (normalizedPath.includes("forgot-password")
+      ? "ForgotPassword"
+      : normalizedPath.includes("reset-password")
+      ? "ResetPassword"
+      : normalizedPath.includes("login")
       ? "Login"
       : normalizedPath.includes("register")
       ? "Register"
@@ -279,16 +287,26 @@ export default function App() {
     }
   }
 
+  const isAuthPage =
+    currentPage === "Register" ||
+    currentPage === "Login" ||
+    currentPage === "ForgotPassword" ||
+    currentPage === "ResetPassword" ||
+    normalizedPath.includes("login") ||
+    normalizedPath.includes("register") ||
+    normalizedPath.includes("forgot-password") ||
+    normalizedPath.includes("reset-password");
+
   React.useEffect(() => {
-    if (currentPage !== "Register" && currentPage !== "Login") {
+    if (!isAuthPage) {
       getHealthLog();
       fetchHealthProfile();
     }
-  }, [currentPage]);
+  }, [currentPage, isAuthPage]);
 
   return (
     <>
-      {currentPage !== "Register" && currentPage !== "Login" && (
+      {!isAuthPage && (
         <Navbar
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
@@ -401,6 +419,25 @@ export default function App() {
               <Login
                 setCurrentPage={setCurrentPage}
                 onSignUpRedirect={() => setCurrentPage("Register")}
+                onForgotPasswordRedirect={() => setCurrentPage("ForgotPassword")}
+              />
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <ForgotPassword
+                setCurrentPage={setCurrentPage}
+                onSignInRedirect={() => setCurrentPage("Login")}
+              />
+            }
+          />
+          <Route
+            path="/reset-password/:token"
+            element={
+              <ResetPassword
+                setCurrentPage={setCurrentPage}
+                onSignInRedirect={() => setCurrentPage("Login")}
               />
             }
           />
@@ -416,7 +453,7 @@ export default function App() {
         />
       )}
 
-      {currentPage !== "Register" && currentPage !== "Login" && (
+      {!isAuthPage && (
         <>
           {showHelpBot ? (
             <HelpBot

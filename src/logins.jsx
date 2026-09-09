@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import "./logins.css";
 import { GoogleLogin } from "@react-oauth/google";
-export default function Login({ onSignUpRedirect, setCurrentPage }) {
+import { useNavigate } from "react-router-dom";
+
+export default function Login({
+  onSignUpRedirect,
+  onForgotPasswordRedirect,
+  setCurrentPage,
+}) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -147,7 +154,21 @@ export default function Login({ onSignUpRedirect, setCurrentPage }) {
               <label className="login-form-label" htmlFor="password">
                 Password
               </label>
-              <span className="forgot-password-link">Forgot Password?</span>
+              <span
+                className="forgot-password-link"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  if (onForgotPasswordRedirect) {
+                    onForgotPasswordRedirect();
+                  } else if (setCurrentPage) {
+                    setCurrentPage("ForgotPassword");
+                  } else {
+                    navigate("/forgot-password");
+                  }
+                }}
+              >
+                Forgot Password?
+              </span>
             </div>
             <div className="login-input-wrapper">
               <span className="material-symbols-outlined login-input-icon-left">
