@@ -153,21 +153,13 @@ const executeTool = async (name, userId) => {
 
 const gemini_models = [
   "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-flash-latest",
   "gemini-2.5-flash-lite",
-  "gemini-2.0-flash-lite",
-  "gemini-3.8-flash",
-  "gemini-3.7-flash",
   "gemini-3.6-flash",
-  "gemini-3.5-flash"
+  "gemini-3.7-flash",
+  "gemini-3.8-flash"
 ];
 
 const openrouter_models = [
-  "google/gemini-2.5-flash",
-  "google/gemini-flash-1.5",
-  "nvidia/nemotron-3-ultra:free",
   "nvidia/nemotron-3.5-lightning:free",
   "minimax/minimax-m3:free",
   "thinking-machines/inkling:free",
@@ -270,16 +262,49 @@ const copilot = async (req, res) => {
         const geminiRes = await withTimeout(chat.sendMessage({ message: geminiInput }), 15000);
 
         if (geminiRes?.functionCalls?.length > 0) {
-          const call = geminiRes.functionCalls[0];
-          const toolResult = await executeTool(call.name, userId);
-          const followUpRes = await withTimeout(
+          // Resolve ALL parallel tool calls
+          const functionResponses = await Promise.all(
+            geminiRes.functionCalls.map(async (call) => {
+              const toolResult = await executeTool(call.name, userId);
+              return {
+                functionResponse: {
+                  name: call.name,
+                  response: { output: toolResult }
+                }
+              };
+            })
+          );
+
+          let currentRes = await withTimeout(
             chat.sendMessage({
-              message: [{ functionResponse: { name: call.name, response: { output: toolResult } } }]
+              message: functionResponses
             }),
             15000
           );
-          if (followUpRes?.text) {
-            aiResponse = followUpRes.text;
+
+          // Handle multi-turn follow-up tool calls if model requests additional data
+          while (currentRes?.functionCalls?.length > 0) {
+            const nextResponses = await Promise.all(
+              currentRes.functionCalls.map(async (call) => {
+                const toolResult = await executeTool(call.name, userId);
+                return {
+                  functionResponse: {
+                    name: call.name,
+                    response: { output: toolResult }
+                  }
+                };
+              })
+            );
+            currentRes = await withTimeout(
+              chat.sendMessage({
+                message: nextResponses
+              }),
+              15000
+            );
+          }
+
+          if (currentRes?.text) {
+            aiResponse = currentRes.text;
             usedModel = gm;
             providerUsed = "gemini";
             break;
@@ -311,6 +336,7 @@ const copilot = async (req, res) => {
           const response = await withTimeout(
             openrouter.chat.completions.create({
               model: om,
+              max_tokens: 4096,
               messages: [
                 { role: "system", content: copilotPrompt },
                 { role: "user", content: openrouterUserContent }
@@ -322,20 +348,26 @@ const copilot = async (req, res) => {
 
           const msg = response.choices?.[0]?.message;
           if (msg?.tool_calls?.length > 0) {
-            const toolCall = msg.tool_calls[0];
-            const toolResult = await executeTool(toolCall.function.name, userId);
+            const toolMessages = await Promise.all(
+              msg.tool_calls.map(async (toolCall) => {
+                const toolResult = await executeTool(toolCall.function.name, userId);
+                return {
+                  role: "tool",
+                  tool_call_id: toolCall.id,
+                  content: JSON.stringify(toolResult)
+                };
+              })
+            );
+
             const followUpRes = await withTimeout(
               openrouter.chat.completions.create({
                 model: om,
+                max_tokens: 4096,
                 messages: [
                   { role: "system", content: copilotPrompt },
                   { role: "user", content: openrouterUserContent },
                   msg,
-                  {
-                    role: "tool",
-                    tool_call_id: toolCall.id,
-                    content: JSON.stringify(toolResult)
-                  }
+                  ...toolMessages
                 ]
               }),
               15000
@@ -348,7 +380,41 @@ const copilot = async (req, res) => {
               break;
             }
           } else if (msg?.content) {
-            aiResponse = msg.content;
+            let rawContent = msg.content;
+            // Check if model printed raw tool calls instead of native tool_calls
+            if (rawContent.includes("<tool_call>") || rawContent.includes("<function=")) {
+              const funcMatches = [...rawContent.matchAll(/<function=([a-zA-Z0-9_]+)>/g)].map(m => m[1]);
+              if (funcMatches.length > 0) {
+                const toolOutputs = {};
+                for (const fn of funcMatches) {
+                  toolOutputs[fn] = await executeTool(fn, userId);
+                }
+                const followUpRes = await withTimeout(
+                  openrouter.chat.completions.create({
+                    model: om,
+                    max_tokens: 4096,
+                    messages: [
+                      { role: "system", content: copilotPrompt },
+                      { role: "user", content: openrouterUserContent },
+                      msg,
+                      {
+                        role: "user",
+                        content: `Here are the results of the requested tool calls:\n${JSON.stringify(toolOutputs, null, 2)}\nPlease now provide the complete, detailed final response based on this data.`
+                      }
+                    ]
+                  }),
+                  15000
+                );
+                const followUpText = followUpRes.choices?.[0]?.message?.content;
+                if (followUpText && !followUpText.includes("<tool_call>")) {
+                  aiResponse = followUpText;
+                  usedModel = om;
+                  providerUsed = "openrouter";
+                  break;
+                }
+              }
+            }
+            aiResponse = rawContent;
             usedModel = om;
             providerUsed = "openrouter";
             break;
