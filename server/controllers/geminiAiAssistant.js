@@ -44,8 +44,45 @@ TONE: precise, no fluff, bullets for steps/lists.
 `;
 
 const MediTrackrAssistant = require("../geminiAssistant");
+const haimaker = require("../haimaker");
 const AssistantHistory = require("../models/AssistantHistory");
 const { processUploadedFile } = require("../utils/fileProcessor");
+
+const gemini_models = [
+  "gemini-flash-latest",
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-3.6-flash",
+  "gemini-3.7-flash"
+];
+
+// Free Haimaker models specialized for scanning images / visual prescriptions
+const haimaker_free_vision_models = [
+  "meta-llama/llama-3.2-11b-vision-instruct:free",
+  "meta-llama/llama-3.2-90b-vision-instruct:free",
+  "qwen/qwen-2.5-vl-72b-instruct:free",
+  "qwen/qwen-2-vl-72b-instruct:free"
+];
+
+// Free Haimaker models specialized for documents, PDFs, lab reports, and medical guidance
+const haimaker_free_doc_models = [
+  "deepseek/deepseek-r1:free",
+  "deepseek/deepseek-chat:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "google/gemma-3-27b-it:free",
+  "mistralai/mistral-small-24b-instruct-2501:free",
+  "qwen/qwen-2.5-72b-instruct:free",
+  "nvidia/nemotron-3.5-lightning:free"
+];
+
+// Helper function to enforce a 15-second timeout per model request
+const withTimeout = (promise, ms = 15000) => {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${ms / 1000}s`)), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+};
 
 const geminiAiAssistant = async (req, res) => {
   const { message, file } = req.body;
@@ -65,40 +102,131 @@ const geminiAiAssistant = async (req, res) => {
       chatDoc = new AssistantHistory({ userId, messages: [] });
     }
 
+    let processed = null;
+    if (file) {
+      processed = await processUploadedFile(file);
+    }
+
+    let aiReply = "";
+    let lastError = null;
+
+    // ==========================================================
+    // STAGE 1: Try Google Gemini API Models First
+    // ==========================================================
     const historyForGemini = chatDoc.messages.map((m) => ({
       role: m.role,
       parts: [{ text: m.text }],
     }));
 
-    const chat = MediTrackrAssistant.chats.create({
-      model: "gemini-flash-latest",
-      history: historyForGemini,
-      config: {
-        systemInstruction: ASSISTANT_SYSTEM_PROMPT,
-      },
-    });
-
     const messageParts = [];
-
-    if (file) {
-      const processed = await processUploadedFile(file);
-      if (processed.geminiPart) {
-        messageParts.push(processed.geminiPart);
-      }
+    if (processed?.geminiPart) {
+      messageParts.push(processed.geminiPart);
     }
-
     if (message) {
       messageParts.push({ text: message });
     } else if (file && messageParts.length === 1 && messageParts[0].inlineData) {
       messageParts.push({ text: "Please review and analyze this attached document/image and explain key details." });
     }
 
-    const response = await chat.sendMessage({
-      message: file ? messageParts : message,
-    });
+    const geminiInput = file ? messageParts : message;
+
+    for (const gm of gemini_models) {
+      try {
+        const chat = MediTrackrAssistant.chats.create({
+          model: gm,
+          history: historyForGemini,
+          config: {
+            systemInstruction: ASSISTANT_SYSTEM_PROMPT,
+          },
+        });
+
+        const response = await withTimeout(
+          chat.sendMessage({
+            message: geminiInput,
+          }),
+          15000
+        );
+
+        if (response?.text) {
+          aiReply = response.text;
+          break;
+        }
+      } catch (err) {
+        console.warn(`[Health Advisor Gemini] Model "${gm}" failed (${err.message}). Trying next...`);
+        lastError = err;
+      }
+    }
+
+    // ==========================================================
+    // STAGE 2: If Gemini Fails -> Automatic Fallback to Free Haimaker Models
+    // ==========================================================
+    if (!aiReply) {
+      console.warn("[Health Advisor] Gemini failed or timed out. Routing automatically to free Haimaker models...");
+
+      const haimakerMessages = [
+        { role: "system", content: ASSISTANT_SYSTEM_PROMPT },
+        ...chatDoc.messages.map((m) => ({
+          role: m.role === "model" ? "assistant" : "user",
+          content: m.text,
+        })),
+      ];
+
+      let haimakerUserContent;
+      if (processed?.isImage) {
+        haimakerUserContent = [
+          {
+            type: "text",
+            text: message || "Please review and analyze this attached image and explain key details.",
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${processed.mimeType};base64,${file.base64}`,
+            },
+          },
+        ];
+      } else if (processed?.extractedText) {
+        haimakerUserContent = `${message ? message + "\n\n" : ""}[Attached Document Content]:\n${processed.extractedText}`;
+      } else {
+        haimakerUserContent = message || "Please review and analyze this attached document/image.";
+      }
+
+      haimakerMessages.push({ role: "user", content: haimakerUserContent });
+
+      // Prioritize vision models if an image is uploaded, or document models if a PDF/doc/text is uploaded
+      const candidateHaimakerModels = processed?.isImage
+        ? [...haimaker_free_vision_models, ...haimaker_free_doc_models]
+        : [...haimaker_free_doc_models, ...haimaker_free_vision_models];
+
+      for (const hm of candidateHaimakerModels) {
+        try {
+          const completion = await withTimeout(
+            haimaker.chat.completions.create({
+              model: hm,
+              max_tokens: 4096,
+              messages: haimakerMessages,
+            }),
+            15000
+          );
+
+          const replyText = completion.choices?.[0]?.message?.content;
+          if (replyText) {
+            aiReply = replyText;
+            break;
+          }
+        } catch (err) {
+          console.warn(`[Health Advisor Haimaker] Model "${hm}" failed (${err.message}). Trying next...`);
+          lastError = err;
+        }
+      }
+    }
+
+    if (!aiReply) {
+      throw lastError || new Error("All AI models across Gemini and Haimaker failed to respond.");
+    }
 
     chatDoc.messages.push({ role: "user", text: message || `[Attached: ${file?.name || "Document/Image"}]` });
-    chatDoc.messages.push({ role: "model", text: response.text });
+    chatDoc.messages.push({ role: "model", text: aiReply });
 
     await chatDoc.save();
 
@@ -106,12 +234,12 @@ const geminiAiAssistant = async (req, res) => {
     const assistantMsg = chatDoc.messages[chatDoc.messages.length - 1];
 
     res.status(200).json({
-      reply: response.text,
+      reply: aiReply,
       userTime: userMsg.timeStamp,
       modelTime: assistantMsg.timeStamp,
     });
   } catch (err) {
-    console.error(err);
+    console.error("[Health Advisor Error]:", err);
     res.status(500).json({
       error: "something went wrong",
       message: err.message || err,
