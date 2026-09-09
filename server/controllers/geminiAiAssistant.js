@@ -44,7 +44,8 @@ TONE: precise, no fluff, bullets for steps/lists.
 `;
 
 const MediTrackrAssistant = require("../geminiAssistant");
-const haimaker = require("../haimaker");
+const haimakerAssistant = require("../haimakerAssistant");
+const openrouter = require("../openrouter");
 const AssistantHistory = require("../models/AssistantHistory");
 const { processUploadedFile } = require("../utils/fileProcessor");
 
@@ -56,26 +57,31 @@ const gemini_models = [
   "gemini-3.7-flash"
 ];
 
-// Free Haimaker models specialized for scanning images / visual prescriptions
-const haimaker_free_vision_models = [
+// Haimaker auto-routing and free models
+const haimaker_models = [
+  "haimaker/auto",
+  "haimaker/auto-free",
+  "haimaker/free",
+  "auto",
   "meta-llama/llama-3.2-11b-vision-instruct:free",
-  "meta-llama/llama-3.2-90b-vision-instruct:free",
   "qwen/qwen-2.5-vl-72b-instruct:free",
-  "qwen/qwen-2-vl-72b-instruct:free"
-];
-
-// Free Haimaker models specialized for documents, PDFs, lab reports, and medical guidance
-const haimaker_free_doc_models = [
   "deepseek/deepseek-r1:free",
   "deepseek/deepseek-chat:free",
   "meta-llama/llama-3.3-70b-instruct:free",
   "google/gemma-3-27b-it:free",
-  "mistralai/mistral-small-24b-instruct-2501:free",
-  "qwen/qwen-2.5-72b-instruct:free",
-  "nvidia/nemotron-3.5-lightning:free"
+  "mistralai/mistral-small-24b-instruct-2501:free"
 ];
 
-// Helper function to enforce a 15-second timeout per model request
+// OpenRouter fallback models if Haimaker is unavailable
+const openrouter_models = [
+  "nvidia/nemotron-3.5-lightning:free",
+  "deepseek/deepseek-r1:free",
+  "deepseek/deepseek-chat:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "google/gemma-3-27b-it:free"
+];
+
+// Helper function to enforce a strict 15-second timeout per model request
 const withTimeout = (promise, ms = 15000) => {
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
@@ -111,7 +117,7 @@ const geminiAiAssistant = async (req, res) => {
     let lastError = null;
 
     // ==========================================================
-    // STAGE 1: Try Google Gemini API Models First
+    // STAGE 1: Try Google Gemini API Models First (15s timeout each)
     // ==========================================================
     const historyForGemini = chatDoc.messages.map((m) => ({
       role: m.role,
@@ -158,10 +164,10 @@ const geminiAiAssistant = async (req, res) => {
     }
 
     // ==========================================================
-    // STAGE 2: If Gemini Fails -> Automatic Fallback to Free Haimaker Models
+    // STAGE 2: If Gemini Fails -> Automatic Fallback to Haimaker Auto (15s timeout each)
     // ==========================================================
     if (!aiReply) {
-      console.warn("[Health Advisor] Gemini failed or timed out. Routing automatically to free Haimaker models...");
+      console.warn("[Health Advisor] Gemini failed or timed out. Routing automatically to Haimaker Auto API...");
 
       const haimakerMessages = [
         { role: "system", content: ASSISTANT_SYSTEM_PROMPT },
@@ -193,15 +199,10 @@ const geminiAiAssistant = async (req, res) => {
 
       haimakerMessages.push({ role: "user", content: haimakerUserContent });
 
-      // Prioritize vision models if an image is uploaded, or document models if a PDF/doc/text is uploaded
-      const candidateHaimakerModels = processed?.isImage
-        ? [...haimaker_free_vision_models, ...haimaker_free_doc_models]
-        : [...haimaker_free_doc_models, ...haimaker_free_vision_models];
-
-      for (const hm of candidateHaimakerModels) {
+      for (const hm of haimaker_models) {
         try {
           const completion = await withTimeout(
-            haimaker.chat.completions.create({
+            haimakerAssistant.chat.completions.create({
               model: hm,
               max_tokens: 4096,
               messages: haimakerMessages,
@@ -221,8 +222,67 @@ const geminiAiAssistant = async (req, res) => {
       }
     }
 
+    // ==========================================================
+    // STAGE 3: If Haimaker Also Fails -> Fallback to OpenRouter (15s timeout each)
+    // ==========================================================
     if (!aiReply) {
-      throw lastError || new Error("All AI models across Gemini and Haimaker failed to respond.");
+      console.warn("[Health Advisor] Haimaker failed or unavailable. Routing to OpenRouter fallback models...");
+
+      const openrouterMessages = [
+        { role: "system", content: ASSISTANT_SYSTEM_PROMPT },
+        ...chatDoc.messages.map((m) => ({
+          role: m.role === "model" ? "assistant" : "user",
+          content: m.text,
+        })),
+      ];
+
+      let openrouterUserContent;
+      if (processed?.isImage) {
+        openrouterUserContent = [
+          {
+            type: "text",
+            text: message || "Please review and analyze this attached image and explain key details.",
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${processed.mimeType};base64,${file.base64}`,
+            },
+          },
+        ];
+      } else if (processed?.extractedText) {
+        openrouterUserContent = `${message ? message + "\n\n" : ""}[Attached Document Content]:\n${processed.extractedText}`;
+      } else {
+        openrouterUserContent = message || "Please review and analyze this attached document/image.";
+      }
+
+      openrouterMessages.push({ role: "user", content: openrouterUserContent });
+
+      for (const om of openrouter_models) {
+        try {
+          const completion = await withTimeout(
+            openrouter.chat.completions.create({
+              model: om,
+              max_tokens: 4096,
+              messages: openrouterMessages,
+            }),
+            15000
+          );
+
+          const replyText = completion.choices?.[0]?.message?.content;
+          if (replyText) {
+            aiReply = replyText;
+            break;
+          }
+        } catch (err) {
+          console.warn(`[Health Advisor OpenRouter] Model "${om}" failed (${err.message}). Trying next...`);
+          lastError = err;
+        }
+      }
+    }
+
+    if (!aiReply) {
+      throw lastError || new Error("All AI models across Gemini, Haimaker, and OpenRouter failed to respond.");
     }
 
     chatDoc.messages.push({ role: "user", text: message || `[Attached: ${file?.name || "Document/Image"}]` });
