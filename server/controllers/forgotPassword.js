@@ -39,16 +39,46 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     // Determine client base URL for the reset link
-    const rawClientUrl = (
-      process.env.CLIENT_URL ||
-      req.headers.origin ||
-      "http://localhost:5173"
-    ).replace(/\/+$/, "");
+    let clientBase = process.env.CLIENT_URL;
 
-    // Include '#/' since the React frontend uses HashRouter (essential for GitHub Pages)
-    const baseUrl = rawClientUrl.includes("#")
-      ? rawClientUrl
-      : `${rawClientUrl}/#`;
+    // If not explicitly set or missing repo subpath, extract from referer header
+    if (!clientBase && req.headers.referer) {
+      try {
+        const refererUrl = new URL(req.headers.referer);
+        const pathSegments = refererUrl.pathname.split("/").filter(Boolean);
+        const subPath =
+          pathSegments.length > 0 && !pathSegments[0].startsWith("#")
+            ? `/${pathSegments[0]}`
+            : "";
+        clientBase = `${refererUrl.origin}${subPath}`;
+      } catch {
+        clientBase = req.headers.origin;
+      }
+    }
+
+    if (!clientBase) {
+      clientBase =
+        req.headers.origin || "https://jotishnitr.github.io/MediTrackr";
+    }
+
+    // Fix for GitHub Pages subpath if omitted
+    if (
+      clientBase.includes("jotishnitr.github.io") &&
+      !clientBase.includes("MediTrackr")
+    ) {
+      clientBase = clientBase.replace(
+        "jotishnitr.github.io",
+        "jotishnitr.github.io/MediTrackr",
+      );
+    }
+
+    // Clean trailing slashes
+    clientBase = clientBase.replace(/\/+$/, "");
+
+    // Ensure HashRouter '#/' is present for GitHub Pages and React HashRouter
+    const baseUrl = clientBase.includes("#")
+      ? clientBase
+      : `${clientBase}/#`;
 
     const resetUrl = `${baseUrl.replace(/\/+$/, "")}/reset-password/${rawToken}`;
 

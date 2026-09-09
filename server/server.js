@@ -46,9 +46,11 @@ const app = express();
 
 connectDB();
 
-const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL].filter(
-  Boolean,
-);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://jotishnitr.github.io",
+  process.env.CLIENT_URL,
+].filter(Boolean);
 
 const corsOption = {
   origin: allowedOrigins,
