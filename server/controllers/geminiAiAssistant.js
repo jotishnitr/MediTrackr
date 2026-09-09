@@ -18,6 +18,7 @@ APP FEATURES:
 
 Rules for Mode A:
 - Short, step-by-step, bullet points, friendly concise tone.
+- When explaining app operations (like adding medicines, logging vitals, scheduling, or uploading prescriptions), explain the manual steps clearly and ALSO suggest: "💡 *Tip: You can also switch to the **MediTrackr Copilot** tab above to automatically add medicines, schedule doses, or log vitals using natural language or by uploading an image/document!*"
 - Unsure if feature exists → "I'm not sure about that — check Settings or contact support via Feedback button."
 - Never give medical advice here — redirect: "That's a great question for our AI Health Assistant — sidebar → 'AI Health Assistant'."
 
@@ -44,6 +45,7 @@ TONE: precise, no fluff, bullets for steps/lists.
 
 const MediTrackrAssistant = require("../geminiAssistant");
 const AssistantHistory = require("../models/AssistantHistory");
+const { processUploadedFile } = require("../utils/fileProcessor");
 
 const geminiAiAssistant = async (req, res) => {
   const { message, file } = req.body;
@@ -77,27 +79,25 @@ const geminiAiAssistant = async (req, res) => {
     });
 
     const messageParts = [];
-    // declared here now, fixes Bug 1
 
     if (file) {
-      messageParts.push({
-        inlineData: {
-          mimeType: file.mimeType,
-          data: file.base64,
-        },
-      });
+      const processed = await processUploadedFile(file);
+      if (processed.geminiPart) {
+        messageParts.push(processed.geminiPart);
+      }
     }
 
     if (message) {
       messageParts.push({ text: message });
+    } else if (file && messageParts.length === 1 && messageParts[0].inlineData) {
+      messageParts.push({ text: "Please review and analyze this attached document/image and explain key details." });
     }
 
     const response = await chat.sendMessage({
       message: file ? messageParts : message,
-      // fixes Bug 2 — actually uses messageParts when file present
     });
 
-    chatDoc.messages.push({ role: "user", text: message || "[uploaded file]" });
+    chatDoc.messages.push({ role: "user", text: message || `[Attached: ${file?.name || "Document/Image"}]` });
     chatDoc.messages.push({ role: "model", text: response.text });
 
     await chatDoc.save();

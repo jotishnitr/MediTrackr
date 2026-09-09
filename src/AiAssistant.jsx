@@ -216,12 +216,21 @@ export default function AiAssistance({ profileDetails }) {
 
     const currentMsgText = trimmedText;
     const time = getCurrentTime();
+    const isImg = selectedImage?.type?.startsWith("image/") || (selectedImage?.name && /\.(png|jpe?g|webp|gif|bmp|heic|svg)$/i.test(selectedImage.name));
 
     const userMsg = {
       sender: "user",
       text: currentMsgText,
       time: time,
-      image: imagePreview,
+      image: isImg ? imagePreview : null,
+      fileInfo: selectedImage
+        ? {
+            name: selectedImage.name,
+            size: selectedImage.size,
+            type: selectedImage.type,
+            isImage: isImg,
+          }
+        : null,
     };
 
     if (activeMode === "advisor") {
@@ -235,7 +244,11 @@ export default function AiAssistance({ profileDetails }) {
     let fileData = null;
     if (selectedImage) {
       const base64 = await fileToBase64(selectedImage);
-      fileData = { base64, mimeType: selectedImage.type };
+      fileData = {
+        base64,
+        mimeType: selectedImage.type || (selectedImage.name.endsWith(".pdf") ? "application/pdf" : selectedImage.name.endsWith(".docx") ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : "application/octet-stream"),
+        name: selectedImage.name,
+      };
     }
     setSelectedImage(null);
     setImagePreview("");
@@ -284,7 +297,10 @@ export default function AiAssistance({ profileDetails }) {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: currentMsgText }),
+            body: JSON.stringify({
+              text: currentMsgText,
+              file: fileData,
+            }),
           },
         );
 
@@ -425,13 +441,32 @@ export default function AiAssistance({ profileDetails }) {
   ];
 
   const copilotChips = [
+    { text: "📊 Generate Health Report", action: "Analyze my health logs, active medicines, and profile, and generate a comprehensive health report for me." },
     { text: "Add 500mg Amoxicillin", action: "Add 500mg Amoxicillin Oral Tablet at 08:00 with food" },
     { text: "Log BP & Vitals", action: "Log my vitals: Blood Pressure 120/80, 7.5 hours sleep, and weight 70kg" },
-    { text: "Add Paracetamol 650mg", action: "Add Paracetamol 650mg tablet at 14:00 for fever" },
     { text: "Optimize Schedule", action: "Optimize my daily medication schedule for morning, afternoon, and bedtime" },
   ];
 
   const currentChips = activeMode === "advisor" ? advisorChips : copilotChips;
+
+  // Helper to download report as formatted markdown / text file
+  const handleDownloadReport = (reportText) => {
+    try {
+      const now = new Date().toISOString().split("T")[0];
+      const fileName = `MediTrackr_Health_Report_${now}.md`;
+      const blob = new Blob([reportText], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Report download failed:", err);
+    }
+  };
 
   // Render Confirmation Preview Card for Copilot Actions (Option 2 Flow)
   const renderActionPreviewCard = (msg, msgIndex) => {
@@ -545,6 +580,14 @@ export default function AiAssistance({ profileDetails }) {
   const renderMessageContent = (msg, index) => {
     // If it's a raw JSON reply from copilot, display clean text or action preview
     const isJsonBlock = msg.text.trim().startsWith("```json") || msg.text.trim().startsWith("{");
+    const isReportMessage =
+      msg.sender === "assistant" &&
+      !msg.requiresConfirmation &&
+      (msg.text.includes("Report") ||
+        msg.text.includes("Patient Profile") ||
+        msg.text.includes("Medication Regimen") ||
+        msg.text.includes("Health & Medication") ||
+        msg.text.includes("## Patient"));
 
     return (
       <>
@@ -556,6 +599,49 @@ export default function AiAssistance({ profileDetails }) {
             className="message-bubble-attachment"
           />
         )}
+        {msg.fileInfo && !msg.fileInfo.isImage && (
+          <div className="message-doc-attachment">
+            <span className="material-symbols-outlined message-doc-icon">
+              {msg.fileInfo.name.endsWith(".pdf")
+                ? "picture_as_pdf"
+                : msg.fileInfo.name.endsWith(".doc") || msg.fileInfo.name.endsWith(".docx")
+                ? "description"
+                : msg.fileInfo.name.endsWith(".csv")
+                ? "table_view"
+                : "text_snippet"}
+            </span>
+            <div className="message-doc-meta">
+              <span className="message-doc-name">{msg.fileInfo.name}</span>
+              <span className="message-doc-size">{(msg.fileInfo.size / 1024).toFixed(1)} KB</span>
+            </div>
+          </div>
+        )}
+
+        {/* Download Action Bar for Health & Medication Reports */}
+        {isReportMessage && (
+          <div className="report-action-bar">
+            <button
+              className="download-report-btn"
+              onClick={() => handleDownloadReport(msg.text)}
+              title="Download this report as a Markdown/Text document"
+            >
+              <span className="material-symbols-outlined">download</span>
+              <span>Download Health Report</span>
+            </button>
+            <button
+              className="copy-report-btn"
+              onClick={() => {
+                navigator.clipboard.writeText(msg.text);
+                alert("Report copied to clipboard!");
+              }}
+              title="Copy report text to clipboard"
+            >
+              <span className="material-symbols-outlined">content_copy</span>
+              <span>Copy</span>
+            </button>
+          </div>
+        )}
+
         {/* Render Option 2 Confirmation Card for Copilot */}
         {msg.requiresConfirmation && renderActionPreviewCard(msg, index)}
       </>
@@ -566,6 +652,7 @@ export default function AiAssistance({ profileDetails }) {
     <section className="ai-assistant">
       {/* Header bar */}
       <div className="ai-header">
+        {/* Left: Avatar and Title */}
         <div className="ai-header-left">
           <div className="ai-avatar-container">
             <div className="ai-avatar">
@@ -575,7 +662,7 @@ export default function AiAssistance({ profileDetails }) {
           </div>
           <div className="ai-header-info">
             <div className="ai-header-title">
-              {activeMode === "advisor" ? "MediTrackr Health Advisor" : "MediTrackr Copilot"}
+              {activeMode === "advisor" ? "Health Advisor" : "MediTrackr Copilot"}
             </div>
             <div className="ai-header-status">
               {activeMode === "advisor"
@@ -585,7 +672,7 @@ export default function AiAssistance({ profileDetails }) {
           </div>
         </div>
 
-        {/* Center Mode Toggle */}
+        {/* Center: Mode Toggle Switch */}
         <div className="ai-mode-toggle">
           <button
             className={`ai-mode-tab ${activeMode === "advisor" ? "active" : ""}`}
@@ -593,7 +680,7 @@ export default function AiAssistance({ profileDetails }) {
             type="button"
           >
             <span className="material-symbols-outlined">health_and_safety</span>
-            Health Advisor
+            <span>Health Advisor</span>
           </button>
           <button
             className={`ai-mode-tab ${activeMode === "copilot" ? "active" : ""}`}
@@ -601,37 +688,27 @@ export default function AiAssistance({ profileDetails }) {
             type="button"
           >
             <span className="material-symbols-outlined">smart_toy</span>
-            MediTrackr Copilot
+            <span>MediTrackr Copilot</span>
           </button>
         </div>
 
-        <div className="ai-header-right" style={{ display: "flex", gap: "10px" }}>
+        {/* Top-Right: Clear Chat and Feedback */}
+        <div className="ai-header-right">
           <button
             className="delete-history-btn"
             onClick={handleDeleteHistory}
-            style={{
-              background: "rgba(255, 75, 75, 0.1)",
-              color: "#ff4b4b",
-              border: "1px solid rgba(255, 75, 75, 0.2)",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "14px",
-              fontWeight: "500",
-              transition: "all 0.2s ease",
-            }}
+            title="Clear chat history"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>delete</span>
-            Clear Chat
+            <span className="material-symbols-outlined">delete</span>
+            <span className="btn-text">Clear</span>
           </button>
           <button
             className="feedback-btn"
             onClick={() => setShowFeedback(true)}
+            title="Give feedback"
           >
-            Give feedback
+            <span className="material-symbols-outlined">rate_review</span>
+            <span className="btn-text">Feedback</span>
           </button>
         </div>
       </div>
@@ -740,23 +817,25 @@ export default function AiAssistance({ profileDetails }) {
             )}
 
             <div className="ai-input-inner">
-              {/* Attachment button for Health Advisor mode */}
-              {activeMode === "advisor" && (
-                <button
-                  className="ai-attachment-btn"
-                  onClick={() => fileInputRef.current?.click()}
-                  type="button"
-                  title="Attach medical report or prescription image"
-                >
-                  <span className="material-symbols-outlined">attach_file</span>
-                </button>
-              )}
+              {/* Attachment button for both Health Advisor and Copilot modes */}
+              <button
+                className="ai-attachment-btn"
+                onClick={() => fileInputRef.current?.click()}
+                type="button"
+                title={
+                  activeMode === "advisor"
+                    ? "Attach medical report, prescription, PDF, Word doc, or image"
+                    : "Attach prescription, vitals slip, PDF, Word doc, or image"
+                }
+              >
+                <span className="material-symbols-outlined">attach_file</span>
+              </button>
 
               <input
                 type="file"
                 ref={fileInputRef}
                 style={{ display: "none" }}
-                accept="image/*,.pdf,.doc,.docx,.txt"
+                accept="image/*,.pdf,.doc,.docx,.txt,.csv,.md,.rtf"
                 onChange={handleImageChange}
               />
 

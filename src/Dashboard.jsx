@@ -695,19 +695,19 @@ export default function Dashboard({
               <div className="health-card-label">BLOOD PRESSURE</div>
 
               <div className="health-card-value">
-                {bloodPressure && bloodPressure !== "0/0" ? (
+                {bloodPressure ? (
                   <>
                     {bloodPressure} <span>mmHg</span>
                   </>
                 ) : (
-                  "null"
+                  <span className="health-card-empty">—</span>
                 )}
               </div>
 
               <div className="health-card-status stable">
-                <p style={{ color: bpInfo ? bpInfo.color : "#9ca3af" }}>
+                <span style={{ color: bpInfo ? bpInfo.color : "#9ca3af" }}>
                   {bpInfo ? bpInfo.tagline : "No log for today"}
-                </p>
+                </span>
               </div>
             </div>
 
@@ -724,7 +724,7 @@ export default function Dashboard({
                     {sleepHours} <span>HRS</span>
                   </>
                 ) : (
-                  "null"
+                  <span className="health-card-empty">—</span>
                 )}
               </div>
 
@@ -746,7 +746,7 @@ export default function Dashboard({
                     {weight} <span>kg</span>
                   </>
                 ) : (
-                  "null"
+                  <span className="health-card-empty">—</span>
                 )}
               </div>
 
@@ -780,7 +780,7 @@ export default function Dashboard({
                   </div>
                 ) : (
                   <span className="no-symptoms">
-                    {notes ? "No symptoms reported" : "null"}
+                    {notes ? "No symptoms reported" : "—"}
                   </span>
                 )}
 

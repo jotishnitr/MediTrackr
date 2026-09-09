@@ -11,11 +11,70 @@ import HelpBot from "./HelpBot";
 import AiAssistance from "./AiAssistant";
 
 import React from "react";
+import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { subscribeUser } from "./utils/pushNotification";
 
+// Mapping between routes and section page names
+const pathToPageMap = {
+  "/": "Dashboard",
+  "/dashboard": "Dashboard",
+  "/myMedicines": "myMedicines",
+  "/medicines": "myMedicines",
+  "/remainders": "Remainders",
+  "/reminders": "Remainders",
+  "/searchMedicines": "SearchMedicines",
+  "/search": "SearchMedicines",
+  "/healthLog": "HealthLog",
+  "/aiHealthAssistance": "aiHealthAssistance",
+  "/ai-assistant": "aiHealthAssistance",
+  "/register": "Register",
+  "/login": "Login",
+};
+
+const pageToPathMap = {
+  Dashboard: "/dashboard",
+  myMedicines: "/myMedicines",
+  Remainders: "/remainders",
+  SearchMedicines: "/searchMedicines",
+  HealthLog: "/healthLog",
+  aiHealthAssistance: "/aiHealthAssistance",
+  Register: "/register",
+  Login: "/login",
+};
+
 export default function App() {
-  const [currentPage, setCurrentPage] = React.useState("Dashboard");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Derive active section name from current URL path
+  const normalizedPath = location.pathname.toLowerCase();
+  const currentPage =
+    pathToPageMap[location.pathname] ||
+    (normalizedPath.includes("login")
+      ? "Login"
+      : normalizedPath.includes("register")
+      ? "Register"
+      : normalizedPath.includes("search")
+      ? "SearchMedicines"
+      : normalizedPath.includes("medicine")
+      ? "myMedicines"
+      : normalizedPath.includes("remaind") || normalizedPath.includes("remind")
+      ? "Remainders"
+      : normalizedPath.includes("healthlog")
+      ? "HealthLog"
+      : normalizedPath.includes("ai")
+      ? "aiHealthAssistance"
+      : "Dashboard");
+
+  // Router-aware page switcher for all child components
+  const setCurrentPage = (pageName) => {
+    const targetPath = pageToPathMap[pageName] || `/${pageName}`;
+    if (location.pathname !== targetPath) {
+      navigate(targetPath);
+    }
+  };
+
   const [showAddMed, setShowAddMed] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showHelpBot, setShowHelpBot] = React.useState(false);
@@ -90,16 +149,23 @@ export default function App() {
         );
         const data = await response.json();
         if (data.success) {
-          setCurrentPage("Dashboard");
+          if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") {
+            navigate("/dashboard");
+          }
         } else {
-          setCurrentPage("Register");
+          if (location.pathname !== "/login" && location.pathname !== "/register") {
+            navigate("/register");
+          }
         }
       } catch (err) {
-        setCurrentPage("Register");
+        if (location.pathname !== "/login" && location.pathname !== "/register") {
+          navigate("/register");
+        }
       }
     }
     getCurrentUser();
   }, []);
+
   const [medicines, setMedicines] = React.useState([]);
   React.useEffect(() => {
     async function loadMedicines() {
@@ -232,79 +298,114 @@ export default function App() {
           setIsSidebarOpen={setIsSidebarOpen}
         />
       )}
+
       <AnimatePresence mode="wait">
-        {currentPage === "Dashboard" && (
-          <Dashboard
-            key="Dashboard"
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            showAddMed={showAddMed}
-            setShowAddMed={setShowAddMed}
-            medicines={medicines}
-            setMedicines={setMedicines}
-            sleepHours={sleepHours}
-            bloodPressure={bloodPressure}
-            weight={weight}
-            selectedSymptoms={selectedSymptoms}
-            notes={notes}
-            profileDetails={profileDetails}
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <Dashboard
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                showAddMed={showAddMed}
+                setShowAddMed={setShowAddMed}
+                medicines={medicines}
+                setMedicines={setMedicines}
+                sleepHours={sleepHours}
+                bloodPressure={bloodPressure}
+                weight={weight}
+                selectedSymptoms={selectedSymptoms}
+                notes={notes}
+                profileDetails={profileDetails}
+              />
+            }
           />
-        )}
-        {currentPage === "myMedicines" && (
-          <MyMedicines
-            key="myMedicines"
-            setShowAddMed={setShowAddMed}
-            showAddMed={showAddMed}
-            medicines={medicines}
-            setCurrentPage={setCurrentPage}
+          <Route
+            path="/myMedicines"
+            element={
+              <MyMedicines
+                setShowAddMed={setShowAddMed}
+                showAddMed={showAddMed}
+                medicines={medicines}
+                setCurrentPage={setCurrentPage}
+              />
+            }
           />
-        )}
-
-        {currentPage === "Remainders" && (
-          <Reminders
-            key="Remainders"
-            medicines={medicines}
-            setMedicines={setMedicines}
-            setCurrentPage={setCurrentPage}
-            setShowAddMed={setShowAddMed}
+          <Route path="/medicines" element={<Navigate to="/myMedicines" replace />} />
+          <Route
+            path="/remainders"
+            element={
+              <Reminders
+                medicines={medicines}
+                setMedicines={setMedicines}
+                setCurrentPage={setCurrentPage}
+                setShowAddMed={setShowAddMed}
+              />
+            }
           />
-        )}
-
-        {currentPage === "SearchMedicines" && (
-          <SearchMedicine
-            key="SearchMedicines"
-            setCurrentPage={setCurrentPage}
-            setShowAddMed={setShowAddMed}
+          <Route path="/reminders" element={<Navigate to="/remainders" replace />} />
+          <Route
+            path="/searchMedicines"
+            element={
+              <SearchMedicine
+                setCurrentPage={setCurrentPage}
+                setShowAddMed={setShowAddMed}
+              />
+            }
           />
-        )}
-
-        {currentPage === "HealthLog" && (
-          <HealthLog
-            key="HealthLog"
-            getHealthLog={getHealthLog}
-            setCurrentPage={setCurrentPage}
-            setShowAddMed={setShowAddMed}
-            sleepHours={sleepHours}
-            setSleepHours={setSleepHours}
-            bloodPressure={bloodPressure}
-            setBloodPressure={setBloodPressure}
-            weight={weight}
-            setWeight={setWeight}
-            selectedSymptoms={selectedSymptoms}
-            setSelectedSymptoms={setSelectedSymptoms}
-            notes={notes}
-            setNotes={setNotes}
-            lastSaved={lastSaved}
-            setLastSaved={setLastSaved}
+          <Route path="/search" element={<Navigate to="/searchMedicines" replace />} />
+          <Route
+            path="/healthLog"
+            element={
+              <HealthLog
+                getHealthLog={getHealthLog}
+                setCurrentPage={setCurrentPage}
+                setShowAddMed={setShowAddMed}
+                sleepHours={sleepHours}
+                setSleepHours={setSleepHours}
+                bloodPressure={bloodPressure}
+                setBloodPressure={setBloodPressure}
+                weight={weight}
+                setWeight={setWeight}
+                selectedSymptoms={selectedSymptoms}
+                setSelectedSymptoms={setSelectedSymptoms}
+                notes={notes}
+                setNotes={setNotes}
+                lastSaved={lastSaved}
+                setLastSaved={setLastSaved}
+              />
+            }
           />
-        )}
-
-        {currentPage === "aiHealthAssistance" && (
-          <AiAssistance
-            key="aiHealthAssistance"
-            profileDetails={profileDetails}
+          <Route
+            path="/aiHealthAssistance"
+            element={
+              <AiAssistance
+                profileDetails={profileDetails}
+              />
+            }
           />
-        )}
+          <Route path="/ai-assistant" element={<Navigate to="/aiHealthAssistance" replace />} />
+          <Route
+            path="/register"
+            element={
+              <Register
+                setCurrentPage={setCurrentPage}
+                onSignInRedirect={() => setCurrentPage("Login")}
+              />
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <Login
+                setCurrentPage={setCurrentPage}
+                onSignUpRedirect={() => setCurrentPage("Register")}
+              />
+            }
+          />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
       </AnimatePresence>
 
       {showProfileModal && (
@@ -312,22 +413,6 @@ export default function App() {
           profileDetails={profileDetails}
           setProfileDetails={setProfileDetails}
           onClose={() => setShowProfileModal(false)}
-        />
-      )}
-
-      {currentPage === "Register" && (
-        <Register
-          key="Register"
-          setCurrentPage={setCurrentPage}
-          onSignInRedirect={() => setCurrentPage("Login")}
-        />
-      )}
-
-      {currentPage === "Login" && (
-        <Login
-          key="Login"
-          setCurrentPage={setCurrentPage}
-          onSignUpRedirect={() => setCurrentPage("Register")}
         />
       )}
 

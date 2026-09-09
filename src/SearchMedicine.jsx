@@ -396,10 +396,28 @@ export default function SearchMedicine({ setCurrentPage, setShowAddMed }) {
             </div>
           ))
         ) : notFound === true ? (
-          <h2 className="no-medicine-found">
-            No exact medicine found. Try searching with a generic name or a
-            different medicine name.
-          </h2>
+          <div className="no-medicine-found-card">
+            <div className="no-medicine-icon">
+              <span className="material-symbols-outlined">search_off</span>
+            </div>
+            <h3 className="no-medicine-title">No Exact Medicine Found in FDA Records</h3>
+            <p className="no-medicine-desc">
+              We couldn&apos;t find verified data for &quot;<strong>{searchMed}</strong>&quot;.
+              <br />
+              You can consult our <strong>AI Health Advisor</strong> to get comprehensive medical details, drug actions, side effects, and precautions.
+            </p>
+            <button
+              className="ask-health-advisor-btn"
+              onClick={() => {
+                if (typeof setCurrentPage === "function") {
+                  setCurrentPage("aiHealthAssistance");
+                }
+              }}
+            >
+              <span className="material-symbols-outlined">health_and_safety</span>
+              Ask AI Health Advisor about &quot;{searchMed}&quot;
+            </button>
+          </div>
         ) : (
           medicines.map((med, index) => (
             <div key={index} className="medicine-info-card">

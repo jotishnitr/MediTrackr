@@ -2251,27 +2251,87 @@ body {
   font-family: "Inter", sans-serif;
 }
 
-.no-medicine-found {
+.no-medicine-found-card {
   width: 100%;
-  min-height: 220px;
+  min-height: 240px;
+  grid-column: 1/-1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 24px;
+  border-radius: 20px;
+  background: radial-gradient(circle at center, rgba(78, 222, 163, 0.05), transparent 70%),
+              linear-gradient(135deg, rgba(22, 31, 52, 0.95), rgba(16, 24, 42, 0.95));
+  border: 1px solid rgba(78, 222, 163, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-out;
+}
 
+.no-medicine-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  margin-bottom: 16px;
+  color: #ff6b6b;
+}
 
-  border-radius: 20px;
-  background: linear-gradient(135deg,
-      rgba(255, 107, 107, 0.08),
-      rgba(15, 23, 42, 0.5));
+.no-medicine-icon .material-symbols-outlined {
+  font-size: 28px;
+}
 
-  border: 1px solid rgba(255, 107, 107, 0.2);
-
-  color: #ff8b8b;
-  grid-column: 1/-1;
+.no-medicine-title {
+  font-family: 'Manrope', sans-serif;
   font-size: 1.25rem;
-  font-weight: 600;
-  text-align: center;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.no-medicine-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #bbcabf;
+  line-height: 1.6;
+  max-width: 520px;
+  margin-bottom: 22px;
+}
+
+.no-medicine-desc strong {
+  color: #4edea3;
+}
+
+.ask-health-advisor-btn {
+  background: linear-gradient(135deg, #4edea3, #25c080);
+  color: #0b1326;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(78, 222, 163, 0.25);
+}
+
+.ask-health-advisor-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(78, 222, 163, 0.4);
+  color: #0b1326;
+}
+
+.ask-health-advisor-btn .material-symbols-outlined {
+  font-size: 20px;
 }
 
 /* =========================
@@ -2355,67 +2415,82 @@ body {
 }
 
 .health-card {
-  flex: 1 1 280px;
-  min-width: 280px;
-
-  min-height: 180px;
-
-  padding: 28px;
-
+  flex: 1 1 240px;
+  min-width: 240px;
+  min-height: 175px;
+  padding: 24px 28px;
   border-radius: 24px;
-
   background: linear-gradient(135deg,
       rgba(22, 31, 52, 0.95),
       rgba(17, 25, 44, 0.95));
-
   border: 1px solid rgba(255, 255, 255, 0.06);
-
   display: flex;
   justify-content: space-between;
-  align-items: center;
-
+  align-items: flex-start;
   transition: all 0.25s ease;
+  box-sizing: border-box;
 }
 
 .health-card:hover {
   transform: translateY(-4px);
-
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
 }
 
+.health-card-left {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
 .health-card-label {
-  font-family: "JetBrains Mono";
+  font-family: "JetBrains Mono", monospace;
   font-size: 12px;
   font-weight: 700;
-
   letter-spacing: 0.08em;
-
   color: #bbcabf;
-
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .health-card-value {
-  font-family: Manrope;
-  font-size: 48px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 38px;
   font-weight: 800;
-
   color: #dae2fd;
-
   margin-bottom: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.pressure-card .health-card-value {
+  font-size: 34px;
+}
+
+.health-card-empty {
+  color: rgba(187, 202, 191, 0.4);
+  font-size: 34px;
+  font-weight: 300;
+  letter-spacing: 2px;
 }
 
 .health-card-value span {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 500;
-
   color: #bbcabf;
 }
 
 .health-card-status {
-  font-family: Inter;
-  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
   font-weight: 500;
+  margin-top: auto;
+}
+
+.health-card-status p {
+  margin: 0;
+  padding: 0;
 }
 
 .stable {

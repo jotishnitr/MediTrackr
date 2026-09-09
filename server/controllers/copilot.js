@@ -77,9 +77,25 @@ JSON Schema:
 }
 \`\`\`
 
+--------------------------------------------------
+4. FUNCTION: COMPREHENSIVE HEALTH & MEDICATION ANALYSIS REPORT
+--------------------------------------------------
+Trigger: User asks to analyze their health/medicines, review their health records, check vital trends, or generate a summary/detailed health report.
+Instruction:
+- ALWAYS call the relevant tools (getMedicines, getHealthLog, getHealthProfile, getUserProfile) to retrieve all user records from the database.
+- Synthesize all retrieved records into a detailed, structured, professional Markdown report with clear headers, tables/bullet points, and actionable insights.
+- Report Structure:
+  # 📋 MediTrackr Health & Medication Summary Report
+  - **Patient Profile**: Full Name, Age, Blood Group, Height, Weight, Known Allergies, and Chronic Conditions.
+  - **Active Medication Regimen**: All scheduled medicines, dosages, form/type, timing (24-hour format), and special instructions.
+  - **Recent Vitals & Symptom Logs**: Summary of recorded Blood Pressure readings, Sleep Hours, Weight changes, and logged symptoms.
+  - **Health Insights & Routine Analysis**: Observations on dosage schedules, blood pressure trends, sleep health, and lifestyle tips.
+  - **Physician Discussion Points**: Key questions or notes to share with their healthcare provider during their next consultation.
+  - End with the standard medical advisory disclaimer.
+
 === GENERAL RULES ===
 1. When generating JSON output for functional actions (ADD_MEDICINES, LOG_HEALTH_VITALS, OPTIMIZE_SCHEDULE), ensure valid JSON syntax without extra conversational filler around the JSON block.
-2. For informational queries about saved records, use tools to fetch data and respond concisely and clearly in natural language.
+2. For informational queries about saved records or report generation, use tools to fetch real data and respond in structured, professional Markdown.
 3. CRITICAL FOR MEDICINE TIME: All medication times MUST be in strict 24-hour 'HH:MM' format (e.g., '08:00', '13:30', '21:00'). NEVER output 'AM' or 'PM' in time fields.
 `;
 
@@ -87,6 +103,7 @@ const gemini = require('../geminiAssistant');
 const openrouter = require('../openrouter');
 const tools = require('../toolsCalling');
 const CopilotHistory = require('../models/CopilotHistory');
+const { processUploadedFile } = require('../utils/fileProcessor');
 
 // Helper to guarantee 24-hour format HH:MM
 const normalizeTo24Hour = (timeStr) => {
@@ -183,16 +200,55 @@ const withTimeout = (promise, ms = 15000) => {
 const copilot = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const { text, model } = req.body;
+    const { text, file, model } = req.body;
 
-    if (!text) {
-      return res.status(400).json({ message: 'Please provide text' });
+    if (!text && !file) {
+      return res.status(400).json({ message: 'Please provide text or attach an image/document' });
     }
 
     let aiResponse = "";
     let usedModel = "";
     let providerUsed = "";
     let lastError = null;
+
+    // Process file if present
+    let processedFile = null;
+    if (file) {
+      processedFile = await processUploadedFile(file);
+    }
+
+    // Build message parts for Gemini
+    const geminiMessageParts = [];
+    if (processedFile?.geminiPart) {
+      geminiMessageParts.push(processedFile.geminiPart);
+    }
+    if (text) {
+      geminiMessageParts.push({ text: text });
+    } else if (file) {
+      geminiMessageParts.push({ text: "Please analyze this attached document/image and extract any relevant medicines, health vitals, or schedule details according to your functions." });
+    }
+    const geminiInput = file ? geminiMessageParts : text;
+
+    // Build user content for OpenRouter
+    let openrouterUserContent;
+    if (processedFile?.isImage) {
+      openrouterUserContent = [
+        {
+          type: "text",
+          text: text || "Please analyze this image and extract any relevant medicines, health vitals, or schedule details according to your functions.",
+        },
+        {
+          type: "image_url",
+          image_url: {
+            url: `data:${processedFile.mimeType};base64,${file.base64}`,
+          },
+        },
+      ];
+    } else if (processedFile?.extractedText) {
+      openrouterUserContent = `${text ? text + "\n\n" : ""}[Attached Document Content]:\n${processedFile.extractedText}`;
+    } else {
+      openrouterUserContent = text || "Please analyze the uploaded document and extract any relevant medicines, health vitals, or schedule details.";
+    }
 
     // ==========================================================
     // STAGE 1: Try Native Google Gemini Models First (with Tools)
@@ -211,7 +267,7 @@ const copilot = async (req, res) => {
           }
         });
 
-        const geminiRes = await withTimeout(chat.sendMessage({ message: text }), 15000);
+        const geminiRes = await withTimeout(chat.sendMessage({ message: geminiInput }), 15000);
 
         if (geminiRes?.functionCalls?.length > 0) {
           const call = geminiRes.functionCalls[0];
@@ -257,7 +313,7 @@ const copilot = async (req, res) => {
               model: om,
               messages: [
                 { role: "system", content: copilotPrompt },
-                { role: "user", content: text }
+                { role: "user", content: openrouterUserContent }
               ],
               tools: openrouterTools
             }),
@@ -273,7 +329,7 @@ const copilot = async (req, res) => {
                 model: om,
                 messages: [
                   { role: "system", content: copilotPrompt },
-                  { role: "user", content: text },
+                  { role: "user", content: openrouterUserContent },
                   msg,
                   {
                     role: "tool",
@@ -347,7 +403,7 @@ const copilot = async (req, res) => {
         }
         copilotDoc.messages.push({
           role: "user",
-          text,
+          text: text || (file ? "[Uploaded Image / Document]" : ""),
           timeStamp: new Date(),
         });
         copilotDoc.messages.push({

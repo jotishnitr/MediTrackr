@@ -36,6 +36,7 @@ require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
 
 const app = express();
+
 connectDB();
 
 const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL].filter(
@@ -50,7 +51,7 @@ const corsOption = {
 app.use(express.json({ limit: "10mb" }));
 
 app.use(cors(corsOption));
-app.use(express.json());
+
 app.use(cookieParser());
 app.use("/", fetchFDA);
 app.use("/", addMedicine);
