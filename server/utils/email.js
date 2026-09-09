@@ -29,7 +29,7 @@ const sendWelcomeEmail = async (name, email) => {
     );
   }
 
-  const appUrl = process.env.CLIENT_URL || "https://meditrackr.onrender.com";
+  const appUrl = "https://jotishnitr.github.io/MediTrackr/#/dashboard";
   const supportEmail = "jotish.dev.noreply@gmail.com";
   const subject = `Welcome to MediTrackr, ${name}! 🏥 Your Smart Health Companion`;
 
