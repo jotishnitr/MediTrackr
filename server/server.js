@@ -1,5 +1,10 @@
 // server file connection all routes
 require("dotenv").config();
+const dns = require("node:dns");
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
 const express = require("express");
 const cors = require("cors");
 const fetchFDA = require("./routes/fetchFDA");

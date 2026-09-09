@@ -16,7 +16,7 @@ const subscribe = async (req, res) => {
       subscriptionData,
       {
         upsert: true,
-        new: true,
+        returnDocument: "after",
       },
     );
 

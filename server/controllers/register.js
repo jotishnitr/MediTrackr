@@ -3,11 +3,13 @@ const Settings = require("../models/Settings.js");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 
-// Create transporter using SMTP with explicit host and SSL port 465
+// Create transporter using SMTP with explicit host, SSL port 465, and IPv4
 const transporter = nodemailer.createTransport({
+  service: "gmail",
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
+  family: 4, // Force IPv4 to prevent ENETUNREACH on Render/cloud hosting
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
