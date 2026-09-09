@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import FeedbackForm from "./feedbackform";
+import { downloadReportAsPDF } from "./utils/pdfGenerator";
 import "./aiAssistant.css";
 
 export default function AiAssistance({ profileDetails }) {
@@ -449,22 +450,13 @@ export default function AiAssistance({ profileDetails }) {
 
   const currentChips = activeMode === "advisor" ? advisorChips : copilotChips;
 
-  // Helper to download report as formatted markdown / text file
+  // Helper to download report as a professional PDF document
   const handleDownloadReport = (reportText) => {
     try {
-      const now = new Date().toISOString().split("T")[0];
-      const fileName = `MediTrackr_Health_Report_${now}.md`;
-      const blob = new Blob([reportText], { type: "text/markdown;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      downloadReportAsPDF(reportText, profileDetails?.name || "Patient");
     } catch (err) {
-      console.error("Report download failed:", err);
+      console.error("PDF Report download failed:", err);
+      alert("Failed to generate PDF. Please try again.");
     }
   };
 
@@ -623,10 +615,10 @@ export default function AiAssistance({ profileDetails }) {
             <button
               className="download-report-btn"
               onClick={() => handleDownloadReport(msg.text)}
-              title="Download this report as a Markdown/Text document"
+              title="Download this report as a PDF document"
             >
-              <span className="material-symbols-outlined">download</span>
-              <span>Download Health Report</span>
+              <span className="material-symbols-outlined">picture_as_pdf</span>
+              <span>Download PDF Report</span>
             </button>
             <button
               className="copy-report-btn"

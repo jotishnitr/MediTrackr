@@ -24,6 +24,7 @@
     "firebase": "^12.16.0",
     "framer-motion": "^12.41.0",
     "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.2.1",
     "mongodb": "4.1",
     "mongoose": "^9.7.4",
     "nodemon": "^3.1.14",
