@@ -211,6 +211,8 @@ export default function SearchMedicine({
             description: cleanUsage(data.usage),
 
             warning: cleanWarning(data.warning),
+
+            source: data.source || "fda",
           },
         ]);
         setSearching(false);
@@ -436,15 +438,39 @@ export default function SearchMedicine({
           medicines.map((med, index) => (
             <div key={index} className="medicine-info-card">
               <div className="medicine-card-header">
-                <div className={`medicine-icon ${med.color}`}>
+                <div className={`medicine-icon ${med.color || ""}`}>
                   <img
-                    className="fda-icon"
-                    alt="FDA Verified"
-                    src="fda.png"
+                    className={
+                      med.source === "dailymed"
+                        ? "dailymed-icon"
+                        : med.source === "drugbank"
+                        ? "drugbank-icon"
+                        : "fda-icon"
+                    }
+                    alt={
+                      med.source === "dailymed"
+                        ? "DailyMed Verified"
+                        : med.source === "drugbank"
+                        ? "DrugBank Verified"
+                        : "FDA Verified"
+                    }
+                    src={
+                      med.source === "dailymed"
+                        ? "dailymed.svg"
+                        : med.source === "drugbank"
+                        ? "drugbank.svg"
+                        : "fda.png"
+                    }
                   ></img>
                 </div>
 
-                <span className="label-badge">Verified</span>
+                <span className="label-badge">
+                  {med.source === "dailymed"
+                    ? "DailyMed Verified"
+                    : med.source === "drugbank"
+                    ? "DrugBank Verified"
+                    : "Verified"}
+                </span>
               </div>
 
               <h2 className="medicine-title">{med.name}</h2>
