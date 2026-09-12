@@ -13,7 +13,6 @@ function cleanReportText(rawText) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
-    // Skip conversational greetings / intro chatter
     if (
       i < 6 &&
       (line.toLowerCase().includes("i've retrieved") ||
@@ -27,7 +26,6 @@ function cleanReportText(rawText) {
       continue;
     }
 
-    // Skip conversational outro chatter
     if (
       i > lines.length - 6 &&
       (line.toLowerCase().includes("would you like me to") ||
@@ -52,13 +50,9 @@ function parseInlineMarkdown(text) {
   if (!text) return "";
 
   let parsed = text
-    // Replace markdown bold **text**
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    // Replace markdown italic *text*
     .replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, "<em>$1</em>")
-    // Replace inline code `code`
     .replace(/`(.*?)`/g, "<code>$1</code>")
-    // Format status tags into styled badges
     .replace(/\bActive\b/g, '<span class="pill pill-success">Active</span>')
     .replace(/\b(Inactive|\*Inactive\*)\b/gi, '<span class="pill pill-warning">Inactive</span>')
     .replace(/\b(Taken|Completed)\b/gi, '<span class="pill pill-success">$1</span>')
@@ -77,7 +71,6 @@ function markdownToReportHtml(markdown, userName, reportDate) {
 
   let html = `
     <div class="meditrackr-report-root">
-      <!-- Report Header Banner -->
       <div class="report-header">
         <div class="header-left">
           <div class="brand-row">
@@ -103,6 +96,9 @@ function markdownToReportHtml(markdown, userName, reportDate) {
   let tableRows = [];
   let inList = false;
   let listType = "ul";
+  let blockOpen = false;
+  // blockOpen — tracks whether a .report-block wrapper is currently open,
+  // so we can close it cleanly whenever a new top-level section starts
 
   const flushTable = () => {
     if (!inTable) return;
@@ -116,13 +112,13 @@ function markdownToReportHtml(markdown, userName, reportDate) {
           </thead>
           <tbody>
             ${tableRows
-              .map(
-                (row, rIdx) => `
+        .map(
+          (row, rIdx) => `
               <tr class="${rIdx % 2 === 0 ? "row-even" : "row-odd"}">
                 ${row.map((cell) => `<td>${parseInlineMarkdown(cell)}</td>`).join("")}
               </tr>`
-              )
-              .join("")}
+        )
+        .join("")}
           </tbody>
         </table>
       </div>
@@ -142,14 +138,12 @@ function markdownToReportHtml(markdown, userName, reportDate) {
     const rawLine = lines[i];
     const line = rawLine.trim();
 
-    // Blank line
     if (!line) {
       flushTable();
       flushList();
       continue;
     }
 
-    // Markdown horizontal rule
     if (line === "---" || line === "***" || line === "___") {
       flushTable();
       flushList();
@@ -157,10 +151,8 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
-    // Table Row Detection
     if (line.startsWith("|") && line.endsWith("|")) {
       flushList();
-      // Check if this is the separator row: |---|---|
       if (/^\|(\s*[-:]+[-|\s:]*)\|$/.test(line)) {
         continue;
       }
@@ -182,19 +174,25 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       flushTable();
     }
 
-    // Main Header (# or ##)
+    // Main Header (# or ##) — opens a new report-block, closes previous one
     if (line.startsWith("# ") || line.startsWith("## ")) {
       flushList();
+      if (blockOpen) html += `</div>`;
+      // close previous block BEFORE opening new one — this is the fix
+      // that lets us later render each section as its own canvas piece
+
       let title = line.replace(/^#+\s*/, "").replace(/[📋📊💡⚠️🩺💊👤]/g, "").trim();
       if (title.toLowerCase().includes("health & medication summary report")) {
         continue;
       }
       html += `
-        <div class="section-header">
-          <div class="section-icon-badge">❖</div>
-          <h2 class="section-title">${parseInlineMarkdown(title)}</h2>
-        </div>
+        <div class="report-block">
+          <div class="section-header">
+            <div class="section-icon-badge">❖</div>
+            <h2 class="section-title">${parseInlineMarkdown(title)}</h2>
+          </div>
       `;
+      blockOpen = true;
       continue;
     }
 
@@ -210,7 +208,19 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
-    // Alert Callouts / Quotes (> Note on..., > Recommendation..., > Disclaimer...)
+    // Sub-sub Header (####) — FIX: was previously unhandled, fell through
+    // to the paragraph case and printed raw "#### text" on the PDF
+    if (line.startsWith("#### ")) {
+      flushList();
+      const title = line.replace(/^####\s*/, "").replace(/[📋📊💡⚠️🩺💊👤]/g, "").trim();
+      html += `
+        <div class="quad-header">
+          <h4 class="quad-title">${parseInlineMarkdown(title)}</h4>
+        </div>
+      `;
+      continue;
+    }
+
     if (line.startsWith(">")) {
       flushList();
       const content = line.replace(/^>\s*/, "").trim();
@@ -221,10 +231,10 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       const cardClass = isDisclaimer
         ? "callout-disclaimer"
         : isWarning
-        ? "callout-warning"
-        : isRecommendation
-        ? "callout-recommendation"
-        : "callout-info";
+          ? "callout-warning"
+          : isRecommendation
+            ? "callout-recommendation"
+            : "callout-info";
 
       const icon = isDisclaimer ? "ℹ️" : isWarning ? "⚠️" : isRecommendation ? "💡" : "📌";
 
@@ -237,7 +247,6 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
-    // Numbered lists (1. , 2. )
     const numberedMatch = line.match(/^(\d+)\.\s+(.*)$/);
     if (numberedMatch) {
       if (!inList || listType !== "ol") {
@@ -255,7 +264,6 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
-    // Bullet points (- or * or •)
     if (line.startsWith("- ") || line.startsWith("* ") || line.startsWith("• ")) {
       const content = line.replace(/^[-*•]\s*/, "").trim();
       if (!inList || listType !== "ul") {
@@ -273,17 +281,17 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
-    // Standard Paragraph
     flushList();
     html += `<p class="clinical-paragraph">${parseInlineMarkdown(line)}</p>`;
   }
 
   flushTable();
   flushList();
+  if (blockOpen) html += `</div>`;
+  // close the last open report-block before appending the footer
 
   html += `
       </div>
-      <!-- Report Footer -->
       <div class="report-footer">
         <div class="footer-left">
           <span>MediTrackr Personal Health Operating System • Confidential Medical Summary</span>
@@ -314,7 +322,6 @@ function getReportStyles() {
       font-size: 11.5px;
     }
 
-    /* Top Executive Header */
     .report-header {
       background: #0b1326 !important;
       border-radius: 10px;
@@ -327,17 +334,9 @@ function getReportStyles() {
       border: 1px solid #1e293b;
     }
 
-    .header-left {
-      display: flex;
-      flex-direction: column;
-    }
+    .header-left { display: flex; flex-direction: column; }
 
-    .brand-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
+    .brand-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 
     .brand-badge {
       background: #10b981 !important;
@@ -365,11 +364,7 @@ function getReportStyles() {
       letter-spacing: -0.2px;
     }
 
-    .report-subtitle {
-      font-size: 10.5px;
-      color: #cbd5e1 !important;
-      margin: 0;
-    }
+    .report-subtitle { font-size: 10.5px; color: #cbd5e1 !important; margin: 0; }
 
     .meta-box {
       background: rgba(255, 255, 255, 0.1) !important;
@@ -382,22 +377,9 @@ function getReportStyles() {
       min-width: 200px;
     }
 
-    .meta-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 10px;
-    }
-
-    .meta-label {
-      color: #94a3b8 !important;
-      font-weight: 500;
-    }
-
-    .meta-val {
-      color: #ffffff !important;
-      font-weight: 700;
-    }
+    .meta-item { display: flex; justify-content: space-between; align-items: center; font-size: 10px; }
+    .meta-label { color: #94a3b8 !important; font-weight: 500; }
+    .meta-val { color: #ffffff !important; font-weight: 700; }
 
     .confidential-pill {
       background: #ef4444 !important;
@@ -409,7 +391,12 @@ function getReportStyles() {
       letter-spacing: 0.5px;
     }
 
-    /* Section Headings */
+    /* report-block — wraps each top-level section so it can be rendered
+       and paginated as one indivisible unit */
+    .report-block {
+      break-inside: avoid;
+    }
+
     .section-header {
       display: flex;
       align-items: center;
@@ -434,19 +421,9 @@ function getReportStyles() {
       border: 1px solid #a7f3d0;
     }
 
-    .section-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #0f172a !important;
-      margin: 0;
-      letter-spacing: -0.2px;
-    }
+    .section-title { font-size: 14px; font-weight: 700; color: #0f172a !important; margin: 0; letter-spacing: -0.2px; }
 
-    .sub-section-header {
-      margin-top: 14px;
-      margin-bottom: 8px;
-    }
-
+    .sub-section-header { margin-top: 14px; margin-bottom: 8px; }
     .sub-section-title {
       font-size: 12px;
       font-weight: 700;
@@ -456,20 +433,19 @@ function getReportStyles() {
       letter-spacing: 0.5px;
     }
 
-    /* Clinical Tables */
-    .table-container {
-      margin: 12px 0 16px 0;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid #cbd5e1;
+    /* quad-header — new style for #### headers, sits between sub-section
+       and plain paragraph in visual weight */
+    .quad-header { margin-top: 10px; margin-bottom: 6px; }
+    .quad-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #475569 !important;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
 
-    .clinical-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 10.5px;
-    }
+    .table-container { margin: 12px 0 16px 0; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
+    .clinical-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 10.5px; }
 
     .clinical-table th {
       background: #0f172a !important;
@@ -482,222 +458,52 @@ function getReportStyles() {
       border-bottom: 1px solid #1e293b;
     }
 
-    .clinical-table td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #e2e8f0;
-      color: #1e293b !important;
-    }
+    .clinical-table td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b !important; }
+    .clinical-table tr.row-even { background: #ffffff !important; }
+    .clinical-table tr.row-odd { background: #f8fafc !important; }
+    .clinical-table tr:last-child td { border-bottom: none; }
 
-    .clinical-table tr.row-even {
-      background: #ffffff !important;
-    }
+    .pill { display: inline-block; padding: 2px 7px; border-radius: 12px; font-size: 8.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; }
+    .pill-success { background: #dcfce7 !important; color: #15803d !important; border: 1px solid #bbf7d0; }
+    .pill-warning { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a; }
+    .pill-danger { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fecaca; }
+    .pill-info { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd; }
 
-    .clinical-table tr.row-odd {
-      background: #f8fafc !important;
-    }
+    .callout-card { display: flex; gap: 10px; padding: 10px 14px; border-radius: 8px; margin: 10px 0; font-size: 10.5px; align-items: flex-start; }
+    .callout-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+    .callout-content { color: #1e293b !important; line-height: 1.45; }
 
-    .clinical-table tr:last-child td {
-      border-bottom: none;
-    }
+    .callout-warning { background: #fffbeb !important; border-left: 4px solid #f59e0b; border-top: 1px solid #fef3c7; border-right: 1px solid #fef3c7; border-bottom: 1px solid #fef3c7; }
+    .callout-warning .callout-content { color: #92400e !important; }
 
-    /* Status Badges / Pills */
-    .pill {
-      display: inline-block;
-      padding: 2px 7px;
-      border-radius: 12px;
-      font-size: 8.5px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-    }
+    .callout-recommendation { background: #f0fdf4 !important; border-left: 4px solid #10b981; border-top: 1px solid #dcfce7; border-right: 1px solid #dcfce7; border-bottom: 1px solid #dcfce7; }
+    .callout-recommendation .callout-content { color: #166534 !important; }
 
-    .pill-success {
-      background: #dcfce7 !important;
-      color: #15803d !important;
-      border: 1px solid #bbf7d0;
-    }
+    .callout-info { background: #f0f9ff !important; border-left: 4px solid #0284c7; border-top: 1px solid #e0f2fe; border-right: 1px solid #e0f2fe; border-bottom: 1px solid #e0f2fe; }
 
-    .pill-warning {
-      background: #fef3c7 !important;
-      color: #b45309 !important;
-      border: 1px solid #fde68a;
-    }
+    .callout-disclaimer { background: #fef2f2 !important; border: 1px solid #fee2e2; border-left: 4px solid #ef4444; margin-top: 20px; }
+    .callout-disclaimer .callout-content { color: #991b1b !important; font-size: 9.5px; font-style: italic; }
 
-    .pill-danger {
-      background: #fee2e2 !important;
-      color: #b91c1c !important;
-      border: 1px solid #fecaca;
-    }
+    .clinical-bullet-list { list-style: none; padding: 0; margin: 8px 0; }
+    .bullet-list-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 11px; color: #1e293b !important; }
+    .bullet-dot { width: 5px; height: 5px; background: #10b981 !important; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+    .bullet-text { flex: 1; color: #1e293b !important; }
 
-    .pill-info {
-      background: #e0f2fe !important;
-      color: #0369a1 !important;
-      border: 1px solid #bae6fd;
-    }
+    .clinical-ordered-list { list-style: none; padding: 0; margin: 8px 0; }
+    .ordered-list-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; background: #f8fafc !important; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 6px; font-size: 11px; }
+    .step-num { background: #0f172a !important; color: #ffffff !important; font-weight: 700; font-size: 9.5px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step-text { flex: 1; color: #0f172a !important; }
 
-    /* Callout & Alert Cards */
-    .callout-card {
-      display: flex;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      margin: 10px 0;
-      font-size: 10.5px;
-      align-items: flex-start;
-    }
+    .clinical-paragraph { font-size: 11px; color: #334155 !important; margin: 6px 0; }
+    .section-divider { height: 1px; background: #e2e8f0; margin: 16px 0; }
 
-    .callout-icon {
-      font-size: 13px;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .callout-content {
-      color: #1e293b !important;
-      line-height: 1.45;
-    }
-
-    .callout-warning {
-      background: #fffbeb !important;
-      border-left: 4px solid #f59e0b;
-      border-top: 1px solid #fef3c7;
-      border-right: 1px solid #fef3c7;
-      border-bottom: 1px solid #fef3c7;
-    }
-
-    .callout-warning .callout-content {
-      color: #92400e !important;
-    }
-
-    .callout-recommendation {
-      background: #f0fdf4 !important;
-      border-left: 4px solid #10b981;
-      border-top: 1px solid #dcfce7;
-      border-right: 1px solid #dcfce7;
-      border-bottom: 1px solid #dcfce7;
-    }
-
-    .callout-recommendation .callout-content {
-      color: #166534 !important;
-    }
-
-    .callout-info {
-      background: #f0f9ff !important;
-      border-left: 4px solid #0284c7;
-      border-top: 1px solid #e0f2fe;
-      border-right: 1px solid #e0f2fe;
-      border-bottom: 1px solid #e0f2fe;
-    }
-
-    .callout-disclaimer {
-      background: #fef2f2 !important;
-      border: 1px solid #fee2e2;
-      border-left: 4px solid #ef4444;
-      margin-top: 20px;
-    }
-
-    .callout-disclaimer .callout-content {
-      color: #991b1b !important;
-      font-size: 9.5px;
-      font-style: italic;
-    }
-
-    /* Lists */
-    .clinical-bullet-list {
-      list-style: none;
-      padding: 0;
-      margin: 8px 0;
-    }
-
-    .bullet-list-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 6px;
-      font-size: 11px;
-      color: #1e293b !important;
-    }
-
-    .bullet-dot {
-      width: 5px;
-      height: 5px;
-      background: #10b981 !important;
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-top: 6px;
-    }
-
-    .bullet-text {
-      flex: 1;
-      color: #1e293b !important;
-    }
-
-    .clinical-ordered-list {
-      list-style: none;
-      padding: 0;
-      margin: 8px 0;
-    }
-
-    .ordered-list-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 9px 12px;
-      background: #f8fafc !important;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      margin-bottom: 6px;
-      font-size: 11px;
-    }
-
-    .step-num {
-      background: #0f172a !important;
-      color: #ffffff !important;
-      font-weight: 700;
-      font-size: 9.5px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .step-text {
-      flex: 1;
-      color: #0f172a !important;
-    }
-
-    .clinical-paragraph {
-      font-size: 11px;
-      color: #334155 !important;
-      margin: 6px 0;
-    }
-
-    .section-divider {
-      height: 1px;
-      background: #e2e8f0;
-      margin: 16px 0;
-    }
-
-    /* Report Footer */
-    .report-footer {
-      margin-top: 24px;
-      padding-top: 10px;
-      border-top: 1px solid #cbd5e1;
-      display: flex;
-      justify-content: space-between;
-      color: #64748b !important;
-      font-size: 9px;
-    }
+    .report-footer { margin-top: 24px; padding-top: 10px; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-between; color: #64748b !important; font-size: 9px; }
   `;
 }
 
 /**
  * Generates and downloads a clean, clinical-grade, beautifully styled PDF health report.
- * 
+ *
  * @param {string} reportText - The markdown / text report content.
  * @param {string} [userName] - Patient name.
  */
@@ -710,11 +516,9 @@ export const downloadReportAsPDF = async (reportText, userName = "Patient") => {
     year: "numeric",
   });
 
-  // 1. Build semantic HTML string
   const htmlContent = markdownToReportHtml(reportText, userName, reportDate);
   const styles = getReportStyles();
 
-  // 2. Create sandbox container in DOM
   const container = document.createElement("div");
   container.style.position = "absolute";
   container.style.top = "0px";
@@ -737,74 +541,72 @@ export const downloadReportAsPDF = async (reportText, userName = "Patient") => {
   document.body.appendChild(container);
 
   try {
-    // 3. Render container to canvas at 2x scale for crystal clear output
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-      windowWidth: 794,
-      scrollX: 0,
-      scrollY: 0,
-    });
-
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "pt",
-      format: "a4",
-    });
-
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
     const pdfWidth = 595.28;
     const pdfHeight = 841.89;
-    const totalImgHeight = (canvas.height * pdfWidth) / canvas.width;
+    const usableHeight = pdfHeight;
+
+    // grab header banner, every section block, and the footer as SEPARATE
+    // elements — this is the fix: each piece renders to its own canvas,
+    // so a page break can only happen BETWEEN pieces, never mid-section
+    const headerEl = container.querySelector(".report-header");
+    const blockEls = Array.from(container.querySelectorAll(".report-block"));
+    const footerEl = container.querySelector(".report-footer");
+
+    const piecesToRender = [headerEl, ...blockEls, footerEl].filter(Boolean);
+
+    let currentY = 0;
+    let pageStarted = false;
+
+    for (const piece of piecesToRender) {
+      const pieceCanvas = await html2canvas(piece, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const pieceHeightPt = (pieceCanvas.height * pdfWidth) / pieceCanvas.width;
+
+      if (pageStarted && currentY + pieceHeightPt > usableHeight) {
+        pdf.addPage();
+        currentY = 0;
+      }
+
+      if (pieceHeightPt > usableHeight) {
+        // rare: a single block (e.g. a huge table) taller than one page —
+        // slice just this oversized piece internally
+        const pageCanvasHeight = (pieceCanvas.width * usableHeight) / pdfWidth;
+        let rendered = 0;
+        while (rendered < pieceCanvas.height) {
+          if (currentY > 0 || rendered > 0) {
+            pdf.addPage();
+            currentY = 0;
+          }
+          const sliceH = Math.min(pageCanvasHeight, pieceCanvas.height - rendered);
+          const sliceCanvas = document.createElement("canvas");
+          sliceCanvas.width = pieceCanvas.width;
+          sliceCanvas.height = pageCanvasHeight;
+          const ctx = sliceCanvas.getContext("2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+          ctx.drawImage(pieceCanvas, 0, rendered, pieceCanvas.width, sliceH, 0, 0, pieceCanvas.width, sliceH);
+          pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, pdfWidth, pdfHeight);
+          rendered += pageCanvasHeight;
+        }
+        currentY = 0;
+        pageStarted = true;
+        continue;
+      }
+
+      const imgData = pieceCanvas.toDataURL("image/jpeg", 0.98);
+      pdf.addImage(imgData, "JPEG", 0, currentY, pdfWidth, pieceHeightPt);
+      currentY += pieceHeightPt;
+      pageStarted = true;
+    }
 
     const filename = `MediTrackr_Health_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
 
-    // 4. Multi-page slicing onto A4 pages
-    if (totalImgHeight <= pdfHeight) {
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, totalImgHeight);
-    } else {
-      const pageCanvasHeight = (canvas.width * pdfHeight) / pdfWidth;
-      let renderedHeight = 0;
-      let pageIndex = 0;
-
-      while (renderedHeight < canvas.height) {
-        if (pageIndex > 0) {
-          pdf.addPage();
-        }
-
-        const currentSliceHeight = Math.min(pageCanvasHeight, canvas.height - renderedHeight);
-
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = pageCanvasHeight;
-        const ctx = sliceCanvas.getContext("2d");
-
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-
-        ctx.drawImage(
-          canvas,
-          0,
-          renderedHeight,
-          canvas.width,
-          currentSliceHeight,
-          0,
-          0,
-          canvas.width,
-          currentSliceHeight
-        );
-
-        const sliceData = sliceCanvas.toDataURL("image/jpeg", 0.98);
-        pdf.addImage(sliceData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-
-        renderedHeight += pageCanvasHeight;
-        pageIndex++;
-      }
-    }
-
-    // 5. Add clean footer page numbers
     const totalPages = pdf.internal.getNumberOfPages();
     for (let p = 1; p <= totalPages; p++) {
       pdf.setPage(p);
