@@ -459,9 +459,9 @@ export default function AiAssistance({
   const currentChips = activeMode === "advisor" ? advisorChips : copilotChips;
 
   // Helper to download report as a professional PDF document
-  const handleDownloadReport = (reportText) => {
+  const handleDownloadReport = async (reportText) => {
     try {
-      downloadReportAsPDF(reportText, profileDetails?.name || "Patient");
+      await downloadReportAsPDF(reportText, profileDetails?.name || "Patient");
     } catch (err) {
       console.error("PDF Report download failed:", err);
       alert("Failed to generate PDF. Please try again.");
