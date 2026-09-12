@@ -1,26 +1,45 @@
+import React, { useState, useEffect } from "react";
+
 export default function ProfileModal({
-  profileDetails,
+  profileDetails = {},
   setProfileDetails,
   onClose,
   requireAuth,
   setCurrentPage,
   setIsAuthenticated,
 }) {
+  const safeProfile = profileDetails || {};
+
   // Check if we need to show the input form first (e.g. if fields like Age, Blood Type are unset)
   const [isEditing, setIsEditing] = useState(() => {
-    return !profileDetails.age || !profileDetails.bloodType;
+    return !safeProfile.age || !safeProfile.bloodType;
   });
 
   const [formData, setFormData] = useState({
-    name: profileDetails.name || "",
-    age: profileDetails.age || "",
-    bloodType: profileDetails.bloodType || "",
-    height: profileDetails.height || "",
-    weight: profileDetails.weight || "",
-    allergies: profileDetails.allergies || "",
-    emergencyContact: profileDetails.emergencyContact || "",
-    email: profileDetails.email || ""
+    name: safeProfile.name || "",
+    age: safeProfile.age || "",
+    bloodType: safeProfile.bloodType || "",
+    height: safeProfile.height || "",
+    weight: safeProfile.weight || "",
+    allergies: safeProfile.allergies || "",
+    emergencyContact: safeProfile.emergencyContact || "",
+    email: safeProfile.email || "",
   });
+
+  useEffect(() => {
+    if (profileDetails) {
+      setFormData({
+        name: profileDetails.name || "",
+        age: profileDetails.age || "",
+        bloodType: profileDetails.bloodType || "",
+        height: profileDetails.height || "",
+        weight: profileDetails.weight || "",
+        allergies: profileDetails.allergies || "",
+        emergencyContact: profileDetails.emergencyContact || "",
+        email: profileDetails.email || "",
+      });
+    }
+  }, [profileDetails]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -208,44 +227,44 @@ export default function ProfileModal({
             <div className="profile-details-view">
               <div className="profile-avatar-section">
                 <div className="profile-avatar">👤</div>
-                <h3>{profileDetails.name}</h3>
+                <h3>{safeProfile.name || "User"}</h3>
                 <span className="profile-tag">Patient Account</span>
                 <span style={{ fontSize: "14px", color: "rgba(218, 226, 253, 0.7)", marginTop: "4px", display: "block" }}>
-                  {profileDetails.email}
+                  {safeProfile.email || ""}
                 </span>
               </div>
 
               <div className="profile-details-grid">
                 <div className="profile-detail-card">
                   <span className="profile-detail-label">AGE</span>
-                  <span className="profile-detail-value">{profileDetails.age || "—"} yrs</span>
+                  <span className="profile-detail-value">{safeProfile.age || "—"} yrs</span>
                 </div>
 
                 <div className="profile-detail-card">
                   <span className="profile-detail-label">BLOOD TYPE</span>
-                  <span className="profile-detail-value highlight">{profileDetails.bloodType || "—"}</span>
+                  <span className="profile-detail-value highlight">{safeProfile.bloodType || "—"}</span>
                 </div>
 
                 <div className="profile-detail-card">
                   <span className="profile-detail-label">HEIGHT</span>
-                  <span className="profile-detail-value">{profileDetails.height || "—"} cm</span>
+                  <span className="profile-detail-value">{safeProfile.height || "—"} cm</span>
                 </div>
 
                 <div className="profile-detail-card">
                   <span className="profile-detail-label">WEIGHT</span>
-                  <span className="profile-detail-value">{profileDetails.weight || "—"} kg</span>
+                  <span className="profile-detail-value">{safeProfile.weight || "—"} kg</span>
                 </div>
               </div>
 
               <div className="profile-info-section">
                 <div className="profile-info-block">
                   <h4>Allergies & Conditions</h4>
-                  <p>{profileDetails.allergies || "No allergies or chronic conditions reported."}</p>
+                  <p>{safeProfile.allergies || "No allergies or chronic conditions reported."}</p>
                 </div>
 
                 <div className="profile-info-block">
                   <h4>Emergency Contact</h4>
-                  <p className="contact-text">🚨 {profileDetails.emergencyContact || "No emergency contact set."}</p>
+                  <p className="contact-text">🚨 {safeProfile.emergencyContact || "No emergency contact set."}</p>
                 </div>
               </div>
 
