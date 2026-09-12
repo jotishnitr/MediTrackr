@@ -97,8 +97,6 @@ function markdownToReportHtml(markdown, userName, reportDate) {
   let inList = false;
   let listType = "ul";
   let blockOpen = false;
-  // blockOpen — tracks whether a .report-block wrapper is currently open,
-  // so we can close it cleanly whenever a new top-level section starts
 
   const flushTable = () => {
     if (!inTable) return;
@@ -147,8 +145,10 @@ function markdownToReportHtml(markdown, userName, reportDate) {
     if (line === "---" || line === "***" || line === "___") {
       flushTable();
       flushList();
-      html += `<div class="section-divider"></div>`;
       continue;
+      // NOTE: divider lines now just skipped — report-block sections already
+      // provide visual separation, an extra horizontal rule between every
+      // section looked cluttered
     }
 
     if (line.startsWith("|") && line.endsWith("|")) {
@@ -174,17 +174,22 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       flushTable();
     }
 
-    // Main Header (# or ##) — opens a new report-block, closes previous one
-    if (line.startsWith("# ") || line.startsWith("## ")) {
+    // Top-level report title (# ) — already shown in the header banner, skip it
+    if (line.startsWith("# ")) {
+      continue;
+    }
+
+    // Section header (### ) — THIS is your actual top-level section marker.
+    // Opens a new report-block, closing whichever one was open before.
+    if (line.startsWith("### ")) {
       flushList();
       if (blockOpen) html += `</div>`;
-      // close previous block BEFORE opening new one — this is the fix
-      // that lets us later render each section as its own canvas piece
 
-      let title = line.replace(/^#+\s*/, "").replace(/[📋📊💡⚠️🩺💊👤]/g, "").trim();
-      if (title.toLowerCase().includes("health & medication summary report")) {
-        continue;
-      }
+      const title = line
+        .replace(/^###\s*/, "")
+        .replace(/[📋📊💡⚠️🩺💊👤🔍]/g, "")
+        .trim();
+
       html += `
         <div class="report-block">
           <div class="section-header">
@@ -196,23 +201,13 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
-    // Sub Header (###)
-    if (line.startsWith("### ")) {
-      flushList();
-      const title = line.replace(/^###\s*/, "").replace(/[📋📊💡⚠️🩺💊👤]/g, "").trim();
-      html += `
-        <div class="sub-section-header">
-          <h3 class="sub-section-title">${parseInlineMarkdown(title)}</h3>
-        </div>
-      `;
-      continue;
-    }
-
-    // Sub-sub Header (####) — FIX: was previously unhandled, fell through
-    // to the paragraph case and printed raw "#### text" on the PDF
+    // Sub-sub header (#### ) — e.g. "Regimen Adherence Notes:"
     if (line.startsWith("#### ")) {
       flushList();
-      const title = line.replace(/^####\s*/, "").replace(/[📋📊💡⚠️🩺💊👤]/g, "").trim();
+      const title = line
+        .replace(/^####\s*/, "")
+        .replace(/[📋📊💡⚠️🩺💊👤🔍]/g, "")
+        .trim();
       html += `
         <div class="quad-header">
           <h4 class="quad-title">${parseInlineMarkdown(title)}</h4>
@@ -221,11 +216,15 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
+    // Blockquote / callout (> text)
     if (line.startsWith(">")) {
       flushList();
       const content = line.replace(/^>\s*/, "").trim();
       const isDisclaimer = content.toLowerCase().includes("disclaimer");
-      const isWarning = content.toLowerCase().includes("alert") || content.toLowerCase().includes("inactive") || content.toLowerCase().includes("warning");
+      const isWarning =
+        content.toLowerCase().includes("alert") ||
+        content.toLowerCase().includes("inactive") ||
+        content.toLowerCase().includes("warning");
       const isRecommendation = content.toLowerCase().includes("recommendation");
 
       const cardClass = isDisclaimer
@@ -247,6 +246,7 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
+    // Numbered list (1. , 2. )
     const numberedMatch = line.match(/^(\d+)\.\s+(.*)$/);
     if (numberedMatch) {
       if (!inList || listType !== "ol") {
@@ -264,6 +264,7 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
+    // Bullet list (* , - , • )
     if (line.startsWith("- ") || line.startsWith("* ") || line.startsWith("• ")) {
       const content = line.replace(/^[-*•]\s*/, "").trim();
       if (!inList || listType !== "ul") {
@@ -281,6 +282,20 @@ function markdownToReportHtml(markdown, userName, reportDate) {
       continue;
     }
 
+    // Standalone italic line (e.g. the disclaimer paragraph, wrapped in *…*)
+    if (line.startsWith("*") && line.endsWith("*") && !line.startsWith("**")) {
+      flushList();
+      const content = line.replace(/^\*/, "").replace(/\*$/, "").trim();
+      html += `
+        <div class="callout-card callout-disclaimer">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-content">${content}</div>
+        </div>
+      `;
+      continue;
+    }
+
+    // Plain paragraph fallback
     flushList();
     html += `<p class="clinical-paragraph">${parseInlineMarkdown(line)}</p>`;
   }
@@ -288,7 +303,6 @@ function markdownToReportHtml(markdown, userName, reportDate) {
   flushTable();
   flushList();
   if (blockOpen) html += `</div>`;
-  // close the last open report-block before appending the footer
 
   html += `
       </div>
@@ -335,7 +349,6 @@ function getReportStyles() {
     }
 
     .header-left { display: flex; flex-direction: column; }
-
     .brand-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 
     .brand-badge {
@@ -391,17 +404,16 @@ function getReportStyles() {
       letter-spacing: 0.5px;
     }
 
-    /* report-block — wraps each top-level section so it can be rendered
-       and paginated as one indivisible unit */
     .report-block {
       break-inside: avoid;
+      margin-bottom: 4px;
     }
 
     .section-header {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 24px;
+      margin-top: 22px;
       margin-bottom: 12px;
       padding-bottom: 6px;
       border-bottom: 2px solid #e2e8f0;
@@ -423,18 +435,6 @@ function getReportStyles() {
 
     .section-title { font-size: 14px; font-weight: 700; color: #0f172a !important; margin: 0; letter-spacing: -0.2px; }
 
-    .sub-section-header { margin-top: 14px; margin-bottom: 8px; }
-    .sub-section-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #1e293b !important;
-      margin: 0;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* quad-header — new style for #### headers, sits between sub-section
-       and plain paragraph in visual weight */
     .quad-header { margin-top: 10px; margin-bottom: 6px; }
     .quad-title {
       font-size: 10.5px;
@@ -481,7 +481,7 @@ function getReportStyles() {
 
     .callout-info { background: #f0f9ff !important; border-left: 4px solid #0284c7; border-top: 1px solid #e0f2fe; border-right: 1px solid #e0f2fe; border-bottom: 1px solid #e0f2fe; }
 
-    .callout-disclaimer { background: #fef2f2 !important; border: 1px solid #fee2e2; border-left: 4px solid #ef4444; margin-top: 20px; }
+    .callout-disclaimer { background: #fef2f2 !important; border: 1px solid #fee2e2; border-left: 4px solid #ef4444; margin-top: 16px; }
     .callout-disclaimer .callout-content { color: #991b1b !important; font-size: 9.5px; font-style: italic; }
 
     .clinical-bullet-list { list-style: none; padding: 0; margin: 8px 0; }
@@ -495,7 +495,6 @@ function getReportStyles() {
     .step-text { flex: 1; color: #0f172a !important; }
 
     .clinical-paragraph { font-size: 11px; color: #334155 !important; margin: 6px 0; }
-    .section-divider { height: 1px; background: #e2e8f0; margin: 16px 0; }
 
     .report-footer { margin-top: 24px; padding-top: 10px; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-between; color: #64748b !important; font-size: 9px; }
   `;
@@ -540,15 +539,16 @@ export const downloadReportAsPDF = async (reportText, userName = "Patient") => {
 
   document.body.appendChild(container);
 
+  // brief pause lets the browser finish layout/paint before html2canvas
+  // reads the element — avoids capturing an incomplete render
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
   try {
     const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
     const pdfWidth = 595.28;
     const pdfHeight = 841.89;
     const usableHeight = pdfHeight;
 
-    // grab header banner, every section block, and the footer as SEPARATE
-    // elements — this is the fix: each piece renders to its own canvas,
-    // so a page break can only happen BETWEEN pieces, never mid-section
     const headerEl = container.querySelector(".report-header");
     const blockEls = Array.from(container.querySelectorAll(".report-block"));
     const footerEl = container.querySelector(".report-footer");
@@ -574,8 +574,6 @@ export const downloadReportAsPDF = async (reportText, userName = "Patient") => {
       }
 
       if (pieceHeightPt > usableHeight) {
-        // rare: a single block (e.g. a huge table) taller than one page —
-        // slice just this oversized piece internally
         const pageCanvasHeight = (pieceCanvas.width * usableHeight) / pdfWidth;
         let rendered = 0;
         while (rendered < pieceCanvas.height) {
