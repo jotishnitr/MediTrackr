@@ -5,6 +5,9 @@ export default function Navbar({
   setShowProfileModal,
   isSidebarOpen,
   setIsSidebarOpen,
+  isAuthenticated,
+  setIsAuthenticated,
+  requireAuth,
 }) {
   return (
     <>
@@ -23,7 +26,10 @@ export default function Navbar({
         </div>
         <div
           className="mobile-profile-avatar"
-          onClick={() => setShowProfileModal(true)}
+          onClick={() => {
+            if (typeof requireAuth === "function" && !requireAuth()) return;
+            setShowProfileModal(true);
+          }}
         >
           <img
             src="person-logo.png"
@@ -207,6 +213,7 @@ export default function Navbar({
           <div
             className="profile-container"
             onClick={() => {
+              if (typeof requireAuth === "function" && !requireAuth()) return;
               setShowProfileModal(true);
               setIsSidebarOpen(false);
             }}
@@ -249,14 +256,12 @@ export default function Navbar({
                     credentials: "include",
                   },
                 );
-                if (response.ok) {
-                  setCurrentPage("Login");
-                } else {
-                  console.error("Logout request failed");
-                  setCurrentPage("Login");
-                }
               } catch (err) {
                 console.error("Logout failed:", err);
+              } finally {
+                if (typeof setIsAuthenticated === "function") {
+                  setIsAuthenticated(false);
+                }
                 setCurrentPage("Login");
               }
             }}

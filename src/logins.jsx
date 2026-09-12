@@ -7,6 +7,7 @@ export default function Login({
   onSignUpRedirect,
   onForgotPasswordRedirect,
   setCurrentPage,
+  setIsAuthenticated,
 }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -63,6 +64,9 @@ export default function Login({
         throw new Error(data.message || "Invalid credentials.");
       }
 
+      if (typeof setIsAuthenticated === "function") {
+        setIsAuthenticated(true);
+      }
       setSuccess("Welcome back! Redirecting...");
       setCurrentPage("Dashboard");
     } catch (err) {
@@ -251,6 +255,9 @@ export default function Login({
 
                 const data = await response.json();
                 if (data.success) {
+                  if (typeof setIsAuthenticated === "function") {
+                    setIsAuthenticated(true);
+                  }
                   setSuccess("Welcome back! Redirecting...");
                   setCurrentPage("Dashboard");
                 } else {

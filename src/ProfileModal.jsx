@@ -1,6 +1,11 @@
-import { useState } from "react";
-
-export default function ProfileModal({ profileDetails, setProfileDetails, onClose }) {
+export default function ProfileModal({
+  profileDetails,
+  setProfileDetails,
+  onClose,
+  requireAuth,
+  setCurrentPage,
+  setIsAuthenticated,
+}) {
   // Check if we need to show the input form first (e.g. if fields like Age, Blood Type are unset)
   const [isEditing, setIsEditing] = useState(() => {
     return !profileDetails.age || !profileDetails.bloodType;
@@ -27,6 +32,7 @@ export default function ProfileModal({ profileDetails, setProfileDetails, onClos
 
   const handleSave = (e) => {
     e.preventDefault();
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     if (!formData.name.trim()) {
       alert("Please enter at least a name.");
       return;

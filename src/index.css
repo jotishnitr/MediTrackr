@@ -1048,7 +1048,7 @@ body {
 }
 
 /* ===========================
-   DELETE BUTTON
+   DELETE & EDIT BUTTONS
 =========================== */
 
 .del-btn-container {
@@ -1070,6 +1070,40 @@ body {
 .del-btn:hover {
   opacity: 1;
   transform: scale(1.1);
+}
+
+.med-edit-btn {
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.med-edit-btn:hover {
+  background: rgba(78, 222, 163, 0.15);
+  border-color: rgba(78, 222, 163, 0.45);
+  color: #4edea3;
+  transform: scale(1.1);
+}
+
+.med-actions-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-top-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ===========================

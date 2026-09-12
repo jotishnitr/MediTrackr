@@ -13,6 +13,8 @@ export default function Reminders({
   setMedicines,
   setCurrentPage,
   setShowAddMed,
+  requireAuth,
+  setIsAuthenticated,
 }) {
   // Helper to format time to { time: "HH:MM", ampm: "AM/PM" }
   const formatTime = (timeStr) => {
@@ -58,18 +60,21 @@ export default function Reminders({
   const adherenceRate =
     totalDoses === 0 ? 0 : Math.round((totalTaken / totalDoses) * 100);
 
-  // Calculate stats dynamically from medicines prop
-  const takenCount = medicines.filter(
+  const safeMedicines = Array.isArray(medicines) ? medicines.filter(Boolean) : [];
+
+  // Calculate stats dynamically from safeMedicines prop
+  const takenCount = safeMedicines.filter(
     (m) => getMedicineStatus(m) === "TAKEN",
   ).length;
-  const pendingCount = medicines.filter(
+  const pendingCount = safeMedicines.filter(
     (m) => getMedicineStatus(m) === "PENDING",
   ).length;
-  const missedCount = medicines.filter(
+  const missedCount = safeMedicines.filter(
     (m) => getMedicineStatus(m) === "MISSED",
   ).length;
 
   async function handleStatusChange(id) {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/statusMedicine?id=${id}`,
       {
@@ -81,13 +86,18 @@ export default function Reminders({
       },
     );
     if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof setIsAuthenticated === "function") setIsAuthenticated(false);
+        setCurrentPage("Login");
+      }
       console.error("Failed to update status");
       return;
     }
 
     const updatedMedicine = await response.json();
+    if (!updatedMedicine || !updatedMedicine._id) return;
     setMedicines((prev) =>
-      prev.map((medicine) =>
+      (Array.isArray(prev) ? prev.filter(Boolean) : []).map((medicine) =>
         medicine._id === updatedMedicine._id ? updatedMedicine : medicine,
       ),
     );
@@ -95,6 +105,7 @@ export default function Reminders({
 
   // Notification System
   async function toggleNotification(id) {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/reminderMedicine?id=${id}`,
       {
@@ -105,9 +116,17 @@ export default function Reminders({
         credentials: "include",
       },
     );
+    if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof setIsAuthenticated === "function") setIsAuthenticated(false);
+        setCurrentPage("Login");
+      }
+      return;
+    }
     const updatedMedicine = await response.json();
+    if (!updatedMedicine || !updatedMedicine._id) return;
     setMedicines((prev) =>
-      prev.map((medicine) =>
+      (Array.isArray(prev) ? prev.filter(Boolean) : []).map((medicine) =>
         medicine._id === updatedMedicine._id ? updatedMedicine : medicine,
       ),
     );
@@ -116,16 +135,22 @@ export default function Reminders({
   const [soundStatus, setSoundStatus] = React.useState(false);
   React.useEffect(() => {
     async function getSettings() {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/getSettings`, { credentials: "include" });
-      const data = await response.json();
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/getSettings`, { credentials: "include" });
+        if (!response.ok) return;
+        const data = await response.json();
 
-      setNotificationStatus(data.browserAlerts);
-      setSoundStatus(data.notificationSound);
+        setNotificationStatus(data.browserAlerts);
+        setSoundStatus(data.notificationSound);
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     getSettings();
   }, []);
   async function toggleNotificationStatus() {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     const response = await fetch(`${import.meta.env.VITE_API_URL}/setBrowserAlerts`, {
       method: "PUT",
       headers: {
@@ -133,6 +158,13 @@ export default function Reminders({
       },
       credentials: "include",
     });
+    if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof setIsAuthenticated === "function") setIsAuthenticated(false);
+        setCurrentPage("Login");
+      }
+      return;
+    }
 
     const data = await response.json();
 
@@ -140,6 +172,7 @@ export default function Reminders({
   }
 
   async function toggleSoundStatus() {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     const response = await fetch(`${import.meta.env.VITE_API_URL}/setNotificationSound`, {
       method: "PUT",
       headers: {
@@ -147,6 +180,13 @@ export default function Reminders({
       },
       credentials: "include",
     });
+    if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof setIsAuthenticated === "function") setIsAuthenticated(false);
+        setCurrentPage("Login");
+      }
+      return;
+    }
 
     const data = await response.json();
 
@@ -175,6 +215,7 @@ export default function Reminders({
           <button
             className="add-med-btn"
             onClick={() => {
+              if (typeof requireAuth === "function" && !requireAuth()) return;
               setCurrentPage("Dashboard");
               setShowAddMed(true);
             }}
@@ -213,7 +254,7 @@ export default function Reminders({
               <div className="schedule-controls"></div>
             </div>
 
-            {medicines.length === 0 ? (
+            {safeMedicines.length === 0 ? (
               <div className="empty-schedule">
                 <p>
                   No medicines scheduled for today. Add medicines to get
@@ -224,7 +265,7 @@ export default function Reminders({
               <div className="timeline-wrapper">
                 <div className="timeline-line"></div>
                 <div className="timeline-list">
-                  {medicines.map((med) => {
+                  {safeMedicines.map((med) => {
                     const status = getMedicineStatus(med);
                     const timeInfo = formatTime(med.time);
 

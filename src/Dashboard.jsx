@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { getMedicineStatus } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
 import { requestFCMToken, listenForForegroundMessages } from "./firebase";
+import MedicineModal from "./MedicineModal";
 
 export default function Dashboard({
   setCurrentPage,
@@ -15,6 +16,9 @@ export default function Dashboard({
   selectedSymptoms,
   notes,
   profileDetails,
+  isAuthenticated,
+  setIsAuthenticated,
+  requireAuth,
 }) {
 
 
@@ -34,16 +38,16 @@ export default function Dashboard({
     listenForForegroundMessages();
   }, []);
 
-  const [medDetails, setMedDetails] = React.useState({
-    id: "",
-    name: "",
-    dosage: "",
-    unit: "mg",
-    type: "Oral Tablet",
-    time: "",
-    instructions: "",
-    status: false,
-  });
+  const [editingMedicine, setEditingMedicine] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sync with showAddMed prop if triggered externally
+  useEffect(() => {
+    if (showAddMed && !isModalOpen) {
+      setIsModalOpen(true);
+      setEditingMedicine(null);
+    }
+  }, [showAddMed]);
 
   const [weeklyData, setWeeklyData] = React.useState([]);
 
@@ -71,31 +75,34 @@ export default function Dashboard({
     }
     fetchWeeklyData();
   }, []);
-  const missedToday = medicines.filter(
+
+  const safeMedicines = Array.isArray(medicines) ? medicines.filter(Boolean) : [];
+
+  const missedToday = safeMedicines.filter(
     (medicine) => getMedicineStatus(medicine) === "MISSED",
   ).length;
 
   const missedAdherence =
-    medicines.length === 0
+    safeMedicines.length === 0
       ? 0
-      : Math.round((missedToday / medicines.length) * 100);
+      : Math.round((missedToday / safeMedicines.length) * 100);
 
-  const medicineTypes = new Set(medicines.map((med) => med.type)).size;
-  const takenToday = medicines.filter((med) => med.status).length;
+  const medicineTypes = new Set(safeMedicines.map((med) => med.type)).size;
+  const takenToday = safeMedicines.filter((med) => med.status).length;
 
   const dailyAdherence =
-    medicines.length === 0
+    safeMedicines.length === 0
       ? 0
-      : Math.round((takenToday / medicines.length) * 100);
+      : Math.round((takenToday / safeMedicines.length) * 100);
 
-  const pendingToday = medicines.filter(
+  const pendingToday = safeMedicines.filter(
     (med) => getMedicineStatus(med) === "PENDING",
   ).length;
 
   const pendingAdherence =
-    medicines.length === 0
+    safeMedicines.length === 0
       ? 0
-      : Math.round((pendingToday / medicines.length) * 100);
+      : Math.round((pendingToday / safeMedicines.length) * 100);
   let totalTaken = 0;
   let totalMissed = 0;
   if (weeklyData.length !== 0) {
@@ -111,54 +118,40 @@ export default function Dashboard({
   const weeklyMissedRate =
     totalDoses === 0 ? 0 : Math.round((totalMissed / totalDoses) * 100);
 
-  function addMedHandleChange() {
-    setShowAddMed((prevState) => !prevState);
-  }
-
-  function handleChange(event) {
-    setMedDetails((prevState) => {
-      return {
-        ...prevState,
-        [event.target.name]: event.target.value,
-      };
-    });
-  }
-  async function addMedicine() {
-    const medicine = {
-      name: medDetails.name,
-      dosage: medDetails.dosage,
-      unit: medDetails.unit,
-      type: medDetails.type,
-      time: medDetails.time,
-      instructions: medDetails.instructions,
-      status: false,
-    };
-    if (medicine.name === "" || medicine.time === "") {
-      alert("Please fill in medicine name and time");
+  function handleOpenAdd() {
+    if (typeof requireAuth === "function" && !requireAuth()) {
       return;
     }
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/addMedicine`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(medicine),
-      },
-    );
-    const data = await response.json();
-    setMedicines((prev) => [...prev, data.medicine]);
-    setMedDetails({
-      name: "",
-      dosage: "",
-      unit: "mg",
-      type: "Oral Tablet",
-      time: "",
-      instructions: "",
-    });
-    setShowAddMed((prevState) => !prevState);
+    setEditingMedicine(null);
+    setIsModalOpen(true);
+    if (setShowAddMed) setShowAddMed(true);
+  }
+
+  function handleOpenEdit(medicine) {
+    if (typeof requireAuth === "function" && !requireAuth()) {
+      return;
+    }
+    setEditingMedicine(medicine);
+    setIsModalOpen(true);
+    if (setShowAddMed) setShowAddMed(true);
+  }
+
+  function handleCloseModal() {
+    setIsModalOpen(false);
+    setEditingMedicine(null);
+    if (setShowAddMed) setShowAddMed(false);
+  }
+
+  function handleSaveMedicine(savedMed, mode) {
+    if (mode === "add") {
+      setMedicines((prev) => [...(Array.isArray(prev) ? prev.filter(Boolean) : []), savedMed]);
+    } else if (mode === "update") {
+      setMedicines((prev) =>
+        (Array.isArray(prev) ? prev.filter(Boolean) : []).map((m) =>
+          m._id === savedMed._id ? savedMed : m
+        )
+      );
+    }
   }
 
   function dateDisplay() {
@@ -188,6 +181,9 @@ export default function Dashboard({
   }
 
   async function deleteMedicine(id) {
+    if (typeof requireAuth === "function" && !requireAuth()) {
+      return;
+    }
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/deleteMedicine?id=${id}`,
       {
@@ -195,11 +191,22 @@ export default function Dashboard({
         credentials: "include",
       },
     );
+    if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof setIsAuthenticated === "function") setIsAuthenticated(false);
+        setCurrentPage("Login");
+      }
+      return;
+    }
     const data = await response.json();
-    setMedicines((prev) => prev.filter((medicine) => medicine._id !== data.id));
+    if (!data || !data.id) return;
+    setMedicines((prev) => (Array.isArray(prev) ? prev.filter((medicine) => medicine && medicine._id !== data.id) : []));
   }
 
   async function statusChange(id) {
+    if (typeof requireAuth === "function" && !requireAuth()) {
+      return;
+    }
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/statusMedicine?id=${id}`,
       {
@@ -209,14 +216,19 @@ export default function Dashboard({
     );
 
     if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof setIsAuthenticated === "function") setIsAuthenticated(false);
+        setCurrentPage("Login");
+      }
       console.error("Failed to update status");
       return;
     }
 
     const updatedMedicine = await response.json();
+    if (!updatedMedicine || !updatedMedicine._id) return;
 
     setMedicines((prev) =>
-      prev.map((medicine) =>
+      (Array.isArray(prev) ? prev.filter(Boolean) : []).map((medicine) =>
         medicine._id === updatedMedicine._id ? updatedMedicine : medicine,
       ),
     );
@@ -313,129 +325,12 @@ export default function Dashboard({
         </div>
         <div className="dashboard-header-right">
           <div className="addMed-container">
-            <button className="addMed-btn" onClick={addMedHandleChange}>
+            <button className="addMed-btn" onClick={handleOpenAdd}>
               + Add Medicine
             </button>
           </div>
         </div>
       </div>
-
-      {/* Add medicine Pop-up */}
-
-      {showAddMed && (
-        <div className="addMed-overlay">
-          <div className="addMed-modal">
-            <div className="addMed-header">
-              <h2>Add Medicine</h2>
-
-              <button className="close-btn" onClick={addMedHandleChange}>
-                ✕
-              </button>
-            </div>
-
-            <div className="addMed-body">
-              <div className="form-group">
-                <label>Medicine Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Metformin HCl"
-                  onChange={handleChange}
-                  name="name"
-                  value={medDetails.name}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Dosage</label>
-
-                <div className="dosage-row">
-                  <input
-                    type="number"
-                    placeholder="500"
-                    onChange={handleChange}
-                    name="dosage"
-                    value={medDetails.dosage}
-                  />
-
-                  <select
-                    onChange={handleChange}
-                    name="unit"
-                    value={medDetails.unit}
-                  >
-                    <option>mg</option>
-                    <option>ml</option>
-                    <option>g</option>
-                    <option>mcg</option>
-                    <option>tablet</option>
-                    <option>pill</option>
-                    <option>capsule</option>
-                    <option>drop</option>
-                    <option>puff</option>
-                    <option>spray</option>
-                    <option>patch</option>
-                    <option>spoon</option>
-                    <option>unit</option>
-                    <option>IU</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Type</label>
-
-                <select
-                  onChange={handleChange}
-                  name="type"
-                  value={medDetails.type}
-                >
-                  <option>Oral Tablet</option>
-                  <option>Capsule</option>
-                  <option>Syrup</option>
-                  <option>Injection</option>
-                  <option>Inhaler</option>
-                  <option>Drops</option>
-                  <option>Cream / Ointment</option>
-                  <option>Spray</option>
-                  <option>Liquid (Oral)</option>
-                  <option>Suspension</option>
-                  <option>Powder</option>
-                  <option>Patch</option>
-                  <option>Suppository</option>
-                  <option>Lotion</option>
-                  <option>Gel</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Time</label>
-                <input
-                  type="time"
-                  onChange={handleChange}
-                  name="time"
-                  value={medDetails.time}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Instructions</label>
-
-                <input
-                  type="text"
-                  placeholder="e.g. After food"
-                  onChange={handleChange}
-                  name="instructions"
-                  value={medDetails.instructions}
-                />
-              </div>
-              <div className="addMed-footer">
-                <button className="save-med-btn" onClick={addMedicine}>
-                  Save Medicine
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="dashboard-main">
         <div className="progress-cards">
@@ -525,7 +420,7 @@ export default function Dashboard({
               </div>
             </div>
 
-            {medicines.map((medicine) => (
+            {safeMedicines.map((medicine) => (
               <div className="medicine-container" key={medicine._id}>
                 <div className="capsule-icon">💊</div>
                 <div className="details-container">
@@ -570,12 +465,23 @@ export default function Dashboard({
                     ></input>
                   )}
                 </div>
-                <div className="del-btn-container">
-                  <img
-                    src="del-btn.png"
-                    className="del-btn"
-                    onClick={() => deleteMedicine(medicine._id)}
-                  ></img>
+                <div className="med-actions-container">
+                  <button
+                    className="med-edit-btn"
+                    title="Edit Medicine"
+                    onClick={() => handleOpenEdit(medicine)}
+                    aria-label="Edit Medicine"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>edit</span>
+                  </button>
+                  <div className="del-btn-container">
+                    <img
+                      src="del-btn.png"
+                      className="del-btn"
+                      onClick={() => deleteMedicine(medicine._id)}
+                      alt="Delete Medicine"
+                    ></img>
+                  </div>
                 </div>
               </div>
             ))}
@@ -796,6 +702,18 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      {isModalOpen && (
+        <MedicineModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          medicineData={editingMedicine}
+          onSave={handleSaveMedicine}
+          requireAuth={requireAuth}
+          setIsAuthenticated={setIsAuthenticated}
+          setCurrentPage={setCurrentPage}
+        />
+      )}
     </motion.section>
   );
 }

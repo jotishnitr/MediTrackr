@@ -4,7 +4,12 @@ import FeedbackForm from "./feedbackform";
 import { downloadReportAsPDF } from "./utils/pdfGenerator";
 import "./aiAssistant.css";
 
-export default function AiAssistance({ profileDetails }) {
+export default function AiAssistance({
+  profileDetails,
+  requireAuth,
+  setCurrentPage,
+  setIsAuthenticated,
+}) {
   // Mode toggle: "advisor" (Health Advisor - text Q&A only) or "copilot" (MediTrackr Copilot - functional actions)
   const [activeMode, setActiveMode] = useState("advisor");
 
@@ -147,6 +152,7 @@ export default function AiAssistance({ profileDetails }) {
   };
 
   const handleDeleteHistory = async () => {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     if (activeMode === "advisor") {
       if (!window.confirm("Are you sure you want to clear Health Advisor chat history?")) return;
 
@@ -212,6 +218,7 @@ export default function AiAssistance({ profileDetails }) {
 
   // Send message handler
   const sendMessage = async (textToSend = input) => {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     const trimmedText = textToSend.trim();
     if (!trimmedText && !selectedImage) return;
 
@@ -342,6 +349,7 @@ export default function AiAssistance({ profileDetails }) {
 
   // Confirm Action Handler (Option 2 flow: User clicks Confirm on Preview Card)
   const handleConfirmAction = async (msgIndex, action, actionData) => {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     setActionStates((prev) => ({
       ...prev,
       [msgIndex]: { loading: true },

@@ -1,8 +1,10 @@
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Settings = require("../models/Settings");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const { sendWelcomeEmail } = require("../utils/email");
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
 const googleLogin = async (req, res) => {
@@ -37,7 +39,7 @@ const googleLogin = async (req, res) => {
         // Find the user in MongoDB by email
         let user = await User.findOne({ email });
 
-        // If the user does not exist, automatically create a new user
+        // If the user does not exist, automatically create a new user (first-time registration)
         if (!user) {
             // Generate a random password since password is required in the schema
             const randomPassword = crypto.randomBytes(16).toString("hex");
@@ -48,6 +50,16 @@ const googleLogin = async (req, res) => {
                 email: email,
                 password: hashedPassword,
             });
+
+            // Create default settings for user
+            await Settings.create({
+                userId: user._id,
+                browserAlerts: true,
+                notificationSound: true,
+            }).catch(() => {});
+
+            // Send welcome email asynchronously without blocking registration
+            sendWelcomeEmail(user.name, user.email).catch(() => {});
         }
 
         // Generate the SAME JWT that the normal login generates

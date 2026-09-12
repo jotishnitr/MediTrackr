@@ -17,6 +17,8 @@ export default function HealthLog({
   setNotes,
   lastSaved,
   setLastSaved,
+  requireAuth,
+  setIsAuthenticated,
 }) {
   const [isSaving, setIsSaving] = useState(false);
 
@@ -42,6 +44,7 @@ export default function HealthLog({
   };
 
   const handleSave = () => {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
     setIsSaving(true);
 
     setTimeout(async () => {
@@ -67,6 +70,14 @@ export default function HealthLog({
           notes: notes,
         }),
       });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          if (typeof setIsAuthenticated === "function") setIsAuthenticated(false);
+          setCurrentPage("Login");
+        }
+        return;
+      }
 
       const data = await response.json();
 
@@ -96,6 +107,7 @@ export default function HealthLog({
           <button
             className="add-med-btn"
             onClick={() => {
+              if (typeof requireAuth === "function" && !requireAuth()) return;
               setCurrentPage("Dashboard");
               setShowAddMed(true);
             }}

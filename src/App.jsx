@@ -11,6 +11,7 @@ import HelpBot from "./HelpBot";
 import AiAssistance from "./AiAssistant";
 import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
+import MedicineModal from "./MedicineModal";
 
 import React from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
@@ -148,6 +149,20 @@ export default function App() {
     };
   }, []);
 
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+  // Helper to guard auth-required actions
+  const requireAuth = (callback) => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return false;
+    }
+    if (typeof callback === "function") {
+      callback();
+    }
+    return true;
+  };
+
   React.useEffect(() => {
     async function getCurrentUser() {
       try {
@@ -164,24 +179,22 @@ export default function App() {
           path.includes("reset-password");
 
         if (data.success) {
+          setIsAuthenticated(true);
           if (isAuthRoute || path === "/") {
             navigate("/dashboard");
           }
         } else {
-          if (!isAuthRoute) {
-            navigate("/login");
+          setIsAuthenticated(false);
+          // If on root, route to dashboard without redirecting unauthenticated users to login
+          if (path === "/") {
+            navigate("/dashboard");
           }
         }
       } catch (err) {
+        setIsAuthenticated(false);
         const path = location.pathname.toLowerCase();
-        const isAuthRoute =
-          path.includes("login") ||
-          path.includes("register") ||
-          path.includes("forgot-password") ||
-          path.includes("reset-password");
-
-        if (!isAuthRoute) {
-          navigate("/login");
+        if (path === "/") {
+          navigate("/dashboard");
         }
       }
     }
@@ -328,6 +341,9 @@ export default function App() {
           setShowProfileModal={setShowProfileModal}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          requireAuth={requireAuth}
         />
       )}
 
@@ -350,6 +366,9 @@ export default function App() {
                 selectedSymptoms={selectedSymptoms}
                 notes={notes}
                 profileDetails={profileDetails}
+                isAuthenticated={isAuthenticated}
+                setIsAuthenticated={setIsAuthenticated}
+                requireAuth={requireAuth}
               />
             }
           />
@@ -360,7 +379,10 @@ export default function App() {
                 setShowAddMed={setShowAddMed}
                 showAddMed={showAddMed}
                 medicines={medicines}
+                setMedicines={setMedicines}
                 setCurrentPage={setCurrentPage}
+                requireAuth={requireAuth}
+                setIsAuthenticated={setIsAuthenticated}
               />
             }
           />
@@ -373,6 +395,8 @@ export default function App() {
                 setMedicines={setMedicines}
                 setCurrentPage={setCurrentPage}
                 setShowAddMed={setShowAddMed}
+                requireAuth={requireAuth}
+                setIsAuthenticated={setIsAuthenticated}
               />
             }
           />
@@ -406,6 +430,8 @@ export default function App() {
                 setNotes={setNotes}
                 lastSaved={lastSaved}
                 setLastSaved={setLastSaved}
+                requireAuth={requireAuth}
+                setIsAuthenticated={setIsAuthenticated}
               />
             }
           />
@@ -414,6 +440,9 @@ export default function App() {
             element={
               <AiAssistance
                 profileDetails={profileDetails}
+                requireAuth={requireAuth}
+                setCurrentPage={setCurrentPage}
+                setIsAuthenticated={setIsAuthenticated}
               />
             }
           />
@@ -424,6 +453,7 @@ export default function App() {
               <Register
                 setCurrentPage={setCurrentPage}
                 onSignInRedirect={() => setCurrentPage("Login")}
+                setIsAuthenticated={setIsAuthenticated}
               />
             }
           />
@@ -434,6 +464,7 @@ export default function App() {
                 setCurrentPage={setCurrentPage}
                 onSignUpRedirect={() => setCurrentPage("Register")}
                 onForgotPasswordRedirect={() => setCurrentPage("ForgotPassword")}
+                setIsAuthenticated={setIsAuthenticated}
               />
             }
           />
@@ -464,6 +495,9 @@ export default function App() {
           profileDetails={profileDetails}
           setProfileDetails={setProfileDetails}
           onClose={() => setShowProfileModal(false)}
+          requireAuth={requireAuth}
+          setCurrentPage={setCurrentPage}
+          setIsAuthenticated={setIsAuthenticated}
         />
       )}
 

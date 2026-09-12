@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Register.css";
 import { GoogleLogin } from "@react-oauth/google";
 
-export default function Register({ onSignInRedirect, setCurrentPage }) {
+export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthenticated }) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -298,6 +298,9 @@ export default function Register({ onSignInRedirect, setCurrentPage }) {
 
                 const data = await response.json();
                 if (data.success) {
+                  if (typeof setIsAuthenticated === "function") {
+                    setIsAuthenticated(true);
+                  }
                   setSuccess("Account verified! Redirecting to Dashboard...");
                   setCurrentPage("Dashboard");
                 } else {
