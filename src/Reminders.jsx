@@ -12,7 +12,8 @@ export default function Reminders({
   medicines,
   setMedicines,
   setCurrentPage,
-  setShowAddMed,
+  onOpenAddMedicine,
+  onOpenEditMedicine,
   requireAuth,
   setIsAuthenticated,
 }) {
@@ -215,9 +216,9 @@ export default function Reminders({
           <button
             className="add-med-btn"
             onClick={() => {
-              if (typeof requireAuth === "function" && !requireAuth()) return;
-              setCurrentPage("Dashboard");
-              setShowAddMed(true);
+              if (typeof onOpenAddMedicine === "function") {
+                onOpenAddMedicine();
+              }
             }}
           >
             + Add Medicine

@@ -2,14 +2,12 @@ import React, { useEffect, useState } from "react";
 import { getMedicineStatus } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
 import { requestFCMToken, listenForForegroundMessages } from "./firebase";
-import MedicineModal from "./MedicineModal";
-
 export default function Dashboard({
   setCurrentPage,
-  showAddMed,
-  setShowAddMed,
   medicines,
   setMedicines,
+  onOpenAddMedicine,
+  onOpenEditMedicine,
   sleepHours,
   bloodPressure,
   weight,
@@ -38,16 +36,7 @@ export default function Dashboard({
     listenForForegroundMessages();
   }, []);
 
-  const [editingMedicine, setEditingMedicine] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Sync with showAddMed prop if triggered externally
-  useEffect(() => {
-    if (showAddMed && !isModalOpen) {
-      setIsModalOpen(true);
-      setEditingMedicine(null);
-    }
-  }, [showAddMed]);
 
   const [weeklyData, setWeeklyData] = React.useState([]);
 
@@ -119,38 +108,14 @@ export default function Dashboard({
     totalDoses === 0 ? 0 : Math.round((totalMissed / totalDoses) * 100);
 
   function handleOpenAdd() {
-    if (typeof requireAuth === "function" && !requireAuth()) {
-      return;
+    if (typeof onOpenAddMedicine === "function") {
+      onOpenAddMedicine();
     }
-    setEditingMedicine(null);
-    setIsModalOpen(true);
-    if (setShowAddMed) setShowAddMed(true);
   }
 
   function handleOpenEdit(medicine) {
-    if (typeof requireAuth === "function" && !requireAuth()) {
-      return;
-    }
-    setEditingMedicine(medicine);
-    setIsModalOpen(true);
-    if (setShowAddMed) setShowAddMed(true);
-  }
-
-  function handleCloseModal() {
-    setIsModalOpen(false);
-    setEditingMedicine(null);
-    if (setShowAddMed) setShowAddMed(false);
-  }
-
-  function handleSaveMedicine(savedMed, mode) {
-    if (mode === "add") {
-      setMedicines((prev) => [...(Array.isArray(prev) ? prev.filter(Boolean) : []), savedMed]);
-    } else if (mode === "update") {
-      setMedicines((prev) =>
-        (Array.isArray(prev) ? prev.filter(Boolean) : []).map((m) =>
-          m._id === savedMed._id ? savedMed : m
-        )
-      );
+    if (typeof onOpenEditMedicine === "function") {
+      onOpenEditMedicine(medicine);
     }
   }
 
@@ -703,17 +668,6 @@ export default function Dashboard({
         </div>
       </div>
 
-      {isModalOpen && (
-        <MedicineModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          medicineData={editingMedicine}
-          onSave={handleSaveMedicine}
-          requireAuth={requireAuth}
-          setIsAuthenticated={setIsAuthenticated}
-          setCurrentPage={setCurrentPage}
-        />
-      )}
     </motion.section>
   );
 }

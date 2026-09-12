@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-export default function SearchMedicine({ setCurrentPage, setShowAddMed }) {
+export default function SearchMedicine({
+  setCurrentPage,
+  onOpenAddMedicine,
+  requireAuth,
+  setIsAuthenticated,
+}) {
   const [currentPopular, setCurrentPopular] = useState("");
   const [search, setSearch] = useState("");
   const [notFound, setNotFound] = useState(false);
@@ -467,8 +472,9 @@ export default function SearchMedicine({ setCurrentPage, setShowAddMed }) {
                 <button
                   className="details-btn"
                   onClick={() => {
-                    setCurrentPage("Dashboard");
-                    setShowAddMed(true);
+                    if (typeof onOpenAddMedicine === "function") {
+                      onOpenAddMedicine({ name: med.name });
+                    }
                   }}
                 >
                   Add to List

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 export default function HealthLog({
   getHealthLog,
   setCurrentPage,
-  setShowAddMed,
+  onOpenAddMedicine,
   sleepHours,
   setSleepHours,
   bloodPressure,
@@ -107,9 +107,9 @@ export default function HealthLog({
           <button
             className="add-med-btn"
             onClick={() => {
-              if (typeof requireAuth === "function" && !requireAuth()) return;
-              setCurrentPage("Dashboard");
-              setShowAddMed(true);
+              if (typeof onOpenAddMedicine === "function") {
+                onOpenAddMedicine();
+              }
             }}
           >
             + Add Medicine

@@ -32,6 +32,15 @@ export default function MedicineModal({
         time: medicineData.time || "",
         instructions: medicineData.instructions || "",
       });
+    } else if (medicineData && medicineData.name) {
+      setMedDetails({
+        name: medicineData.name || "",
+        dosage: medicineData.dosage !== undefined ? medicineData.dosage : "",
+        unit: medicineData.unit || "mg",
+        type: medicineData.type || "Oral Tablet",
+        time: medicineData.time || "",
+        instructions: medicineData.instructions || "",
+      });
     } else {
       setMedDetails({
         name: "",

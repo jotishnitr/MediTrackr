@@ -84,9 +84,46 @@ export default function App() {
     }
   };
 
-  const [showAddMed, setShowAddMed] = React.useState(false);
+  const [isMedicineModalOpen, setIsMedicineModalOpen] = React.useState(false);
+  const [editingMedicine, setEditingMedicine] = React.useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showHelpBot, setShowHelpBot] = React.useState(false);
+
+  const handleOpenAddMedicine = (initialData = null) => {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
+    setEditingMedicine(
+      initialData && typeof initialData === "object" && initialData.name
+        ? initialData
+        : null
+    );
+    setIsMedicineModalOpen(true);
+  };
+
+  const handleOpenEditMedicine = (med) => {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
+    setEditingMedicine(med);
+    setIsMedicineModalOpen(true);
+  };
+
+  const handleCloseMedicineModal = () => {
+    setIsMedicineModalOpen(false);
+    setEditingMedicine(null);
+  };
+
+  const handleSaveMedicine = (savedMed, mode) => {
+    if (mode === "add") {
+      setMedicines((prev) => [
+        ...(Array.isArray(prev) ? prev.filter(Boolean) : []),
+        savedMed,
+      ]);
+    } else if (mode === "update") {
+      setMedicines((prev) =>
+        (Array.isArray(prev) ? prev.filter(Boolean) : []).map((m) =>
+          m._id === savedMed._id ? savedMed : m
+        )
+      );
+    }
+  };
 
   React.useEffect(() => {
     async function init() {
@@ -356,10 +393,10 @@ export default function App() {
               <Dashboard
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
-                showAddMed={showAddMed}
-                setShowAddMed={setShowAddMed}
                 medicines={medicines}
                 setMedicines={setMedicines}
+                onOpenAddMedicine={handleOpenAddMedicine}
+                onOpenEditMedicine={handleOpenEditMedicine}
                 sleepHours={sleepHours}
                 bloodPressure={bloodPressure}
                 weight={weight}
@@ -376,10 +413,10 @@ export default function App() {
             path="/myMedicines"
             element={
               <MyMedicines
-                setShowAddMed={setShowAddMed}
-                showAddMed={showAddMed}
                 medicines={medicines}
                 setMedicines={setMedicines}
+                onOpenAddMedicine={handleOpenAddMedicine}
+                onOpenEditMedicine={handleOpenEditMedicine}
                 setCurrentPage={setCurrentPage}
                 requireAuth={requireAuth}
                 setIsAuthenticated={setIsAuthenticated}
@@ -393,8 +430,9 @@ export default function App() {
               <Reminders
                 medicines={medicines}
                 setMedicines={setMedicines}
+                onOpenAddMedicine={handleOpenAddMedicine}
+                onOpenEditMedicine={handleOpenEditMedicine}
                 setCurrentPage={setCurrentPage}
-                setShowAddMed={setShowAddMed}
                 requireAuth={requireAuth}
                 setIsAuthenticated={setIsAuthenticated}
               />
@@ -406,7 +444,9 @@ export default function App() {
             element={
               <SearchMedicine
                 setCurrentPage={setCurrentPage}
-                setShowAddMed={setShowAddMed}
+                onOpenAddMedicine={handleOpenAddMedicine}
+                requireAuth={requireAuth}
+                setIsAuthenticated={setIsAuthenticated}
               />
             }
           />
@@ -417,7 +457,7 @@ export default function App() {
               <HealthLog
                 getHealthLog={getHealthLog}
                 setCurrentPage={setCurrentPage}
-                setShowAddMed={setShowAddMed}
+                onOpenAddMedicine={handleOpenAddMedicine}
                 sleepHours={sleepHours}
                 setSleepHours={setSleepHours}
                 bloodPressure={bloodPressure}
@@ -489,6 +529,18 @@ export default function App() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AnimatePresence>
+
+      {isMedicineModalOpen && (
+        <MedicineModal
+          isOpen={isMedicineModalOpen}
+          onClose={handleCloseMedicineModal}
+          medicineData={editingMedicine}
+          onSave={handleSaveMedicine}
+          requireAuth={requireAuth}
+          setIsAuthenticated={setIsAuthenticated}
+          setCurrentPage={setCurrentPage}
+        />
+      )}
 
       {showProfileModal && (
         <ProfileModal

@@ -1,54 +1,30 @@
 import { useState } from "react";
 import { getMedicineStatus } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
-import MedicineModal from "./MedicineModal";
-
 export default function MyMedicines({
   setCurrentPage,
-  setShowAddMed,
   medicines,
   setMedicines,
+  onOpenAddMedicine,
+  onOpenEditMedicine,
   requireAuth,
   setIsAuthenticated,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingMedicine, setEditingMedicine] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const safeMedicines = Array.isArray(medicines) ? medicines.filter(Boolean) : [];
 
   const filteredMedicines = safeMedicines.filter((med) =>
     med && med.name && med.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   const handleOpenAdd = () => {
-    if (typeof requireAuth === "function" && !requireAuth()) return;
-    setEditingMedicine(null);
-    setIsModalOpen(true);
+    if (typeof onOpenAddMedicine === "function") {
+      onOpenAddMedicine();
+    }
   };
 
   const handleOpenEdit = (med) => {
-    if (typeof requireAuth === "function" && !requireAuth()) return;
-    setEditingMedicine(med);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingMedicine(null);
-  };
-
-  const handleSaveMedicine = (savedMed, mode) => {
-    if (typeof setMedicines === "function") {
-      if (mode === "add") {
-        setMedicines((prev) => [...(Array.isArray(prev) ? prev.filter(Boolean) : []), savedMed]);
-      } else if (mode === "update") {
-        setMedicines((prev) =>
-          (Array.isArray(prev) ? prev.filter(Boolean) : []).map((m) =>
-            m._id === savedMed._id ? savedMed : m
-          )
-        );
-      }
+    if (typeof onOpenEditMedicine === "function") {
+      onOpenEditMedicine(med);
     }
   };
 
@@ -145,17 +121,6 @@ export default function MyMedicines({
         )}
       </div>
 
-      {isModalOpen && (
-        <MedicineModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          medicineData={editingMedicine}
-          onSave={handleSaveMedicine}
-          requireAuth={requireAuth}
-          setIsAuthenticated={setIsAuthenticated}
-          setCurrentPage={setCurrentPage}
-        />
-      )}
     </motion.section>
   );
 }
