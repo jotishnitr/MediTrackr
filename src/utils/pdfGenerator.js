@@ -1,11 +1,6 @@
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
-// Ensure html2canvas is attached to window for jsPDF compatibility
-if (typeof window !== "undefined") {
-  window.html2canvas = html2canvas;
-}
-
 /**
  * Strips conversational preamble & postamble from AI response text.
  */
@@ -20,13 +15,14 @@ function cleanReportText(rawText) {
 
     // Skip conversational greetings / intro chatter
     if (
-      i < 5 &&
+      i < 6 &&
       (line.toLowerCase().includes("i've retrieved") ||
         line.toLowerCase().includes("here is your") ||
         line.toLowerCase().includes("here's your") ||
         line.toLowerCase().includes("based on your records") ||
         line.toLowerCase().includes("sure, here is") ||
-        line.toLowerCase().includes("analyzing your health"))
+        line.toLowerCase().includes("analyzing your health") ||
+        line.toLowerCase().includes("i have compiled"))
     ) {
       continue;
     }
@@ -190,7 +186,6 @@ function markdownToReportHtml(markdown, userName, reportDate) {
     if (line.startsWith("# ") || line.startsWith("## ")) {
       flushList();
       let title = line.replace(/^#+\s*/, "").replace(/[📋📊💡⚠️🩺💊👤]/g, "").trim();
-      // Skip redundant document title if matched
       if (title.toLowerCase().includes("health & medication summary report")) {
         continue;
       }
@@ -310,29 +305,31 @@ function getReportStyles() {
   return `
     .meditrackr-report-root {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: #1e293b;
-      background: #ffffff;
-      padding: 24px 30px;
+      color: #0f172a !important;
+      background: #ffffff !important;
+      padding: 28px 32px;
       box-sizing: border-box;
       width: 794px;
-      line-height: 1.45;
-      font-size: 11px;
+      line-height: 1.5;
+      font-size: 11.5px;
     }
 
     /* Top Executive Header */
     .report-header {
-      background: linear-gradient(135deg, #0b1326 0%, #172554 100%);
+      background: #0b1326 !important;
       border-radius: 10px;
       padding: 20px 24px;
-      color: #ffffff;
+      color: #ffffff !important;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
       border: 1px solid #1e293b;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-      page-break-inside: avoid;
-      break-inside: avoid;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
     }
 
     .brand-row {
@@ -343,8 +340,8 @@ function getReportStyles() {
     }
 
     .brand-badge {
-      background: #10b981;
-      color: #042f2e;
+      background: #10b981 !important;
+      color: #042f2e !important;
       font-weight: 800;
       font-size: 13px;
       padding: 3px 10px;
@@ -353,7 +350,7 @@ function getReportStyles() {
     }
 
     .report-type-tag {
-      color: #94a3b8;
+      color: #94a3b8 !important;
       font-size: 9px;
       font-weight: 600;
       text-transform: uppercase;
@@ -363,20 +360,20 @@ function getReportStyles() {
     .report-main-title {
       font-size: 17px;
       font-weight: 700;
-      color: #f8fafc;
-      margin: 0 0 3px 0;
+      color: #ffffff !important;
+      margin: 0 0 4px 0;
       letter-spacing: -0.2px;
     }
 
     .report-subtitle {
-      font-size: 10px;
-      color: #cbd5e1;
+      font-size: 10.5px;
+      color: #cbd5e1 !important;
       margin: 0;
     }
 
     .meta-box {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 8px;
       padding: 10px 14px;
       display: flex;
@@ -393,18 +390,18 @@ function getReportStyles() {
     }
 
     .meta-label {
-      color: #94a3b8;
+      color: #94a3b8 !important;
       font-weight: 500;
     }
 
     .meta-val {
-      color: #f8fafc;
+      color: #ffffff !important;
       font-weight: 700;
     }
 
     .confidential-pill {
-      background: rgba(239, 68, 68, 0.2);
-      color: #fca5a5;
+      background: #ef4444 !important;
+      color: #ffffff !important;
       font-size: 8.5px;
       padding: 2px 6px;
       border-radius: 4px;
@@ -417,17 +414,15 @@ function getReportStyles() {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 22px;
+      margin-top: 24px;
       margin-bottom: 12px;
       padding-bottom: 6px;
       border-bottom: 2px solid #e2e8f0;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
 
     .section-icon-badge {
-      background: #ecfdf5;
-      color: #059669;
+      background: #ecfdf5 !important;
+      color: #059669 !important;
       font-size: 12px;
       font-weight: 800;
       width: 22px;
@@ -440,9 +435,9 @@ function getReportStyles() {
     }
 
     .section-title {
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 700;
-      color: #0f172a;
+      color: #0f172a !important;
       margin: 0;
       letter-spacing: -0.2px;
     }
@@ -450,14 +445,12 @@ function getReportStyles() {
     .sub-section-header {
       margin-top: 14px;
       margin-bottom: 8px;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
 
     .sub-section-title {
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
-      color: #334155;
+      color: #1e293b !important;
       margin: 0;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -469,41 +462,38 @@ function getReportStyles() {
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid #cbd5e1;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
 
     .clinical-table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
-      font-size: 10px;
+      font-size: 10.5px;
     }
 
     .clinical-table th {
-      background: #0f172a;
-      color: #f8fafc;
+      background: #0f172a !important;
+      color: #ffffff !important;
       font-weight: 700;
       padding: 9px 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      font-size: 9px;
-      border-bottom: 1px solid #334155;
+      font-size: 9.5px;
+      border-bottom: 1px solid #1e293b;
     }
 
     .clinical-table td {
       padding: 8px 12px;
       border-bottom: 1px solid #e2e8f0;
-      color: #334155;
+      color: #1e293b !important;
     }
 
     .clinical-table tr.row-even {
-      background: #ffffff;
+      background: #ffffff !important;
     }
 
     .clinical-table tr.row-odd {
-      background: #f8fafc;
+      background: #f8fafc !important;
     }
 
     .clinical-table tr:last-child td {
@@ -522,26 +512,26 @@ function getReportStyles() {
     }
 
     .pill-success {
-      background: #dcfce7;
-      color: #15803d;
+      background: #dcfce7 !important;
+      color: #15803d !important;
       border: 1px solid #bbf7d0;
     }
 
     .pill-warning {
-      background: #fef3c7;
-      color: #b45309;
+      background: #fef3c7 !important;
+      color: #b45309 !important;
       border: 1px solid #fde68a;
     }
 
     .pill-danger {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: #fee2e2 !important;
+      color: #b91c1c !important;
       border: 1px solid #fecaca;
     }
 
     .pill-info {
-      background: #e0f2fe;
-      color: #0369a1;
+      background: #e0f2fe !important;
+      color: #0369a1 !important;
       border: 1px solid #bae6fd;
     }
 
@@ -552,10 +542,8 @@ function getReportStyles() {
       padding: 10px 14px;
       border-radius: 8px;
       margin: 10px 0;
-      font-size: 10px;
+      font-size: 10.5px;
       align-items: flex-start;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
 
     .callout-icon {
@@ -565,12 +553,12 @@ function getReportStyles() {
     }
 
     .callout-content {
-      color: #334155;
+      color: #1e293b !important;
       line-height: 1.45;
     }
 
     .callout-warning {
-      background: #fffbeb;
+      background: #fffbeb !important;
       border-left: 4px solid #f59e0b;
       border-top: 1px solid #fef3c7;
       border-right: 1px solid #fef3c7;
@@ -578,11 +566,11 @@ function getReportStyles() {
     }
 
     .callout-warning .callout-content {
-      color: #92400e;
+      color: #92400e !important;
     }
 
     .callout-recommendation {
-      background: #f0fdf4;
+      background: #f0fdf4 !important;
       border-left: 4px solid #10b981;
       border-top: 1px solid #dcfce7;
       border-right: 1px solid #dcfce7;
@@ -590,11 +578,11 @@ function getReportStyles() {
     }
 
     .callout-recommendation .callout-content {
-      color: #166534;
+      color: #166534 !important;
     }
 
     .callout-info {
-      background: #f0f9ff;
+      background: #f0f9ff !important;
       border-left: 4px solid #0284c7;
       border-top: 1px solid #e0f2fe;
       border-right: 1px solid #e0f2fe;
@@ -602,14 +590,14 @@ function getReportStyles() {
     }
 
     .callout-disclaimer {
-      background: #fef2f2;
+      background: #fef2f2 !important;
       border: 1px solid #fee2e2;
       border-left: 4px solid #ef4444;
       margin-top: 20px;
     }
 
     .callout-disclaimer .callout-content {
-      color: #991b1b;
+      color: #991b1b !important;
       font-size: 9.5px;
       font-style: italic;
     }
@@ -626,14 +614,14 @@ function getReportStyles() {
       align-items: flex-start;
       gap: 8px;
       margin-bottom: 6px;
-      font-size: 10.5px;
-      color: #334155;
+      font-size: 11px;
+      color: #1e293b !important;
     }
 
     .bullet-dot {
       width: 5px;
       height: 5px;
-      background: #10b981;
+      background: #10b981 !important;
       border-radius: 50%;
       flex-shrink: 0;
       margin-top: 6px;
@@ -641,6 +629,7 @@ function getReportStyles() {
 
     .bullet-text {
       flex: 1;
+      color: #1e293b !important;
     }
 
     .clinical-ordered-list {
@@ -653,21 +642,19 @@ function getReportStyles() {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      padding: 8px 12px;
-      background: #f8fafc;
+      padding: 9px 12px;
+      background: #f8fafc !important;
       border: 1px solid #e2e8f0;
       border-radius: 6px;
       margin-bottom: 6px;
-      font-size: 10.5px;
-      page-break-inside: avoid;
-      break-inside: avoid;
+      font-size: 11px;
     }
 
     .step-num {
-      background: #0f172a;
-      color: #ffffff;
+      background: #0f172a !important;
+      color: #ffffff !important;
       font-weight: 700;
-      font-size: 9px;
+      font-size: 9.5px;
       width: 18px;
       height: 18px;
       border-radius: 50%;
@@ -680,12 +667,12 @@ function getReportStyles() {
 
     .step-text {
       flex: 1;
-      color: #1e293b;
+      color: #0f172a !important;
     }
 
     .clinical-paragraph {
-      font-size: 10.5px;
-      color: #475569;
+      font-size: 11px;
+      color: #334155 !important;
       margin: 6px 0;
     }
 
@@ -702,10 +689,8 @@ function getReportStyles() {
       border-top: 1px solid #cbd5e1;
       display: flex;
       justify-content: space-between;
-      color: #94a3b8;
-      font-size: 8.5px;
-      page-break-inside: avoid;
-      break-inside: avoid;
+      color: #64748b !important;
+      font-size: 9px;
     }
   `;
 }
@@ -729,14 +714,17 @@ export const downloadReportAsPDF = async (reportText, userName = "Patient") => {
   const htmlContent = markdownToReportHtml(reportText, userName, reportDate);
   const styles = getReportStyles();
 
-  // 2. Create off-screen rendering sandbox container
+  // 2. Create sandbox container in DOM
   const container = document.createElement("div");
-  container.style.position = "fixed";
-  container.style.top = "-99999px";
-  container.style.left = "-99999px";
+  container.style.position = "absolute";
+  container.style.top = "0px";
+  container.style.left = "0px";
   container.style.width = "794px";
   container.style.background = "#ffffff";
-  container.style.zIndex = "-9999";
+  container.style.color = "#0f172a";
+  container.style.zIndex = "-99999";
+  container.style.opacity = "1";
+  container.style.pointerEvents = "none";
 
   const styleEl = document.createElement("style");
   styleEl.innerHTML = styles;
@@ -749,55 +737,95 @@ export const downloadReportAsPDF = async (reportText, userName = "Patient") => {
   document.body.appendChild(container);
 
   try {
-    const doc = new jsPDF({
+    // 3. Render container to canvas at 2x scale for crystal clear output
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+      windowWidth: 794,
+      scrollX: 0,
+      scrollY: 0,
+    });
+
+    const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
       format: "a4",
     });
 
+    const pdfWidth = 595.28;
+    const pdfHeight = 841.89;
+    const totalImgHeight = (canvas.height * pdfWidth) / canvas.width;
+
     const filename = `MediTrackr_Health_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
 
-    await doc.html(container, {
-      callback: (pdf) => {
-        // Add footer page numbers
-        const totalPages = pdf.internal.getNumberOfPages();
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
+    // 4. Multi-page slicing onto A4 pages
+    if (totalImgHeight <= pdfHeight) {
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, totalImgHeight);
+    } else {
+      const pageCanvasHeight = (canvas.width * pdfHeight) / pdfWidth;
+      let renderedHeight = 0;
+      let pageIndex = 0;
 
-        for (let p = 1; p <= totalPages; p++) {
-          pdf.setPage(p);
-          pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(8);
-          pdf.setTextColor(150, 160, 175);
-          pdf.text(
-            `Page ${p} of ${totalPages} • MediTrackr Personal Health OS`,
-            pageWidth / 2,
-            pageHeight - 16,
-            { align: "center" }
-          );
+      while (renderedHeight < canvas.height) {
+        if (pageIndex > 0) {
+          pdf.addPage();
         }
 
-        pdf.save(filename);
-        if (container.parentNode) {
-          container.parentNode.removeChild(container);
-        }
-      },
-      x: 0,
-      y: 0,
-      width: 595, // A4 standard width in pt
-      windowWidth: 794, // Render viewport width matching container
-      autoPaging: "text",
-      html2canvas: {
-        scale: 2, // 2x Retina scale for crystal clear fonts and tables
-        useCORS: true,
-        logging: false,
-      },
-    });
+        const currentSliceHeight = Math.min(pageCanvasHeight, canvas.height - renderedHeight);
+
+        const sliceCanvas = document.createElement("canvas");
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = pageCanvasHeight;
+        const ctx = sliceCanvas.getContext("2d");
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+
+        ctx.drawImage(
+          canvas,
+          0,
+          renderedHeight,
+          canvas.width,
+          currentSliceHeight,
+          0,
+          0,
+          canvas.width,
+          currentSliceHeight
+        );
+
+        const sliceData = sliceCanvas.toDataURL("image/jpeg", 0.98);
+        pdf.addImage(sliceData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+
+        renderedHeight += pageCanvasHeight;
+        pageIndex++;
+      }
+    }
+
+    // 5. Add clean footer page numbers
+    const totalPages = pdf.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      pdf.setPage(p);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      pdf.setTextColor(140, 150, 165);
+      pdf.text(
+        `Page ${p} of ${totalPages} • MediTrackr Personal Health OS`,
+        pdfWidth / 2,
+        pdfHeight - 14,
+        { align: "center" }
+      );
+    }
+
+    pdf.save(filename);
   } catch (err) {
     console.error("PDF generation failed:", err);
-    if (container.parentNode) {
+    throw err;
+  } finally {
+    if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
-    throw err;
   }
 };
