@@ -250,7 +250,16 @@ export default function SearchMedicine({
           <p>Discover medicines and treatment options</p>
         </div>
 
-        <button className="add-med-btn">+ Add Medicine</button>
+        <button
+          className="add-med-btn"
+          onClick={() => {
+            if (typeof onOpenAddMedicine === "function") {
+              onOpenAddMedicine();
+            }
+          }}
+        >
+          + Add Medicine
+        </button>
       </div>
 
       <div className={`search-box ${searching ? "searching" : ""}`}>
