@@ -1,7 +1,11 @@
 const HealthProfile = require("../models/HealthProfile");
 const User = require("../models/user");
 const Notification = require("../models/Notification");
-const { sendFamilyMemberAddedEmail } = require("../utils/email");
+const {
+    sendFamilyMemberAddedEmail,
+    sendFamilyMemberRemovedEmail,
+    sendFamilyMemberConfirmationEmail,
+} = require("../utils/email");
 
 const addHealthProfile = async (req, res) => {
     try {
@@ -74,20 +78,30 @@ const addHealthProfile = async (req, res) => {
                 .map((u) => (typeof u === "object" && u !== null ? u.email : u))
                 .filter(Boolean);
 
-            // Find newly added family emails (not in previous profile)
+            // 1. Newly Added Family Emails
             const newlyAddedEmails = cleanedEmails.filter((email) => !existingFamilyEmails.includes(email));
 
             for (const email of newlyAddedEmails) {
-                // 1. Send notification email to the entered family email
+                // Send notification email to the added family member
                 sendFamilyMemberAddedEmail(
                     email,
                     currentUser?.name || fullName,
                     req.user?.email
                 ).catch((err) => {
-                    console.error(`[Family Email Error] Failed to send email to ${email}:`, err);
+                    console.error(`[Family Added Email Error] Failed to send email to ${email}:`, err);
                 });
 
-                // 2. Store in-app notification if the family member has a registered account
+                // Send confirmation email to the user who added them
+                sendFamilyMemberConfirmationEmail(
+                    req.user?.email,
+                    currentUser?.name || fullName,
+                    email,
+                    "added"
+                ).catch((err) => {
+                    console.error(`[Family Confirmation Email Error] Failed to send confirmation to ${req.user?.email}:`, err);
+                });
+
+                // Store in-app notification if the family member has a registered account
                 const matchedUser = familyUsers.find((u) => u.email?.toLowerCase() === email);
                 if (matchedUser) {
                     try {
@@ -103,6 +117,48 @@ const addHealthProfile = async (req, res) => {
                     } catch (notifErr) {
                         console.error(`[Family Notification Error] Failed to save in-app notification for ${email}:`, notifErr);
                     }
+                }
+            }
+
+            // 2. Removed Family Emails
+            const removedEmails = existingFamilyEmails.filter((email) => !cleanedEmails.includes(email));
+
+            for (const email of removedEmails) {
+                // Send notification email to the removed family member
+                sendFamilyMemberRemovedEmail(
+                    email,
+                    currentUser?.name || fullName,
+                    req.user?.email
+                ).catch((err) => {
+                    console.error(`[Family Removed Email Error] Failed to send email to ${email}:`, err);
+                });
+
+                // Send confirmation email to the user who removed them
+                sendFamilyMemberConfirmationEmail(
+                    req.user?.email,
+                    currentUser?.name || fullName,
+                    email,
+                    "removed"
+                ).catch((err) => {
+                    console.error(`[Family Confirmation Email Error] Failed to send removal confirmation to ${req.user?.email}:`, err);
+                });
+
+                // Store in-app notification for the disconnected user if registered
+                try {
+                    const removedUserObj = await User.findOne({ email });
+                    if (removedUserObj) {
+                        const removeNotif = new Notification({
+                            userId: removedUserObj._id,
+                            title: "ℹ️ Family Connection Removed",
+                            userName: req.user.id,
+                            message: `Your family connection with ${currentUser?.name || fullName || req.user?.email} on MediTrackr has been disconnected.`,
+                            type: "alert",
+                            isRead: false,
+                        });
+                        await removeNotif.save();
+                    }
+                } catch (notifErr) {
+                    console.error(`[Family Notification Error] Failed to save removal notification for ${email}:`, notifErr);
                 }
             }
         } else {

@@ -762,8 +762,308 @@ The MediTrackr Team`;
   }
 };
 
+/**
+ * Send notification email when a family member connection is removed
+ * @param {string} recipientEmail - The removed family member's email
+ * @param {string} patientName - Name of the user who disconnected
+ * @param {string} patientEmail - Email of the user who disconnected
+ */
+const sendFamilyMemberRemovedEmail = async (recipientEmail, patientName, patientEmail) => {
+  const rawApiKey = process.env.BREVO_API_KEY;
+  const rawSenderEmail = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER;
+
+  if (!rawApiKey) {
+    console.warn("[Family Removed Email] Skipped: BREVO_API_KEY not set in environment variables.");
+    return;
+  }
+
+  const apiKey = rawApiKey.trim().replace(/^["']|["']$/g, "");
+  const senderEmail = rawSenderEmail ? rawSenderEmail.trim().replace(/^["']|["']$/g, "") : null;
+
+  if (!senderEmail) {
+    console.warn("[Family Removed Email] Skipped: BREVO_SENDER_EMAIL (or EMAIL_USER) not set in environment variables.");
+    return;
+  }
+
+  const appUrl = "https://jotishnitr.github.io/MediTrackr/#/dashboard";
+  const logoUrl = "https://jotishnitr.github.io/MediTrackr/icon.png";
+  const displayName = patientName || patientEmail || "A family member";
+  const subject = `ℹ️ Family Connection Update on MediTrackr`;
+
+  const textContent = `Hello!
+
+This is a notification to inform you that your family connection with ${displayName} (${patientEmail}) on MediTrackr has been removed.
+
+You will no longer receive medication reminders or missed dose safety alerts for ${displayName}.
+
+If you believe this was done in error, please contact ${displayName} or manage your family connections in your MediTrackr dashboard:
+${appUrl}
+
+Stay healthy & empowered,
+The MediTrackr Team`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Connection Removed - MediTrackr</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #e2e8f0;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #030712; padding: 36px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 600px; background-color: #0a1122; border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);" cellspacing="0" cellpadding="0" border="0">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 36px 32px 28px; background: linear-gradient(145deg, #1f1124 0%, #170d1e 60%, #0d1522 100%); border-bottom: 1px solid rgba(244, 63, 94, 0.2); text-align: center;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin-bottom: 14px;">
+                <tr>
+                  <td align="center">
+                    <img 
+                      src="${logoUrl}" 
+                      alt="MediTrackr Logo" 
+                      width="58" 
+                      height="58" 
+                      style="display: block; border-radius: 14px; border: 2px solid rgba(244, 63, 94, 0.5); box-shadow: 0 8px 24px rgba(244, 63, 94, 0.35); background-color: #0b1326;" 
+                    />
+                  </td>
+                </tr>
+              </table>
+              <div style="display: inline-block; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: 20px; padding: 4px 14px; font-size: 11px; font-weight: 700; color: #f43f5e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                ℹ️ Connection Removed
+              </div>
+              <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #f8fafc; line-height: 1.3;">
+                Family Connection Disconnected
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 28px 32px 20px 32px;">
+              <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #e2e8f0;">
+                Hello,
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #cbd5e1;">
+                This email confirms that your family connection with <strong style="color: #f43f5e;">${displayName}</strong> (<a href="mailto:${patientEmail}" style="color: #38bdf8; text-decoration: none;">${patientEmail}</a>) has been removed from MediTrackr.
+              </p>
+
+              <!-- Info Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: rgba(28, 18, 30, 0.8); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 14px; padding: 18px 20px; margin-bottom: 24px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0; color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
+                      You will no longer receive automated missed-dose alerts or family reminder updates for ${displayName}.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 12px;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td align="center" style="border-radius: 10px; background: linear-gradient(135deg, #334155 0%, #1e293b 100%); border: 1px solid rgba(255, 255, 255, 0.15);">
+                          <a href="${appUrl}" target="_blank" style="display: inline-block; padding: 14px 34px; font-size: 14px; font-weight: 700; color: #f8fafc; text-decoration: none; border-radius: 10px;">
+                            Go to MediTrackr Dashboard →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 20px 32px; background: #060b17; border-top: 1px solid rgba(255, 255, 255, 0.08); text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.4;">
+                © ${new Date().getFullYear()} MediTrackr &bull; Smart Health Management System.<br/>
+                This email was sent to ${recipientEmail} regarding your MediTrackr family circle.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  try {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "api-key": apiKey,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: "MediTrackr Health",
+          email: senderEmail,
+        },
+        to: [
+          {
+            email: recipientEmail,
+          },
+        ],
+        subject: subject,
+        textContent: textContent,
+        htmlContent: htmlContent,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      console.error(`[Family Removed Email Error] Failed to send to ${recipientEmail}: Status code: ${response.status}`, data);
+      return;
+    }
+    console.log(`[Family Removed Email Success] Sent successfully to ${recipientEmail}.`);
+    return data;
+  } catch (error) {
+    console.error(`[Family Removed Email Error] Failed to send to ${recipientEmail}:`, error?.message || error);
+  }
+};
+
+/**
+ * Send confirmation email to the user modifying their family list
+ * @param {string} userEmail - The user making the change
+ * @param {string} userName - The user's name
+ * @param {string} targetEmail - The email of the family member added/removed
+ * @param {string} actionType - 'added' | 'removed'
+ */
+const sendFamilyMemberConfirmationEmail = async (userEmail, userName, targetEmail, actionType) => {
+  const rawApiKey = process.env.BREVO_API_KEY;
+  const rawSenderEmail = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER;
+
+  if (!rawApiKey || !rawSenderEmail) return;
+
+  const apiKey = rawApiKey.trim().replace(/^["']|["']$/g, "");
+  const senderEmail = rawSenderEmail.trim().replace(/^["']|["']$/g, "");
+
+  const appUrl = "https://jotishnitr.github.io/MediTrackr/#/dashboard";
+  const logoUrl = "https://jotishnitr.github.io/MediTrackr/icon.png";
+  const isAdded = actionType === "added";
+  const subject = isAdded
+    ? `✅ Family Member Added: ${targetEmail}`
+    : `ℹ️ Family Member Removed: ${targetEmail}`;
+
+  const textContent = `Hello ${userName || "there"},
+
+You have successfully ${isAdded ? "connected with" : "removed"} ${targetEmail} ${isAdded ? "as a family member" : "from your family circle"} on MediTrackr.
+
+${isAdded ? "They have been notified via email and will receive automatic safety alerts if scheduled doses are unconfirmed." : "They will no longer receive your medication alerts."}
+
+Manage your profile:
+${appUrl}
+
+Stay healthy,
+The MediTrackr Team`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Circle Updated</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #e2e8f0;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #030712; padding: 36px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 600px; background-color: #0a1122; border: 1px solid ${isAdded ? "rgba(78, 222, 163, 0.25)" : "rgba(255, 255, 255, 0.15)"}; border-radius: 20px; overflow: hidden;" cellspacing="0" cellpadding="0" border="0">
+          <tr>
+            <td style="padding: 32px 32px 24px; text-align: center; background: linear-gradient(145deg, #091a38 0%, #061928 100%);">
+              <img src="${logoUrl}" alt="MediTrackr" width="52" height="52" style="border-radius: 12px; margin-bottom: 12px;" />
+              <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #f8fafc;">
+                Family Circle Updated
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 24px 32px 20px;">
+              <p style="margin: 0 0 14px 0; font-size: 15px; color: #e2e8f0;">
+                Hello <strong style="color: #4edea3;">${userName || "there"}</strong>,
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 14.5px; line-height: 1.6; color: #cbd5e1;">
+                You have successfully ${isAdded ? "added" : "removed"} <strong style="color: ${isAdded ? "#4edea3" : "#f43f5e"};">${targetEmail}</strong> ${isAdded ? "to" : "from"} your connected family list on MediTrackr.
+              </p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: rgba(15, 28, 51, 0.8); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;">
+                <tr>
+                  <td style="font-size: 13.5px; color: #94a3b8; line-height: 1.5;">
+                    ${isAdded ? "✅ An email notification has been dispatched to their inbox and in-app alerts are now linked." : "ℹ️ They have been unlinked and will no longer receive alerts."}
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" align="center" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="border-radius: 8px; background: #4edea3;">
+                    <a href="${appUrl}" target="_blank" style="display: inline-block; padding: 12px 28px; font-size: 14px; font-weight: 700; color: #070f1e; text-decoration: none; border-radius: 8px;">
+                      View Dashboard →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 16px 32px; background: #060b17; border-top: 1px solid rgba(255, 255, 255, 0.08); text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #64748b;">
+                © ${new Date().getFullYear()} MediTrackr
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  try {
+    await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "api-key": apiKey,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: "MediTrackr Health",
+          email: senderEmail,
+        },
+        to: [
+          {
+            email: userEmail,
+          },
+        ],
+        subject: subject,
+        textContent: textContent,
+        htmlContent: htmlContent,
+      }),
+    });
+  } catch (err) {
+    console.error(`[Family Confirmation Email Error] Failed to send to ${userEmail}:`, err);
+  }
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendResetPasswordEmail,
   sendFamilyMemberAddedEmail,
+  sendFamilyMemberRemovedEmail,
+  sendFamilyMemberConfirmationEmail,
 };
