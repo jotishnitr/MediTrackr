@@ -1,5 +1,8 @@
 const HealthProfile = require("../models/HealthProfile");
 const User = require("../models/user");
+const Notification = require("../models/Notification");
+const { sendFamilyMemberAddedEmail } = require("../utils/email");
+
 const addHealthProfile = async (req, res) => {
     try {
         const {
@@ -13,6 +16,12 @@ const addHealthProfile = async (req, res) => {
             familyMembersEmails,
         } = req.body;
 
+        // Fetch current user and previously connected family members
+        const currentUser = await User.findById(req.user.id).populate("familyMembersUserId", "email name");
+        const existingFamilyEmails = (currentUser?.familyMembersUserId || [])
+            .map((u) => (typeof u === "object" && u !== null ? u.email?.toLowerCase() : ""))
+            .filter(Boolean);
+
         // Process Family Members if emails array provided
         let familyMembersEmailsList = [];
         if (Array.isArray(familyMembersEmails)) {
@@ -22,11 +31,12 @@ const addHealthProfile = async (req, res) => {
                 .filter((email) => email !== req.user?.email?.toLowerCase());
 
             let familyUserIds = [];
+            let familyUsers = [];
             if (cleanedEmails.length > 0) {
-                const familyUsers = await User.find({
+                familyUsers = await User.find({
                     email: { $in: cleanedEmails },
                     _id: { $ne: req.user.id },
-                }).select("_id");
+                }).select("_id email name");
 
                 familyUserIds = familyUsers.map((u) => u._id);
             }
@@ -40,8 +50,39 @@ const addHealthProfile = async (req, res) => {
             familyMembersEmailsList = (updatedUser?.familyMembersUserId || [])
                 .map((u) => (typeof u === "object" && u !== null ? u.email : u))
                 .filter(Boolean);
+
+            // Find newly added family emails (not in previous profile)
+            const newlyAddedEmails = cleanedEmails.filter((email) => !existingFamilyEmails.includes(email));
+
+            for (const email of newlyAddedEmails) {
+                // 1. Send notification email to the entered family email
+                sendFamilyMemberAddedEmail(
+                    email,
+                    currentUser?.name || fullName,
+                    req.user?.email
+                ).catch((err) => {
+                    console.error(`[Family Email Error] Failed to send email to ${email}:`, err);
+                });
+
+                // 2. Store in-app notification if the family member has a registered account
+                const matchedUser = familyUsers.find((u) => u.email?.toLowerCase() === email);
+                if (matchedUser) {
+                    try {
+                        const familyNotification = new Notification({
+                            userId: matchedUser._id,
+                            title: "👨‍👩‍👧 Family Connection Added",
+                            userName: req.user.id,
+                            message: `${currentUser?.name || fullName || req.user?.email} added you as a family member on MediTrackr to help monitor medication schedules and safety alerts.`,
+                            type: "alert",
+                            isRead: false,
+                        });
+                        await familyNotification.save();
+                    } catch (notifErr) {
+                        console.error(`[Family Notification Error] Failed to save in-app notification for ${email}:`, notifErr);
+                    }
+                }
+            }
         } else {
-            const currentUser = await User.findById(req.user.id).populate("familyMembersUserId", "email name");
             familyMembersEmailsList = (currentUser?.familyMembersUserId || [])
                 .map((u) => (typeof u === "object" && u !== null ? u.email : u))
                 .filter(Boolean);

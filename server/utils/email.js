@@ -573,7 +573,197 @@ The MediTrackr Team`;
   }
 };
 
+/**
+ * Send notification email when a user adds a family member/caregiver
+ * @param {string} recipientEmail - The family member's email
+ * @param {string} patientName - Name of the user who added them
+ * @param {string} patientEmail - Email of the user who added them
+ */
+const sendFamilyMemberAddedEmail = async (recipientEmail, patientName, patientEmail) => {
+  const rawApiKey = process.env.BREVO_API_KEY;
+  const rawSenderEmail = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER;
+
+  if (!rawApiKey) {
+    console.warn("[Family Email] Skipped: BREVO_API_KEY not set in environment variables.");
+    return;
+  }
+
+  const apiKey = rawApiKey.trim().replace(/^["']|["']$/g, "");
+  const senderEmail = rawSenderEmail ? rawSenderEmail.trim().replace(/^["']|["']$/g, "") : null;
+
+  if (!senderEmail) {
+    console.warn("[Family Email] Skipped: BREVO_SENDER_EMAIL (or EMAIL_USER) not set in environment variables.");
+    return;
+  }
+
+  const appUrl = "https://jotishnitr.github.io/MediTrackr/#/dashboard";
+  const logoUrl = "https://jotishnitr.github.io/MediTrackr/icon.png";
+  const displayName = patientName || patientEmail || "A family member";
+  const subject = `👨‍👩‍👧 ${displayName} added you as a Family Member on MediTrackr`;
+
+  const textContent = `Hello!
+
+${displayName} (${patientEmail}) has added you as a connected family member / caregiver on MediTrackr.
+
+As a connected family member on MediTrackr:
+• You will receive automated family alerts and notifications if ${displayName} misses any scheduled medication doses (after 30 minutes).
+• You can help ensure their wellness, adherence, and timely care.
+
+Access MediTrackr anytime:
+${appUrl}
+
+Stay healthy & empowered,
+The MediTrackr Team`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Connection on MediTrackr</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #e2e8f0;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #030712; padding: 36px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 600px; background-color: #0a1122; border: 1px solid rgba(78, 222, 163, 0.25); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);" cellspacing="0" cellpadding="0" border="0">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 36px 32px 28px; background: linear-gradient(145deg, #091a38 0%, #061928 60%, #08201a 100%); border-bottom: 1px solid rgba(78, 222, 163, 0.2); text-align: center;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin-bottom: 14px;">
+                <tr>
+                  <td align="center">
+                    <img 
+                      src="${logoUrl}" 
+                      alt="MediTrackr Logo" 
+                      width="58" 
+                      height="58" 
+                      style="display: block; border-radius: 14px; border: 2px solid rgba(78, 222, 163, 0.5); box-shadow: 0 8px 24px rgba(78, 222, 163, 0.35); background-color: #0b1326;" 
+                    />
+                  </td>
+                </tr>
+              </table>
+              <div style="display: inline-block; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 20px; padding: 4px 14px; font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                👨‍👩‍👧 Family Connection
+              </div>
+              <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #f8fafc; line-height: 1.3;">
+                You've Been Added as a Family Member
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 28px 32px 20px 32px;">
+              <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #e2e8f0;">
+                Hello,
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #cbd5e1;">
+                <strong style="color: #4edea3;">${displayName}</strong> (<a href="mailto:${patientEmail}" style="color: #38bdf8; text-decoration: none;">${patientEmail}</a>) has added you as a trusted family member / caregiver on <strong style="color: #4edea3;">MediTrackr</strong>.
+              </p>
+
+              <!-- Highlight Info Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: rgba(15, 28, 51, 0.8); border: 1px solid rgba(78, 222, 163, 0.2); border-radius: 14px; padding: 18px 20px; margin-bottom: 24px;">
+                <tr>
+                  <td>
+                    <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #4edea3; font-weight: 700;">
+                      🛡️ What this means for you:
+                    </h3>
+                    <ul style="margin: 0; padding-left: 18px; color: #94a3b8; font-size: 13.5px; line-height: 1.6;">
+                      <li style="margin-bottom: 6px;">
+                        <strong style="color: #f1f5f9;">Missed Medication Alerts:</strong> You will receive notifications if ${displayName} misses any scheduled medication doses (triggered 30 mins after due time).
+                      </li>
+                      <li style="margin-bottom: 6px;">
+                        <strong style="color: #f1f5f9;">Connected Health Support:</strong> Help your loved ones stay on track with their wellness and treatment plans.
+                      </li>
+                      <li>
+                        <strong style="color: #f1f5f9;">In-App Notifications:</strong> If you have an account with this email (${recipientEmail}), alerts will also appear in your notification center.
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 12px;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td align="center" style="border-radius: 10px; background: linear-gradient(135deg, #4edea3 0%, #22c55e 100%); box-shadow: 0 6px 25px rgba(78, 222, 163, 0.35);">
+                          <a href="${appUrl}" target="_blank" style="display: inline-block; padding: 14px 34px; font-size: 14.5px; font-weight: 800; color: #070f1e; text-decoration: none; border-radius: 10px; letter-spacing: 0.3px;">
+                            Open MediTrackr Dashboard →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 20px 32px; background: #060b17; border-top: 1px solid rgba(255, 255, 255, 0.08); text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.4;">
+                © ${new Date().getFullYear()} MediTrackr &bull; Smart Health Management System.<br/>
+                This email was sent to ${recipientEmail} because you were added as a family member on MediTrackr.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  try {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "api-key": apiKey,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: "MediTrackr Health",
+          email: senderEmail,
+        },
+        to: [
+          {
+            email: recipientEmail,
+          },
+        ],
+        subject: subject,
+        textContent: textContent,
+        htmlContent: htmlContent,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      console.error(`[Family Email Error] Failed to send to ${recipientEmail}: Status code: ${response.status}`, data);
+      return;
+    }
+
+    const messageId = data?.messageId || data?.messageIds?.[0] || "delivered";
+    console.log(`[Family Email Success] Sent successfully to ${recipientEmail}. MessageId: ${messageId}`);
+    return data;
+  } catch (error) {
+    console.error(`[Family Email Error] Failed to send to ${recipientEmail}:`, error?.message || error);
+  }
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendResetPasswordEmail,
+  sendFamilyMemberAddedEmail,
 };
