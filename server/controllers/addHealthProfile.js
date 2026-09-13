@@ -21,6 +21,9 @@ const addHealthProfile = async (req, res) => {
         const existingFamilyEmails = (currentUser?.familyMembersUserId || [])
             .map((u) => (typeof u === "object" && u !== null ? u.email?.toLowerCase() : ""))
             .filter(Boolean);
+        const existingFamilyUserIds = (currentUser?.familyMembersUserId || [])
+            .map((u) => (typeof u === "object" && u !== null ? u._id.toString() : u.toString()))
+            .filter(Boolean);
 
         // Process Family Members if emails array provided
         let familyMembersEmailsList = [];
@@ -46,6 +49,26 @@ const addHealthProfile = async (req, res) => {
                 { familyMembersUserId: familyUserIds },
                 { new: true }
             ).populate("familyMembersUserId", "email name");
+
+            // Automatically link this user in the other users' records (Bidirectional linking)
+            if (familyUserIds.length > 0) {
+                await User.updateMany(
+                    { _id: { $in: familyUserIds } },
+                    { $addToSet: { familyMembersUserId: req.user.id } }
+                );
+            }
+
+            // If any family user was removed, unlink from their record as well
+            const currentFamilyIdStrings = familyUserIds.map((id) => id.toString());
+            const removedFamilyUserIds = existingFamilyUserIds.filter(
+                (id) => !currentFamilyIdStrings.includes(id)
+            );
+            if (removedFamilyUserIds.length > 0) {
+                await User.updateMany(
+                    { _id: { $in: removedFamilyUserIds } },
+                    { $pull: { familyMembersUserId: req.user.id } }
+                );
+            }
 
             familyMembersEmailsList = (updatedUser?.familyMembersUserId || [])
                 .map((u) => (typeof u === "object" && u !== null ? u.email : u))
