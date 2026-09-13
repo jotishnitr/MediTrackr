@@ -8,22 +8,31 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
 
+  const API_BASE = import.meta.env.VITE_API_URL || "https://meditrackr.onrender.com";
+
+  const defaultWelcomeMessage = {
+    sender: "bot",
+    text: "Hi! I'm **MediTrackr Bot** 👋\n\nI can help you navigate the app, explain features, and guide you through adding medicines, setting reminders, using FDA search, or explaining AI Copilot.\n\nHow can I help you today?",
+  };
+
+  const quickPrompts = [
+    "How to add a medicine?",
+    "How to enable reminders?",
+    "What is AI Copilot?",
+    "How does FDA search work?",
+  ];
+
   const handleDeleteHistory = async () => {
     if (!window.confirm("Are you sure you want to clear your chat history?")) return;
 
     try {
-      const url = `${import.meta.env.VITE_API_URL || "https://meditrackr.onrender.com"}/getChatHistory`;
+      const url = `${API_BASE}/getChatHistory`;
       const response = await fetch(url, {
         method: "DELETE",
         credentials: "include",
       });
       if (response.ok) {
-        setMessages([
-          {
-            sender: "bot",
-            text: "Hi! I'm MediTrackr Bot 👋 Ask me anything about adding medicines, reminders, or using the app.",
-          },
-        ]);
+        setMessages([defaultWelcomeMessage]);
       } else {
         console.error("Failed to delete chat history");
       }
@@ -33,68 +42,72 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   };
 
   useEffect(() => {
-    setMessages([
-      {
-        sender: "bot",
-        text: "Hi! I'm MediTrackr Bot 👋 Ask me anything about adding medicines, reminders, or using the app.",
-      },
-    ]);
-  }, []);
-  // runs once when popup mounts, sets first message before user types anything
-
-  useEffect(() => {
     async function loadHistory() {
       try {
-        const res = await fetch(
-          "https://meditrackr.onrender.com/getChatHistory",
-          {
-            credentials: "include",
-          },
-        );
+        const res = await fetch(`${API_BASE}/getChatHistory`, {
+          credentials: "include",
+        });
         const data = await res.json();
 
-        const formatted = data.messages.map((m) => ({
-          sender: m.role === "user" ? "user" : "bot",
-          text: m.text,
-        }));
-
-        setMessages(formatted);
+        if (data && Array.isArray(data.messages) && data.messages.length > 0) {
+          const formatted = data.messages.map((m) => ({
+            sender: m.role === "user" ? "user" : "bot",
+            text: m.text,
+          }));
+          setMessages(formatted);
+        } else {
+          setMessages([defaultWelcomeMessage]);
+        }
       } catch (err) {
         console.error(err);
+        setMessages([defaultWelcomeMessage]);
       }
     }
 
     loadHistory();
-  }, []);
+  }, [API_BASE]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
 
-  const sendMessage = async () => {
-    if (!input.trim()) {
-      return;
-    }
-    const userMsg = { sender: "user", text: input };
+  const sendMessage = async (textToSend = null) => {
+    const messageText = (textToSend || input).trim();
+    if (!messageText || loading) return;
+
+    const userMsg = { sender: "user", text: messageText };
     setMessages((prev) => [...prev, userMsg]);
-
     setInput("");
     setLoading(true);
+
     try {
-      const res = await fetch("https://meditrackr.onrender.com/api/chat", {
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: messageText }),
       });
       const data = await res.json();
-      const botMsg = { sender: "bot", text: data.reply };
-      setMessages((prev) => [...prev, botMsg]);
+      if (data && data.reply) {
+        const botMsg = { sender: "bot", text: data.reply };
+        setMessages((prev) => [...prev, botMsg]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "bot",
+            text: "I'm having trouble responding right now. Please try again or visit our AI Advisor & Copilot page.",
+          },
+        ]);
+      }
     } catch (err) {
       console.error(err);
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "Something went wrong" },
+        {
+          sender: "bot",
+          text: "⚠️ Network issue or service unavailable. Please check your connection and try again.",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -102,13 +115,15 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       sendMessage();
     }
   };
 
   return (
     <section className="chatbot-popup">
+      {/* Header */}
       <div className="header-container">
         <div className="bot-header-avatar">
           <span className="material-symbols-outlined bot-avatar-icon">support_agent</span>
@@ -124,28 +139,21 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
           <button
             onClick={handleDeleteHistory}
             title="Clear Chat History"
-            style={{
-              background: "rgba(255, 75, 75, 0.1)",
-              border: "1px solid rgba(255, 75, 75, 0.2)",
-              color: "#ff4b4b",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              transition: "all 0.2s ease"
-            }}
+            className="bot-clear-btn"
           >
             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>delete</span>
           </button>
-          <div className="bot-close-btn" onClick={() => setShowHelpBot(false)}>
+          <button
+            className="bot-close-btn"
+            onClick={() => setShowHelpBot(false)}
+            aria-label="Close Chat"
+          >
             ✕
-          </div>
+          </button>
         </div>
       </div>
 
+      {/* Chat Messages List (Middle Scrollable) */}
       <div className="chat-container">
         {messages.map((msg, index) => (
           <div
@@ -156,19 +164,57 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
           </div>
         ))}
 
-        {loading && <div className="msg-typing">Typing...</div>}
+        {messages.length === 1 && (
+          <div className="bot-quick-prompts">
+            <span className="quick-prompts-label">Suggested Questions:</span>
+            <div className="quick-prompts-grid">
+              {quickPrompts.map((prompt, pIdx) => (
+                <button
+                  key={pIdx}
+                  className="quick-prompt-chip"
+                  onClick={() => sendMessage(prompt)}
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {loading && (
+          <div className="msg-bot msg-typing-bubble">
+            <div className="typing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        )}
 
         <div ref={chatEndRef}></div>
+      </div>
 
-        <div className="input-container">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask your queries ..."
-          />
-        </div>
+      {/* Input Area (Bottom Fixed) */}
+      <div className="input-container">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask your queries..."
+          disabled={loading}
+        />
+        <button
+          className="chat-send-btn"
+          onClick={() => sendMessage()}
+          disabled={!input.trim() || loading}
+          title="Send message"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+        </button>
       </div>
     </section>
   );

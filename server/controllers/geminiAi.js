@@ -59,7 +59,36 @@ YOUR ONLY JOB: help users navigate the app, explain features, and guide them ste
 `;
 
 const ai = require("../gemini");
+const openrouter = require("../openrouter");
 const ChatHistory = require("../models/ChatHistory");
+
+const gemini_models = [
+  "gemini-flash-latest",
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-3.7-flash"
+];
+
+// OpenRouter Free Text/Chat models for app assistance
+const openrouter_models = [
+  "deepseek/deepseek-chat:free",
+  "deepseek/deepseek-r1:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "google/gemma-3-27b-it:free",
+  "mistralai/mistral-small-24b-instruct-2501:free",
+  "qwen/qwen-2.5-72b-instruct:free",
+  "meta-llama/llama-3.2-3b-instruct:free",
+  "nvidia/nemotron-3.5-lightning:free",
+  "stepfun/step-1-8k:free"
+];
+
+const withTimeout = (promise, ms = 15000) => {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${ms / 1000}s`)), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+};
 
 const geminiAi = async (req, res) => {
   const { message } = req.body;
@@ -70,28 +99,86 @@ const geminiAi = async (req, res) => {
       error: "Message required",
     });
   }
+
   try {
     let chatDoc = await ChatHistory.findOne({ userId });
     if (!chatDoc) {
       chatDoc = new ChatHistory({ userId, messages: [] });
     }
 
-    const historyForGemini = chatDoc.messages.map((m) => ({
+    const historyForGemini = chatDoc.messages.slice(-10).map((m) => ({
       role: m.role,
       parts: [{ text: m.text }],
     }));
 
-    const chat = ai.chats.create({
-      model: "gemini-flash-latest",
-      history: historyForGemini,
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-      },
-    });
-    const response = await chat.sendMessage({ message });
+    let replyText = null;
+    let providerUsed = null;
+
+    // STAGE 1: Try Gemini Models with timeout
+    for (const gm of gemini_models) {
+      try {
+        const chat = ai.chats.create({
+          model: gm,
+          history: historyForGemini,
+          config: {
+            systemInstruction: SYSTEM_PROMPT,
+          },
+        });
+        const response = await withTimeout(chat.sendMessage({ message }), 15000);
+        if (response && response.text) {
+          replyText = response.text;
+          providerUsed = `gemini (${gm})`;
+          break;
+        }
+      } catch (geminiErr) {
+        console.warn(`[MediTrackr Bot Gemini] Model "${gm}" failed: ${geminiErr.message}. Trying next...`);
+      }
+    }
+
+    // STAGE 2: If Gemini Models Failed -> Automatic Fallback to OpenRouter Free Models
+    if (!replyText) {
+      console.warn("[MediTrackr Bot] All Gemini models failed or timed out. Routing to OpenRouter fallback models...");
+
+      const openrouterMessages = [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...chatDoc.messages.slice(-10).map((m) => ({
+          role: m.role === "model" ? "assistant" : "user",
+          content: m.text,
+        })),
+        { role: "user", content: message },
+      ];
+
+      for (const om of openrouter_models) {
+        try {
+          const completion = await withTimeout(
+            openrouter.chat.completions.create({
+              model: om,
+              messages: openrouterMessages,
+              temperature: 0.7,
+              max_tokens: 800,
+            }),
+            15000
+          );
+
+          const choiceText = completion.choices?.[0]?.message?.content;
+          if (choiceText && choiceText.trim()) {
+            replyText = choiceText.trim();
+            providerUsed = `openrouter (${om})`;
+            console.log(`[MediTrackr Bot OpenRouter] Successfully responded with model "${om}".`);
+            break;
+          }
+        } catch (openrouterErr) {
+          console.warn(`[MediTrackr Bot OpenRouter] Model "${om}" failed (${openrouterErr.message}). Trying next...`);
+        }
+      }
+    }
+
+    if (!replyText) {
+      throw new Error("All AI models across Gemini and OpenRouter failed to respond.");
+    }
 
     chatDoc.messages.push({ role: "user", text: message });
-    chatDoc.messages.push({ role: "model", text: response.text });
+    chatDoc.messages.push({ role: "model", text: replyText });
 
     await chatDoc.save();
 
@@ -99,12 +186,13 @@ const geminiAi = async (req, res) => {
     const modelMsg = chatDoc.messages[chatDoc.messages.length - 1];
 
     res.status(200).json({
-      reply: response.text,
-      userTime: userMsg.timeStamp,
-      modelTime: modelMsg.timeStamp,
+      reply: replyText,
+      userTime: userMsg?.timeStamp || new Date(),
+      modelTime: modelMsg?.timeStamp || new Date(),
+      provider: providerUsed,
     });
   } catch (err) {
-    console.error(err);
+    console.error("[MediTrackr Bot Error]:", err);
     res.status(500).json({
       error: "Something went wrong",
       message: err.message || err,
