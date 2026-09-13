@@ -39,6 +39,7 @@ const copilot = require("./routes/copilot");
 const getCopilotHistory = require("./routes/getCopilotHistory");
 const forgotPassword = require("./routes/forgotPassword");
 const resetPassword = require("./routes/resetPassword");
+const getNotifications = require("./routes/getNotifications");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
@@ -94,6 +95,7 @@ app.use("/", copilot);
 app.use("/", getCopilotHistory);
 app.use("/", forgotPassword);
 app.use("/", resetPassword);
+app.use("/", getNotifications);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

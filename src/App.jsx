@@ -12,6 +12,7 @@ import AiAssistance from "./AiAssistant";
 import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
 import MedicineModal from "./MedicineModal";
+import NotificationModal from "./NotificationModal";
 
 import React from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
@@ -88,6 +89,28 @@ export default function App() {
   const [editingMedicine, setEditingMedicine] = React.useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [showHelpBot, setShowHelpBot] = React.useState(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = React.useState(false);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = React.useState(0);
+
+  const fetchUnreadNotifications = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/getNotifications`, {
+        credentials: "include",
+      });
+      if (res.status === 401) return;
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.notifications)) {
+        setUnreadNotificationsCount(data.notifications.length);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications count:", err);
+    }
+  };
+
+  const handleOpenNotificationModal = () => {
+    if (typeof requireAuth === "function" && !requireAuth()) return;
+    setIsNotificationModalOpen(true);
+  };
 
   const handleOpenAddMedicine = (initialData = null) => {
     if (typeof requireAuth === "function" && !requireAuth()) return;
@@ -278,6 +301,7 @@ export default function App() {
     allergies: "",
     emergencyContact: "",
     email: "",
+    familyMembersEmails: [],
   });
 
   // Lifted vitals and symptoms state with safe initializers (null if not logged today)
@@ -343,6 +367,7 @@ export default function App() {
           allergies: profile.allergies || "",
           emergencyContact: profile.emergencyContact || "",
           email: profile.email || "",
+          familyMembersEmails: profile.familyMembersEmails || [],
         };
         setProfileDetails(details);
       }
@@ -365,6 +390,9 @@ export default function App() {
     if (!isAuthPage) {
       getHealthLog();
       fetchHealthProfile();
+      fetchUnreadNotifications();
+      const interval = setInterval(fetchUnreadNotifications, 30000);
+      return () => clearInterval(interval);
     }
   }, [currentPage, isAuthPage]);
 
@@ -406,6 +434,8 @@ export default function App() {
                 isAuthenticated={isAuthenticated}
                 setIsAuthenticated={setIsAuthenticated}
                 requireAuth={requireAuth}
+                unreadNotificationsCount={unreadNotificationsCount}
+                onOpenNotificationModal={handleOpenNotificationModal}
               />
             }
           />
@@ -420,6 +450,8 @@ export default function App() {
                 setCurrentPage={setCurrentPage}
                 requireAuth={requireAuth}
                 setIsAuthenticated={setIsAuthenticated}
+                unreadNotificationsCount={unreadNotificationsCount}
+                onOpenNotificationModal={handleOpenNotificationModal}
               />
             }
           />
@@ -435,6 +467,8 @@ export default function App() {
                 setCurrentPage={setCurrentPage}
                 requireAuth={requireAuth}
                 setIsAuthenticated={setIsAuthenticated}
+                unreadNotificationsCount={unreadNotificationsCount}
+                onOpenNotificationModal={handleOpenNotificationModal}
               />
             }
           />
@@ -447,6 +481,8 @@ export default function App() {
                 onOpenAddMedicine={handleOpenAddMedicine}
                 requireAuth={requireAuth}
                 setIsAuthenticated={setIsAuthenticated}
+                unreadNotificationsCount={unreadNotificationsCount}
+                onOpenNotificationModal={handleOpenNotificationModal}
               />
             }
           />
@@ -472,6 +508,8 @@ export default function App() {
                 setLastSaved={setLastSaved}
                 requireAuth={requireAuth}
                 setIsAuthenticated={setIsAuthenticated}
+                unreadNotificationsCount={unreadNotificationsCount}
+                onOpenNotificationModal={handleOpenNotificationModal}
               />
             }
           />
@@ -539,6 +577,17 @@ export default function App() {
           requireAuth={requireAuth}
           setIsAuthenticated={setIsAuthenticated}
           setCurrentPage={setCurrentPage}
+        />
+      )}
+
+      {isNotificationModalOpen && (
+        <NotificationModal
+          isOpen={isNotificationModalOpen}
+          onClose={() => setIsNotificationModalOpen(false)}
+          requireAuth={requireAuth}
+          setCurrentPage={setCurrentPage}
+          setIsAuthenticated={setIsAuthenticated}
+          onNotificationRead={(remainingCount) => setUnreadNotificationsCount(remainingCount)}
         />
       )}
 
