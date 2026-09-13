@@ -12,14 +12,14 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
 
   const defaultWelcomeMessage = {
     sender: "bot",
-    text: "Hi! I'm **MediTrackr Bot** 👋\n\nI can help you navigate the app, explain features, and guide you through adding medicines, setting reminders, using FDA search, or explaining AI Copilot.\n\nHow can I help you today?",
+    text: "Hi! I'm **MediTrackr Bot** 👋\n\nI can help you navigate the app, explain features, and guide you step-by-step through adding medicines, setting reminders, using FDA search, or exploring AI Copilot.\n\nNeed technical support or assistance? Contact our team anytime at **jotish.dev.noreply@gmail.com**.\n\nHow can I help you today?",
   };
 
   const quickPrompts = [
     "How to add a medicine?",
     "How to enable reminders?",
     "What is AI Copilot?",
-    "How does FDA search work?",
+    "Contact support details",
   ];
 
   const handleDeleteHistory = async () => {
