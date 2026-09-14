@@ -357,8 +357,9 @@ export default function AiAssistance({
 
     try {
       if (action === "ADD_MEDICINES" && actionData?.medicines) {
-        // Add each medicine via addMedicine controller
         for (const med of actionData.medicines) {
+          const targetUserId = med.targetUserId || actionData?.targetUserId || actionData?.familyMemberId;
+          const targetEmail = med.targetEmail || actionData?.targetEmail;
           await fetch(`${import.meta.env.VITE_API_URL}/addMedicine`, {
             method: "POST",
             credentials: "include",
@@ -371,6 +372,8 @@ export default function AiAssistance({
               time: normalizeTo24Hour(med.time),
               instructions: med.instructions || "",
               reminder: med.reminder ?? true,
+              ...(targetUserId ? { targetUserId } : {}),
+              ...(targetEmail ? { targetEmail } : {}),
             }),
           });
         }
@@ -499,6 +502,11 @@ export default function AiAssistance({
               {msg.action === "ADD_MEDICINES" ? "medication" : "monitor_heart"}
             </span>
             {msg.action === "ADD_MEDICINES" ? "Preview Medicines" : "Preview Health Log"}
+            {msg.action === "ADD_MEDICINES" && (msg.actionData?.targetMemberName || msg.actionData?.targetEmail) && (
+              <span style={{ fontSize: "0.8rem", color: "#67e8f9", marginLeft: "8px", fontWeight: "normal" }}>
+                (For: {msg.actionData.targetMemberName || msg.actionData.targetEmail})
+              </span>
+            )}
           </div>
           <span className="action-card-badge">Requires Confirmation</span>
         </div>
@@ -516,6 +524,11 @@ export default function AiAssistance({
                   <span className="action-tag">{med.dosage} {med.unit}</span>
                   <span className="action-tag">{med.type}</span>
                   {med.reminder && <span className="action-tag">🔔 Reminder ON</span>}
+                  {(med.targetMemberName || msg.actionData?.targetMemberName) && (
+                    <span className="action-tag" style={{ background: "rgba(103, 232, 249, 0.15)", color: "#67e8f9" }}>
+                      👤 {med.targetMemberName || msg.actionData.targetMemberName}
+                    </span>
+                  )}
                 </div>
                 {med.instructions && (
                   <div className="action-item-notes">{med.instructions}</div>

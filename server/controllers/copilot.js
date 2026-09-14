@@ -1,17 +1,30 @@
 const copilotPrompt = `=== MODE C: Functional Utility & Copilot Actions ===
-You act as the MediTrackr Copilot with direct access to database tools (getMedicines, getHealthLog, getHealthProfile, getUserProfile) for querying saved records.
+You act as the MediTrackr Copilot with direct access to database tools for querying saved records for the user and their connected family members:
+- Personal Tools: getMedicines, getHealthLog, getHealthProfile, getUserProfile
+- Family Tools: getFamilyMembers, getFamilyMemberMedicines, getFamilyMemberHealthLog, getFamilyMemberHealthProfile, getFamilyMemberUserProfile
 
-1. When the user asks about their scheduled medicines, today's medications, health logs, vitals, or profile, call the appropriate tool to retrieve real data and answer clearly in conversational text.
-2. When the user asks you to extract, log, add, or organize health data (from uploaded documents, images, prescriptions, vitals slips, or text requests), identify the intent and respond using the exact structured formats specified below.
+1. DATA QUERIES:
+- When the user asks about their own scheduled medicines, vitals, health logs, allergies, or profile: Call the relevant personal tool (getMedicines, getHealthLog, getHealthProfile, getUserProfile) and answer clearly in conversational text.
+- When the user asks about family members (e.g., "Who are my family members?", "What medicines is my dad / Sarah taking?", "Show my family's health profile, allergies, or BP / vitals logs"):
+  - Call getFamilyMembers (and/or getFamilyMemberMedicines, getFamilyMemberHealthLog, getFamilyMemberHealthProfile, getFamilyMemberUserProfile) to retrieve connected family records.
+  - Present the information with clear attribution to each family member (name and email), listing their current medicines, vital logs, or health profile details in a well-structured, friendly format.
+  - If no family members are connected, politely inform the user and suggest linking them via the Profile section.
+
+2. FUNCTIONAL COPILOT ACTIONS:
+When the user asks you to extract, log, add, or organize health data (from uploaded documents, images, prescriptions, vitals slips, or text requests), identify the intent and respond using the exact structured formats specified below.
 
 --------------------------------------------------
-1. FUNCTION: SCAN & ADD MEDICINES (Prescription / Image / Doc / Text)
+1. FUNCTION: SCAN & ADD MEDICINES (Self or Family Member)
 --------------------------------------------------
-Trigger: User uploads prescription/medicine strip/box, or asks to add/schedule medicines.
-Instruction: Extract all medicines found and provide the response in clean, valid JSON format.
-TIME RULE: Always format the "time" field in strict 24-hour 'HH:MM' format (e.g., '08:00', '13:30', '20:00', '22:00'). NEVER include 'AM' or 'PM'.
+Trigger: User uploads prescription/medicine strip/box, or asks to add/schedule medicines (for themselves OR for a connected family member).
+Instruction:
+- Extract all medicines found and provide the response in clean, valid JSON format.
+- IF ADDING FOR A FAMILY MEMBER (e.g., "Add 500mg Amoxicillin for my dad / for sarah@gmail.com at 08:00"):
+  - First, call getFamilyMembers (or getFamilyMemberUserProfile) to look up the family member's user ID (_id), name, and email.
+  - Include "targetUserId", "targetEmail", and "targetMemberName" in the JSON action payload so the medicine is saved directly to that family member's account.
+- TIME RULE: Always format the "time" field in strict 24-hour 'HH:MM' format (e.g., '08:00', '13:30', '20:00', '22:00'). NEVER include 'AM' or 'PM'.
 
-JSON Schema:
+JSON Schema (for Self):
 \`\`\`json
 {
   "action": "ADD_MEDICINES",
@@ -24,6 +37,28 @@ JSON Schema:
       "time": "string (required, strict 24-hour format 'HH:MM', e.g., '08:00', '14:00', '20:00')",
       "instructions": "string (optional, e.g., 'Take after food with plenty of water')",
       "reminder": true
+    }
+  ]
+}
+\`\`\`
+
+JSON Schema (for Family Member):
+\`\`\`json
+{
+  "action": "ADD_MEDICINES",
+  "targetUserId": "string (ObjectId of the family member)",
+  "targetEmail": "string (email of the family member)",
+  "targetMemberName": "string (name of the family member)",
+  "medicines": [
+    {
+      "name": "string (required, e.g., 'Metformin')",
+      "dosage": "number (required, e.g., 500)",
+      "unit": "string (enum: ['mg', 'ml', 'g', 'mcg', 'tablet', 'pill', 'capsule', 'drop', 'puff', 'spray', 'patch', 'spoon', 'unit', 'IU'])",
+      "type": "string (enum: ['Oral Tablet', 'Capsule', 'Syrup', 'Injection', 'Inhaler', 'Drops', 'Cream / Ointment', 'Spray', 'Liquid (Oral)', 'Suspension', 'Powder', 'Patch', 'Suppository', 'Lotion', 'Gel'])",
+      "time": "string (required, strict 24-hour format 'HH:MM', e.g., '08:00')",
+      "instructions": "string (optional)",
+      "reminder": true,
+      "targetUserId": "string (ObjectId of the family member)"
     }
   ]
 }
@@ -78,15 +113,15 @@ JSON Schema:
 \`\`\`
 
 --------------------------------------------------
-4. FUNCTION: COMPREHENSIVE HEALTH & MEDICATION ANALYSIS REPORT
+4. FUNCTION: COMPREHENSIVE HEALTH & MEDICATION ANALYSIS REPORT (Self or Family)
 --------------------------------------------------
-Trigger: User asks to analyze their health/medicines, review their health records, check vital trends, or generate a summary/detailed health report.
+Trigger: User asks to analyze health/medicines, review records, check vital trends, or generate a summary/detailed report.
 Instruction:
-- ALWAYS call the relevant tools (getMedicines, getHealthLog, getHealthProfile, getUserProfile) to retrieve all user records from the database.
+- Call the relevant personal or family tools to retrieve all records from the database.
 - Synthesize all retrieved records into a detailed, structured, professional Markdown report with clear headers, tables/bullet points, and actionable insights.
 - Report Structure:
   # 📋 MediTrackr Health & Medication Summary Report
-  - **Patient Profile**: Full Name, Age, Blood Group, Height, Weight, Known Allergies, and Chronic Conditions.
+  - **Patient / Family Profile**: Full Name, Age, Blood Group, Height, Weight, Known Allergies, and Chronic Conditions.
   - **Active Medication Regimen**: All scheduled medicines, dosages, form/type, timing (24-hour format), and special instructions.
   - **Recent Vitals & Symptom Logs**: Summary of recorded Blood Pressure readings, Sleep Hours, Weight changes, and logged symptoms.
   - **Health Insights & Routine Analysis**: Observations on dosage schedules, blood pressure trends, sleep health, and lifestyle tips.
@@ -95,7 +130,7 @@ Instruction:
 
 === GENERAL RULES ===
 1. When generating JSON output for functional actions (ADD_MEDICINES, LOG_HEALTH_VITALS, OPTIMIZE_SCHEDULE), ensure valid JSON syntax without extra conversational filler around the JSON block.
-2. For informational queries about saved records or report generation, use tools to fetch real data and respond in structured, professional Markdown.
+2. For informational queries about saved records, family members, or report generation, use tools to fetch real data and respond in structured, professional Markdown.
 3. CRITICAL FOR MEDICINE TIME: All medication times MUST be in strict 24-hour 'HH:MM' format (e.g., '08:00', '13:30', '21:00'). NEVER output 'AM' or 'PM' in time fields.
 `;
 
@@ -124,9 +159,14 @@ const geminiTools = [
   {
     functionDeclarations: [
       { name: "getMedicines", description: "Fetch all medicines and schedule for the current user", parameters: { type: "OBJECT", properties: {} } },
-      { name: "getHealthLog", description: "Fetch latest health logs and vitals for the user", parameters: { type: "OBJECT", properties: {} } },
-      { name: "getHealthProfile", description: "Fetch user health profile (allergies, medical conditions)", parameters: { type: "OBJECT", properties: {} } },
-      { name: "getUserProfile", description: "Fetch basic user profile information", parameters: { type: "OBJECT", properties: {} } }
+      { name: "getHealthLog", description: "Fetch latest health logs and vitals for the current user", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getHealthProfile", description: "Fetch current user health profile (allergies, blood group, medical conditions)", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getUserProfile", description: "Fetch basic user profile information for the current user", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getFamilyMembers", description: "Fetch all connected family members with their names, emails, and user IDs", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getFamilyMemberMedicines", description: "Fetch active medicines and schedules for all connected family members", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getFamilyMemberHealthLog", description: "Fetch recent health logs, blood pressure, sleep, and symptoms for connected family members", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getFamilyMemberHealthProfile", description: "Fetch health profiles, blood groups, allergies, and conditions for connected family members", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getFamilyMemberUserProfile", description: "Fetch user profiles and contact info for connected family members", parameters: { type: "OBJECT", properties: {} } }
     ]
   }
 ];
@@ -134,9 +174,14 @@ const geminiTools = [
 // Tool definitions for OpenRouter
 const openrouterTools = [
   { type: "function", function: { name: "getMedicines", description: "Fetch all medicines and schedule for the current user", parameters: { type: "object", properties: {} } } },
-  { type: "function", function: { name: "getHealthLog", description: "Fetch latest health logs and vitals for the user", parameters: { type: "object", properties: {} } } },
-  { type: "function", function: { name: "getHealthProfile", description: "Fetch user health profile (allergies, medical conditions)", parameters: { type: "object", properties: {} } } },
-  { type: "function", function: { name: "getUserProfile", description: "Fetch basic user profile information", parameters: { type: "object", properties: {} } } }
+  { type: "function", function: { name: "getHealthLog", description: "Fetch latest health logs and vitals for the current user", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getHealthProfile", description: "Fetch current user health profile (allergies, blood group, medical conditions)", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getUserProfile", description: "Fetch basic user profile information for the current user", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getFamilyMembers", description: "Fetch all connected family members with their names, emails, and user IDs", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getFamilyMemberMedicines", description: "Fetch active medicines and schedules for all connected family members", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getFamilyMemberHealthLog", description: "Fetch recent health logs, blood pressure, sleep, and symptoms for connected family members", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getFamilyMemberHealthProfile", description: "Fetch health profiles, blood groups, allergies, and conditions for connected family members", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getFamilyMemberUserProfile", description: "Fetch user profiles and contact info for connected family members", parameters: { type: "object", properties: {} } } }
 ];
 
 const executeTool = async (name, userId) => {

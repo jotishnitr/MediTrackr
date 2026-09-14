@@ -1,4 +1,6 @@
 const Medicine = require("../models/Medicine.js");
+const User = require("../models/user.js");
+
 const addMedicine = async (req, res) => {
   try {
     const {
@@ -10,9 +12,34 @@ const addMedicine = async (req, res) => {
       reminder,
       type,
       instructions,
+      targetUserId,
+      familyMemberId,
+      targetEmail,
     } = req.body;
+
+    let targetId = req.user.id;
+
+    // Check if adding for a connected family member
+    const requestedTarget = targetUserId || familyMemberId;
+    if (requestedTarget || targetEmail) {
+      const currentUser = await User.findById(req.user.id);
+      const directFamily = (currentUser?.familyMembersUserId || []).map((id) => id.toString());
+      const reverseFamilyUsers = await User.find({ familyMembersUserId: req.user.id }).select("_id");
+      const reverseFamily = reverseFamilyUsers.map((u) => u._id.toString());
+      const connectedFamilyIds = Array.from(new Set([...directFamily, ...reverseFamily]));
+
+      if (requestedTarget && connectedFamilyIds.includes(requestedTarget.toString())) {
+        targetId = requestedTarget;
+      } else if (targetEmail) {
+        const targetUser = await User.findOne({ email: targetEmail.trim().toLowerCase() });
+        if (targetUser && connectedFamilyIds.includes(targetUser._id.toString())) {
+          targetId = targetUser._id;
+        }
+      }
+    }
+
     const medicine = await Medicine.create({
-      userId: req.user.id,
+      userId: targetId,
       name,
       dosage,
       unit,
@@ -21,13 +48,14 @@ const addMedicine = async (req, res) => {
       instructions,
     });
     await medicine.save();
+
     res.status(201).json({
+      success: true,
       sucess: true,
       medicine,
     });
-    console.log(medicine);
   } catch (err) {
-    res.status(404).json(err);
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
