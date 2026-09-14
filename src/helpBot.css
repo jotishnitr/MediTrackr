@@ -259,6 +259,40 @@
   font-size: 12px;
 }
 
+.bot-msg-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bot-msg-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bot-msg-copy-btn:hover {
+  background: rgba(78, 222, 163, 0.15);
+  border-color: rgba(78, 222, 163, 0.3);
+  color: #4edea3;
+}
+
+.bot-msg-copy-btn.copied {
+  background: rgba(78, 222, 163, 0.2);
+  border-color: #4edea3;
+  color: #4edea3;
+}
+
 /* Quick Prompts */
 .bot-quick-prompts {
   margin-top: 4px;

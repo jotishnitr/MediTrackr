@@ -33,6 +33,16 @@ export default function AiAssistance({
   
   // Track action execution states by message index: { [index]: { status: 'executed' | 'discarded', loading: boolean } }
   const [actionStates, setActionStates] = useState({});
+  const [copiedIndex, setCopiedIndex] = useState(null);
+
+  const handleCopyMessage = (text, index) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => {
+      setCopiedIndex((prev) => (prev === index ? null : prev));
+    }, 2000);
+  };
 
   const chatEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -737,20 +747,37 @@ export default function AiAssistance({
           {activeMessages.map((msg, index) => (
             <div key={index} className={`message-wrapper ${msg.sender}`}>
               <div className="message-header">
-                <span
-                  className={
-                    msg.sender === "user"
-                      ? "sender-label-user"
-                      : "sender-label-assistant"
-                  }
-                >
-                  {msg.sender === "user"
-                    ? "YOU"
-                    : activeMode === "advisor"
-                    ? "HEALTH ADVISOR"
-                    : "COPILOT"}
-                </span>
-                <span className="time-stamp">{msg.time}</span>
+                <div className="message-header-left">
+                  <span
+                    className={
+                      msg.sender === "user"
+                        ? "sender-label-user"
+                        : "sender-label-assistant"
+                    }
+                  >
+                    {msg.sender === "user"
+                      ? "YOU"
+                      : activeMode === "advisor"
+                      ? "HEALTH ADVISOR"
+                      : "COPILOT"}
+                  </span>
+                  <span className="time-stamp">{msg.time}</span>
+                </div>
+                {msg.sender === "assistant" && msg.text && (
+                  <button
+                    type="button"
+                    className={`msg-copy-btn ${copiedIndex === index ? "copied" : ""}`}
+                    onClick={() => handleCopyMessage(msg.text, index)}
+                    title="Copy response to clipboard"
+                  >
+                    <span className="material-symbols-outlined msg-copy-icon">
+                      {copiedIndex === index ? "check" : "content_copy"}
+                    </span>
+                    <span className="msg-copy-text">
+                      {copiedIndex === index ? "Copied" : "Copy"}
+                    </span>
+                  </button>
+                )}
               </div>
               <div className="message-bubble">{renderMessageContent(msg, index)}</div>
             </div>

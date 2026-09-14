@@ -7,7 +7,17 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState(null);
   const chatEndRef = useRef(null);
+
+  const handleCopyMessage = (text, index) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => {
+      setCopiedIndex((prev) => (prev === index ? null : prev));
+    }, 2000);
+  };
 
   const API_BASE = import.meta.env.VITE_API_URL || "https://meditrackr.onrender.com";
 
@@ -164,6 +174,21 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
             <div className="markdown-content">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
             </div>
+            {msg.sender !== "user" && msg.text && (
+              <div className="bot-msg-actions">
+                <button
+                  type="button"
+                  className={`bot-msg-copy-btn ${copiedIndex === index ? "copied" : ""}`}
+                  onClick={() => handleCopyMessage(msg.text, index)}
+                  title="Copy response to clipboard"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>
+                    {copiedIndex === index ? "check" : "content_copy"}
+                  </span>
+                  <span>{copiedIndex === index ? "Copied" : "Copy"}</span>
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
