@@ -1,5 +1,9 @@
 const Notification = require("../models/Notification");
 const User = require("../models/user");
+const {
+    sendFamilyConnectionAcceptedEmail,
+    sendFamilyConnectionDeclinedEmail,
+} = require("../utils/email");
 
 const respondConnection = async (req, res) => {
     try {
@@ -63,6 +67,27 @@ const respondConnection = async (req, res) => {
                 } catch (notifErr) {
                     console.error("Failed to send acceptance notification to requester:", notifErr);
                 }
+
+                // Send email of acceptance to BOTH users
+                sendFamilyConnectionAcceptedEmail(
+                    requester.email,
+                    requester.name,
+                    currentUser?.email,
+                    currentUser?.name,
+                    "requester"
+                ).catch((err) => {
+                    console.error(`[Acceptance Email Error] Failed to send to requester ${requester.email}:`, err);
+                });
+
+                sendFamilyConnectionAcceptedEmail(
+                    currentUser?.email,
+                    currentUser?.name,
+                    requester.email,
+                    requester.name,
+                    "acceptor"
+                ).catch((err) => {
+                    console.error(`[Acceptance Email Error] Failed to send to acceptor ${currentUser?.email}:`, err);
+                });
             }
 
             notification.isRead = true;
@@ -92,7 +117,7 @@ const respondConnection = async (req, res) => {
                     },
                 });
 
-                // Send polite decline notice to requester
+                // Send decline in-app notice to requester
                 try {
                     const declineNotif = new Notification({
                         userId: requester._id,
@@ -106,6 +131,27 @@ const respondConnection = async (req, res) => {
                 } catch (notifErr) {
                     console.error("Failed to send decline notification to requester:", notifErr);
                 }
+
+                // Send email of declination to BOTH users
+                sendFamilyConnectionDeclinedEmail(
+                    requester.email,
+                    requester.name,
+                    currentUser?.email,
+                    currentUser?.name,
+                    "requester"
+                ).catch((err) => {
+                    console.error(`[Decline Email Error] Failed to send to requester ${requester.email}:`, err);
+                });
+
+                sendFamilyConnectionDeclinedEmail(
+                    currentUser?.email,
+                    currentUser?.name,
+                    requester.email,
+                    requester.name,
+                    "rejector"
+                ).catch((err) => {
+                    console.error(`[Decline Email Error] Failed to send to rejector ${currentUser?.email}:`, err);
+                });
             }
 
             notification.isRead = true;

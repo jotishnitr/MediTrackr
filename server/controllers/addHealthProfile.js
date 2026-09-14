@@ -2,7 +2,8 @@ const HealthProfile = require("../models/HealthProfile");
 const User = require("../models/user");
 const Notification = require("../models/Notification");
 const {
-    sendFamilyMemberAddedEmail,
+    sendFamilyConnectionRequestEmail,
+    sendFamilyRequestSentEmail,
     sendFamilyMemberRemovedEmail,
     sendFamilyMemberConfirmationEmail,
 } = require("../utils/email");
@@ -108,23 +109,22 @@ const addHealthProfile = async (req, res) => {
                     }
                 }
 
-                // Send notification email to the added family member
-                sendFamilyMemberAddedEmail(
+                // Send connection request email to the added family member (Pending status)
+                sendFamilyConnectionRequestEmail(
                     email,
                     currentUser?.name || fullName,
                     req.user?.email
                 ).catch((err) => {
-                    console.error(`[Family Added Email Error] Failed to send email to ${email}:`, err);
+                    console.error(`[Family Request Email Error] Failed to send email to ${email}:`, err);
                 });
 
-                // Send confirmation email to the user who requested them
-                sendFamilyMemberConfirmationEmail(
+                // Send pending request confirmation email to the user who requested them
+                sendFamilyRequestSentEmail(
                     req.user?.email,
                     currentUser?.name || fullName,
-                    email,
-                    "added"
+                    email
                 ).catch((err) => {
-                    console.error(`[Family Confirmation Email Error] Failed to send confirmation to ${req.user?.email}:`, err);
+                    console.error(`[Family Request Confirmation Email Error] Failed to send confirmation to ${req.user?.email}:`, err);
                 });
             }
 
