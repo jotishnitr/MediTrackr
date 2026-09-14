@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import "./helpBot.css";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const [messages, setMessages] = useState([]);
@@ -160,7 +161,9 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
             key={index}
             className={msg.sender === "user" ? "msg-user" : "msg-bot"}
           >
-            <ReactMarkdown>{msg.text}</ReactMarkdown>
+            <div className="markdown-content">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+            </div>
           </div>
         ))}
 

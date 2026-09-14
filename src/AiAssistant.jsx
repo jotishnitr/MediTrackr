@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import FeedbackForm from "./feedbackform";
 import { downloadReportAsPDF } from "./utils/pdfGenerator";
 import "./aiAssistant.css";
@@ -604,7 +605,11 @@ export default function AiAssistance({
 
     return (
       <>
-        {!isJsonBlock && <ReactMarkdown>{msg.text}</ReactMarkdown>}
+        {!isJsonBlock && (
+          <div className="markdown-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+          </div>
+        )}
         {msg.image && (
           <img
             src={msg.image}
