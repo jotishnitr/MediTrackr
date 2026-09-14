@@ -8,9 +8,12 @@ const getNotifications = async (req, res) => {
         const populatedNotifications = await Promise.all(notifications.map(async (notification) => {
             const notifObj = notification.toObject ? notification.toObject() : notification;
             if (notifObj.userName) {
-                const user = await User.findById(notifObj.userName);
+                const user = await User.findById(notifObj.userName).select("name email");
                 if (user) {
-                    notifObj.userName = user.name;
+                    notifObj.senderId = user._id;
+                    notifObj.requesterName = user.name;
+                    notifObj.requesterEmail = user.email;
+                    notifObj.userName = user.name || user.email;
                 }
             }
             return notifObj;

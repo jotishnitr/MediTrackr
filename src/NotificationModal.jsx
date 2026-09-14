@@ -12,6 +12,8 @@ export default function NotificationModal({
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isMarkingRead, setIsMarkingRead] = useState(false);
+  const [respondingId, setRespondingId] = useState(null);
+  const [responseStatus, setResponseStatus] = useState({});
   const [error, setError] = useState(null);
   const [position, setPosition] = useState({ top: 75, right: 24 });
 
@@ -103,6 +105,56 @@ export default function NotificationModal({
     }
   };
 
+  const handleRespondConnection = async (notificationId, action) => {
+    try {
+      setRespondingId(notificationId);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/respondConnection`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ notificationId, action }),
+      });
+
+      if (res.status === 401) {
+        if (typeof setIsAuthenticated === "function") setIsAuthenticated(false);
+        if (typeof setCurrentPage === "function") setCurrentPage("Login");
+        onClose();
+        return;
+      }
+
+      const data = await res.json();
+      if (data.success) {
+        setResponseStatus((prev) => ({
+          ...prev,
+          [notificationId]: action === "accept" ? "accepted" : "rejected",
+        }));
+
+        // Dispatch storage/custom event so profile or other components can sync
+        window.dispatchEvent(new Event("familyConnectionUpdated"));
+
+        // Remove from notification list after smooth transition
+        setTimeout(() => {
+          setNotifications((prev) => {
+            const updated = prev.filter((n) => n._id !== notificationId);
+            if (typeof onNotificationRead === "function") {
+              onNotificationRead(updated.length);
+            }
+            return updated;
+          });
+        }, 1200);
+      } else {
+        alert(data.message || "Failed to process connection response");
+      }
+    } catch (err) {
+      console.error("Error responding to connection request:", err);
+      alert("Error processing request. Please try again.");
+    } finally {
+      setRespondingId(null);
+    }
+  };
+
   const formatNotificationTime = (dateStr) => {
     if (!dateStr) return "";
     try {
@@ -136,6 +188,18 @@ export default function NotificationModal({
   };
 
   const getNotificationIcon = (type, title) => {
+    if (type === "connection") {
+      return (
+        <div className="notif-icon-badge connection">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" y1="8" x2="19" y2="14" />
+            <line x1="22" y1="11" x2="16" y2="11" />
+          </svg>
+        </div>
+      );
+    }
     if (title && title.includes("Family")) {
       return (
         <div className="notif-icon-badge family">
@@ -272,37 +336,120 @@ export default function NotificationModal({
               </div>
             ) : (
               <div className="notif-list">
-                {notifications.map((item, idx) => (
-                  <motion.div
-                    key={item._id || idx}
-                    className="notif-card"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: idx * 0.04 }}
-                  >
-                    <div className="notif-card-icon">
-                      {getNotificationIcon(item.type, item.title)}
-                    </div>
-                    <div className="notif-card-content">
-                      <div className="notif-card-top">
-                        <span className="notif-card-title">{item.title}</span>
-                        <span className="notif-card-time">
-                          {formatNotificationTime(item.createdAt)}
-                        </span>
+                {notifications.map((item, idx) => {
+                  const isConnection = item.type === "connection";
+                  const handledStatus = responseStatus[item._id];
+
+                  return (
+                    <motion.div
+                      key={item._id || idx}
+                      className={`notif-card ${isConnection ? "notif-card-connection" : ""}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.04 }}
+                    >
+                      <div className="notif-card-icon">
+                        {getNotificationIcon(item.type, item.title)}
                       </div>
-                      {item.userName && (
-                        <div className="notif-patient-tag">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                          </svg>
-                          <span>Patient: {item.userName}</span>
+                      <div className="notif-card-content">
+                        <div className="notif-card-top">
+                          <span className="notif-card-title">{item.title}</span>
+                          <span className="notif-card-time">
+                            {formatNotificationTime(item.createdAt)}
+                          </span>
                         </div>
-                      )}
-                      <p className="notif-card-message">{item.message}</p>
-                    </div>
-                  </motion.div>
-                ))}
+
+                        {item.userName && !isConnection && (
+                          <div className="notif-patient-tag">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                              <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            <span>Patient: {item.userName}</span>
+                          </div>
+                        )}
+
+                        {isConnection && item.userName && (
+                          <div className="notif-patient-tag connection-requester-tag">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                              <circle cx="9" cy="7" r="4" />
+                            </svg>
+                            <span>From: {item.userName}</span>
+                          </div>
+                        )}
+
+                        <p className="notif-card-message">{item.message}</p>
+
+                        {/* Connection Acceptance Action Buttons */}
+                        {isConnection && (
+                          <div className="notif-connection-actions-container">
+                            {handledStatus ? (
+                              <div className={`notif-status-badge ${handledStatus}`}>
+                                {handledStatus === "accepted" ? (
+                                  <>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <span>Connection Accepted</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <line x1="18" y1="6" x2="6" y2="18" />
+                                      <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                    <span>Request Declined</span>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="notif-connection-actions">
+                                <button
+                                  type="button"
+                                  className="notif-accept-btn"
+                                  onClick={() => handleRespondConnection(item._id, "accept")}
+                                  disabled={respondingId === item._id}
+                                  title="Accept connection request"
+                                >
+                                  {respondingId === item._id ? (
+                                    <span className="notif-spinner-micro"></span>
+                                  ) : (
+                                    <>
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                      </svg>
+                                      <span>Accept</span>
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="notif-reject-btn"
+                                  onClick={() => handleRespondConnection(item._id, "reject")}
+                                  disabled={respondingId === item._id}
+                                  title="Decline connection request"
+                                >
+                                  {respondingId === item._id ? (
+                                    <span className="notif-spinner-micro"></span>
+                                  ) : (
+                                    <>
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                      </svg>
+                                      <span>Decline</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
           </div>

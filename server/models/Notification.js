@@ -22,8 +22,13 @@ const notificationSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["reminder", "alert", "system", "refill"],
+            enum: ["reminder", "alert", "system", "refill", "connection"],
             default: "reminder",
+        },
+        connectionStatus: {
+            type: String,
+            enum: ["pending", "accepted", "rejected"],
+            default: "pending",
         },
         medicineId: {
             type: mongoose.Schema.Types.ObjectId,

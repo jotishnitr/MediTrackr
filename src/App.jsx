@@ -367,7 +367,10 @@ export default function App() {
           allergies: profile.allergies || "",
           emergencyContact: profile.emergencyContact || "",
           email: profile.email || "",
+          familyMembers: profile.familyMembers || [],
           familyMembersEmails: profile.familyMembersEmails || [],
+          connectedFamilyEmails: profile.connectedFamilyEmails || [],
+          pendingFamilyEmails: profile.pendingFamilyEmails || [],
         };
         setProfileDetails(details);
       }
@@ -392,7 +395,17 @@ export default function App() {
       fetchHealthProfile();
       fetchUnreadNotifications();
       const interval = setInterval(fetchUnreadNotifications, 30000);
-      return () => clearInterval(interval);
+
+      const handleConnectionUpdated = () => {
+        fetchHealthProfile();
+        fetchUnreadNotifications();
+      };
+      window.addEventListener("familyConnectionUpdated", handleConnectionUpdated);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener("familyConnectionUpdated", handleConnectionUpdated);
+      };
     }
   }, [currentPage, isAuthPage]);
 

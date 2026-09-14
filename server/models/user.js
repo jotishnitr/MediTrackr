@@ -23,6 +23,21 @@ const userSchema = new mongoose.Schema(
       },
     ],
 
+    pendingFamilyMembersUserId: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    pendingFamilyEmails: [
+      {
+        type: String,
+        trim: true,
+        lowercase: true,
+      },
+    ],
+
     password: {
       type: String,
       required: true,

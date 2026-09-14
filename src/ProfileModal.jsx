@@ -25,6 +25,7 @@ export default function ProfileModal({
     emergencyContact: safeProfile.emergencyContact || "",
     email: safeProfile.email || "",
     familyMembersEmails: Array.isArray(safeProfile.familyMembersEmails) ? safeProfile.familyMembersEmails : [],
+    familyMembers: Array.isArray(safeProfile.familyMembers) ? safeProfile.familyMembers : [],
   });
 
   const [familyEmailInput, setFamilyEmailInput] = useState("");
@@ -41,6 +42,7 @@ export default function ProfileModal({
         emergencyContact: profileDetails.emergencyContact || "",
         email: profileDetails.email || "",
         familyMembersEmails: Array.isArray(profileDetails.familyMembersEmails) ? profileDetails.familyMembersEmails : [],
+        familyMembers: Array.isArray(profileDetails.familyMembers) ? profileDetails.familyMembers : [],
       });
     }
   }, [profileDetails]);
@@ -51,6 +53,20 @@ export default function ProfileModal({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const getMemberStatus = (email) => {
+    const clean = (email || "").toLowerCase();
+    if (Array.isArray(safeProfile.familyMembers)) {
+      const found = safeProfile.familyMembers.find(
+        (m) => (m.email || "").toLowerCase() === clean
+      );
+      if (found) return found.status;
+    }
+    if (Array.isArray(safeProfile.connectedFamilyEmails) && safeProfile.connectedFamilyEmails.map(e => e.toLowerCase()).includes(clean)) {
+      return "connected";
+    }
+    return "pending";
   };
 
   const handleAddFamilyEmail = () => {
@@ -89,6 +105,9 @@ export default function ProfileModal({
       ...prev,
       familyMembersEmails: (prev.familyMembersEmails || []).filter(
         (email) => email !== emailToRemove
+      ),
+      familyMembers: (prev.familyMembers || []).filter(
+        (m) => (typeof m === "object" ? m.email : m) !== emailToRemove
       ),
     }));
   };
@@ -162,8 +181,11 @@ export default function ProfileModal({
             weight: profile.weight || "",
             allergies: profile.allergies || "",
             emergencyContact: profile.emergencyContact || "",
-            email: formData.email, // preserve email
+            email: formData.email,
+            familyMembers: profile.familyMembers || [],
             familyMembersEmails: profile.familyMembersEmails || finalFamilyEmails,
+            connectedFamilyEmails: profile.connectedFamilyEmails || [],
+            pendingFamilyEmails: profile.pendingFamilyEmails || [],
           };
           setProfileDetails(updatedDetails);
         }
@@ -175,35 +197,35 @@ export default function ProfileModal({
     setIsEditing(false);
   };
 
+  const getDisplayFamilyMembers = () => {
+    if (Array.isArray(safeProfile.familyMembers) && safeProfile.familyMembers.length > 0) {
+      return safeProfile.familyMembers;
+    }
+    if (Array.isArray(safeProfile.familyMembersEmails) && safeProfile.familyMembersEmails.length > 0) {
+      return safeProfile.familyMembersEmails.map((email) => ({
+        email,
+        name: "",
+        status: getMemberStatus(email),
+      }));
+    }
+    return [];
+  };
+
+  const displayMembers = getDisplayFamilyMembers();
+
   return (
     <div className="profile-modal-overlay">
       <div className="profile-modal">
-        <div className="profile-modal-header">
-          <h2>{isEditing ? "Edit Health Profile" : "Health Profile"}</h2>
-          <button className="profile-close-btn" onClick={onClose}>
-            ✕
-          </button>
-        </div>
+        <div className="profile-modal-content">
+          <div className="profile-modal-header">
+            <h2>Health & Family Profile</h2>
+            <button className="profile-close-btn" onClick={onClose}>
+              ✕
+            </button>
+          </div>
 
-        <div className="profile-modal-body">
           {isEditing ? (
             <form onSubmit={handleSave} className="profile-form">
-              <div className="profile-form-group">
-                <label>Email Address</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  readOnly
-                  disabled
-                  style={{
-                    opacity: 0.6,
-                    cursor: "not-allowed",
-                    background: "rgba(255, 255, 255, 0.05)",
-                  }}
-                />
-              </div>
-
               <div className="profile-form-group">
                 <label>Full Name</label>
                 <input
@@ -211,7 +233,7 @@ export default function ProfileModal({
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Jotish Kumar"
+                  placeholder="e.g. John Doe"
                   required
                 />
               </div>
@@ -235,15 +257,15 @@ export default function ProfileModal({
                     value={formData.bloodType}
                     onChange={handleChange}
                   >
-                    <option value="">Select...</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
+                    <option value="">Select Blood Group</option>
                     <option value="A+">A+</option>
                     <option value="A-">A-</option>
                     <option value="B+">B+</option>
                     <option value="B-">B-</option>
                     <option value="AB+">AB+</option>
                     <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
                   </select>
                 </div>
               </div>
@@ -264,18 +286,18 @@ export default function ProfileModal({
                   <label>Weight (kg)</label>
                   <input
                     type="number"
-                    step="0.1"
                     name="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    placeholder="e.g. 70.5"
+                    placeholder="e.g. 70"
                   />
                 </div>
               </div>
 
               <div className="profile-form-group">
-                <label>Allergies & Chronic Conditions</label>
-                <textarea
+                <label>Known Allergies / Chronic Conditions</label>
+                <input
+                  type="text"
                   name="allergies"
                   value={formData.allergies}
                   onChange={handleChange}
@@ -321,24 +343,30 @@ export default function ProfileModal({
                 {formData.familyMembersEmails &&
                   formData.familyMembersEmails.length > 0 && (
                     <div className="family-emails-tags">
-                      {formData.familyMembersEmails.map((email, idx) => (
-                        <div key={idx} className="family-email-tag">
-                          <span className="family-tag-icon">👤</span>
-                          <span className="family-tag-text">{email}</span>
-                          <button
-                            type="button"
-                            className="family-tag-remove"
-                            onClick={() => handleRemoveFamilyEmail(email)}
-                            title="Remove member"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
+                      {formData.familyMembersEmails.map((email, idx) => {
+                        const status = getMemberStatus(email);
+                        return (
+                          <div key={idx} className={`family-email-tag ${status}`}>
+                            <span className="family-tag-icon">👤</span>
+                            <span className="family-tag-text">{email}</span>
+                            <span className={`family-tag-status-badge ${status}`}>
+                              {status === "connected" ? "Connected" : "Pending"}
+                            </span>
+                            <button
+                              type="button"
+                              className="family-tag-remove"
+                              onClick={() => handleRemoveFamilyEmail(email)}
+                              title="Remove member"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 <span className="profile-input-hint">
-                  Enter registered emails of family members to link and share health tracking.
+                  Adding a family member will send them a connection request. They must accept the request in their notification drawer to establish connection.
                 </span>
               </div>
 
@@ -412,14 +440,28 @@ export default function ProfileModal({
 
                 <div className="profile-info-block family-block">
                   <h4>Linked Family Members</h4>
-                  {safeProfile.familyMembersEmails &&
-                  safeProfile.familyMembersEmails.length > 0 ? (
+                  {displayMembers && displayMembers.length > 0 ? (
                     <div className="family-view-list">
-                      {safeProfile.familyMembersEmails.map((email, idx) => (
-                        <span key={idx} className="family-view-pill">
-                          <span className="pill-icon">👥</span> {email}
-                        </span>
-                      ))}
+                      {displayMembers.map((member, idx) => {
+                        const email = typeof member === "object" ? member.email : member;
+                        const status = typeof member === "object" && member.status ? member.status : getMemberStatus(email);
+                        const isConnected = status === "connected";
+
+                        return (
+                          <div key={idx} className={`family-view-card ${isConnected ? "connected" : "pending"}`}>
+                            <div className="family-view-main">
+                              <span className="pill-icon">👥</span>
+                              <div className="family-view-info">
+                                <span className="family-member-email">{email}</span>
+                                {member.name && <span className="family-member-name">{member.name}</span>}
+                              </div>
+                            </div>
+                            <span className={`family-view-status-badge ${isConnected ? "connected" : "pending"}`}>
+                              {isConnected ? "✓ Connected" : "⏳ Pending Acceptance"}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p>No family members linked yet. Click "Edit Profile" to link members.</p>
