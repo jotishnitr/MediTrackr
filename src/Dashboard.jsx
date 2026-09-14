@@ -817,9 +817,9 @@ export default function Dashboard({
               )}
             </div>
 
-            <div className="addMed-footer" style={{ marginTop: "16px" }}>
+            <div className="addMed-footer" style={{ padding: "16px 24px", display: "flex", justifyContent: "flex-end", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
               <button
-                className="save-med-btn"
+                className="refill-modal-close-btn"
                 onClick={() => setShowAllRefillsModal(false)}
               >
                 Close
