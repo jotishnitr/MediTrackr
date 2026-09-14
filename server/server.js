@@ -41,6 +41,7 @@ const forgotPassword = require("./routes/forgotPassword");
 const resetPassword = require("./routes/resetPassword");
 const getNotifications = require("./routes/getNotifications");
 const respondConnection = require("./routes/respondConnection");
+const getUpcomingRefills = require("./routes/getUpcomingRefills");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
 const connectDB = require("./config/db.js");
@@ -98,6 +99,7 @@ app.use("/", forgotPassword);
 app.use("/", resetPassword);
 app.use("/", getNotifications);
 app.use("/", respondConnection);
+app.use("/", getUpcomingRefills);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

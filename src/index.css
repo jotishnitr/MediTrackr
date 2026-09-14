@@ -1568,121 +1568,235 @@ body {
 }
 
 /* ==========================
-   TODAY SUMMARY CARD
+   UPCOMING REFILLS CARD
 ========================== */
 
-.today-summary {
+.upcoming-refills-card {
   box-sizing: border-box;
   background: linear-gradient(135deg, #131c30 0%, #171f33 50%, #1a2238 100%);
-
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 24px;
   backdrop-filter: blur(20px);
-
-  padding: 28px;
+  padding: 24px 28px;
   margin-top: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
-.today-summary-header {
-  margin-bottom: 12px;
-}
-
-.today-summary-header h2 {
-  color: #ffffff;
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.2;
-}
-
-/* ==========================
-   SUMMARY ROW
-========================== */
-
-.summary-item {
+.upcoming-refills-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 16px;
 }
 
-.summary-item:last-child {
-  border-bottom: none;
-}
-
-.summary-left {
+.upcoming-refills-title-wrap {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 10px;
 }
 
-/* ==========================
-   STATUS DOTS
-========================== */
+.upcoming-refills-icon {
+  color: #4edea3;
+  font-size: 24px;
+}
 
-.summary-dot {
-  width: 12px;
-  height: 12px;
+.upcoming-refills-header h2 {
+  color: #ffffff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.view-all-refills-btn {
+  background: rgba(78, 222, 163, 0.1);
+  border: 1px solid rgba(78, 222, 163, 0.25);
+  color: #4edea3;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-all-refills-btn:hover {
+  background: rgba(78, 222, 163, 0.2);
+  border-color: #4edea3;
+  transform: translateX(2px);
+}
+
+/* Refill List Items */
+.upcoming-refills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.empty-refills {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 12px;
+  color: #8b9bb4;
+  font-size: 13.5px;
+  gap: 8px;
+}
+
+.empty-refills-icon {
+  font-size: 28px;
+}
+
+.refill-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.refill-item:hover {
+  background: rgba(78, 222, 163, 0.05);
+  border-color: rgba(78, 222, 163, 0.2);
+  transform: translateX(3px);
+}
+
+.refill-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.refill-dot {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  margin-top: 6px;
   flex-shrink: 0;
 }
 
-.taken-dot {
-  background: #4edea3;
-  box-shadow: 0 0 10px rgba(78, 222, 163, 0.4);
+.refill-urgent-dot {
+  background: #ff5252;
+  box-shadow: 0 0 8px rgba(255, 82, 82, 0.6);
 }
 
-.pending-dot {
+.refill-warning-dot {
   background: #ffb95f;
-  box-shadow: 0 0 10px rgba(255, 185, 95, 0.4);
+  box-shadow: 0 0 8px rgba(255, 185, 95, 0.6);
 }
 
-.missed-dot {
-  background: #ff6b6b;
-  box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
+.refill-normal-dot {
+  background: #4edea3;
+  box-shadow: 0 0 8px rgba(78, 222, 163, 0.6);
 }
 
-/* ==========================
-   TEXT
-========================== */
+.refill-info {
+  display: flex;
+  flex-direction: column;
+}
 
-.summary-title {
+.refill-med-name {
   color: #ffffff;
-  font-size: 1.15rem;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 2px;
 }
 
-.summary-subtitle {
+.refill-med-type {
   color: #8b9bb4;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 12px;
 }
 
-/* ==========================
-   VALUES
-========================== */
-
-.summary-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ffffff;
-  min-width: 40px;
-  text-align: right;
+/* Badges */
+.refill-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
-.pending-value {
-  color: #ffb95f;
-}
-
-.missed-value {
+.refill-urgent {
+  background: rgba(255, 82, 82, 0.15);
+  border: 1px solid rgba(255, 82, 82, 0.35);
   color: #ff8e8e;
 }
 
-.taken-value {
+.refill-warning {
+  background: rgba(255, 185, 95, 0.15);
+  border: 1px solid rgba(255, 185, 95, 0.35);
+  color: #ffb95f;
+}
+
+.refill-normal {
+  background: rgba(78, 222, 163, 0.12);
+  border: 1px solid rgba(78, 222, 163, 0.3);
   color: #4edea3;
+}
+
+/* Refills Modal Popup */
+.refill-modal {
+  max-width: 680px !important;
+  width: 90% !important;
+}
+
+.refills-modal-body {
+  margin-top: 14px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.refills-modal-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.refills-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.refills-table th {
+  padding: 12px 14px;
+  text-align: left;
+  background: rgba(78, 222, 163, 0.12);
+  color: #4edea3;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(78, 222, 163, 0.2);
+}
+
+.refills-table td {
+  padding: 12px 14px;
+  color: #dae2fd;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.refills-table tbody tr:hover {
+  background: rgba(78, 222, 163, 0.04);
+}
+
+.refill-td-name {
+  display: flex;
+  align-items: center;
+}
+
+.refill-dosage-tag {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  color: #94a3b8;
 }
 
 /* =========================

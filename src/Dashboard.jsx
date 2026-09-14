@@ -41,6 +41,8 @@ export default function Dashboard({
 
 
   const [weeklyData, setWeeklyData] = React.useState([]);
+  const [upcomingRefills, setUpcomingRefills] = React.useState([]);
+  const [showAllRefillsModal, setShowAllRefillsModal] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchWeeklyData() {
@@ -66,6 +68,26 @@ export default function Dashboard({
     }
     fetchWeeklyData();
   }, []);
+
+  React.useEffect(() => {
+    async function fetchUpcomingRefills() {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/getUpcomingRefills`,
+          { credentials: "include" }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data && Array.isArray(data.upcomingRefills)) {
+            setUpcomingRefills(data.upcomingRefills);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load upcoming refills:", err);
+      }
+    }
+    fetchUpcomingRefills();
+  }, [medicines]);
 
   const safeMedicines = Array.isArray(medicines) ? medicines.filter(Boolean) : [];
 
@@ -545,49 +567,64 @@ export default function Dashboard({
               </div>
             </div>
 
-            <div className="today-summary">
-              <div className="today-summary-header">
-                <h2>Today's Summary</h2>
+            <div className="upcoming-refills-card">
+              <div className="upcoming-refills-header">
+                <div className="upcoming-refills-title-wrap">
+                  <span className="material-symbols-outlined upcoming-refills-icon">inventory_2</span>
+                  <h2>Upcoming Refills</h2>
+                </div>
+                {upcomingRefills.length > 0 && (
+                  <button
+                    className="view-all-refills-btn"
+                    onClick={() => setShowAllRefillsModal(true)}
+                    type="button"
+                  >
+                    View All →
+                  </button>
+                )}
               </div>
 
-              <div className="summary-item">
-                <div className="summary-left">
-                  <span className="summary-dot taken-dot"></span>
-                  <div>
-                    <div className="summary-title">Taken</div>
-                    <div className="summary-subtitle">
-                      Completed medications
-                    </div>
+              <div className="upcoming-refills-list">
+                {upcomingRefills.length === 0 ? (
+                  <div className="empty-refills">
+                    <span className="empty-refills-icon">💊</span>
+                    <p>No medicines need refill soon</p>
                   </div>
-                </div>
+                ) : (
+                  upcomingRefills.slice(0, 3).map((refill) => {
+                    const isUrgent = refill.remainingDays <= 3;
+                    const isWarning = refill.remainingDays > 3 && refill.remainingDays <= 7;
+                    const badgeClass = isUrgent
+                      ? "refill-urgent"
+                      : isWarning
+                      ? "refill-warning"
+                      : "refill-normal";
 
-                <div className="summary-value taken-value">{takenToday}</div>
-              </div>
+                    return (
+                      <div
+                        className="refill-item"
+                        key={refill.id || refill._id}
+                        onClick={() => setShowAllRefillsModal(true)}
+                        style={{ cursor: "pointer" }}
+                        title="Click to view all upcoming refills"
+                      >
+                        <div className="refill-left">
+                          <span className={`refill-dot ${badgeClass}-dot`}></span>
+                          <div className="refill-info">
+                            <div className="refill-med-name">{refill.name}</div>
+                            <div className="refill-med-type">{refill.type || "Medicine"}</div>
+                          </div>
+                        </div>
 
-              <div className="summary-item">
-                <div className="summary-left">
-                  <span className="summary-dot pending-dot"></span>
-                  <div>
-                    <div className="summary-title">Pending</div>
-                    <div className="summary-subtitle">Yet to take</div>
-                  </div>
-                </div>
-
-                <div className="summary-value pending-value">
-                  {pendingToday}
-                </div>
-              </div>
-
-              <div className="summary-item">
-                <div className="summary-left">
-                  <span className="summary-dot missed-dot"></span>
-                  <div>
-                    <div className="summary-title">Missed</div>
-                    <div className="summary-subtitle">Missed medications</div>
-                  </div>
-                </div>
-
-                <div className="summary-value missed-value">{missedToday}</div>
+                        <div className={`refill-badge ${badgeClass}`}>
+                          {refill.remainingDays === 0
+                            ? "Out of stock"
+                            : `${refill.remainingDays} ${refill.remainingDays === 1 ? "day" : "days"} left`}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
@@ -700,6 +737,97 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      {/* All Upcoming Refills Modal */}
+      {showAllRefillsModal && (
+        <div className="addMed-overlay" onClick={() => setShowAllRefillsModal(false)}>
+          <div className="addMed-modal refill-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="addMed-header">
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span className="material-symbols-outlined" style={{ color: "#4edea3", fontSize: "24px" }}>inventory_2</span>
+                <h2>All Upcoming Refills</h2>
+              </div>
+              <button
+                className="close-btn"
+                onClick={() => setShowAllRefillsModal(false)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="refills-modal-body">
+              {upcomingRefills.length === 0 ? (
+                <div className="empty-state" style={{ padding: "40px 20px" }}>
+                  <div className="empty-state-icon">💊</div>
+                  <h3>No Refills Needed</h3>
+                  <p>All your medicines have plenty of stock remaining.</p>
+                </div>
+              ) : (
+                <div className="refills-modal-table-container">
+                  <table className="refills-table">
+                    <thead>
+                      <tr>
+                        <th>Medicine Name</th>
+                        <th>Type</th>
+                        <th>Stock Count</th>
+                        <th>Time</th>
+                        <th>Remaining Days</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {upcomingRefills.map((item) => {
+                        const isUrgent = item.remainingDays <= 3;
+                        const isWarning = item.remainingDays > 3 && item.remainingDays <= 7;
+                        const badgeClass = isUrgent
+                          ? "refill-urgent"
+                          : isWarning
+                          ? "refill-warning"
+                          : "refill-normal";
+
+                        return (
+                          <tr key={item.id || item._id}>
+                            <td className="refill-td-name">
+                              <span style={{ marginRight: "8px" }}>💊</span>
+                              <strong>{item.name}</strong>
+                              {item.dosage && (
+                                <span className="refill-dosage-tag">
+                                  {item.dosage} {item.unit?.toUpperCase()}
+                                </span>
+                              )}
+                            </td>
+                            <td>{item.type || "Oral Tablet"}</td>
+                            <td style={{ fontWeight: "600", color: "#67e8f9" }}>
+                              {item.count ?? 0} {item.unit || "units"}
+                            </td>
+                            <td>{item.time || "—"}</td>
+                            <td>
+                              <span className={`refill-badge ${badgeClass}`}>
+                                {item.remainingDays === 0
+                                  ? "Out of stock"
+                                  : `${item.remainingDays} ${item.remainingDays === 1 ? "day" : "days"} left`}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="addMed-footer" style={{ marginTop: "16px" }}>
+              <button
+                className="save-med-btn"
+                onClick={() => setShowAllRefillsModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </motion.section>
   );
