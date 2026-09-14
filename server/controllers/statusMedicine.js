@@ -7,11 +7,23 @@ const statusMedicine = async (req, res) => {
     const day = String(localNow.getDate()).padStart(2, "0");
     const today = `${year}-${month}-${day}`;
     const medicine = await Medicine.findOne({ _id: req.query.id });
+    if (!medicine) {
+      return res.status(404).json({ success: false, message: "Medicine not found" });
+    }
+
     medicine.status = !medicine.status;
+    const currentCount = typeof medicine.count === "number" ? medicine.count : 0;
+
     if (medicine.status) {
+      // Medicine was taken -> decrease available quantity/stock
       medicine.takenDate = today;
+      if (currentCount > 0) {
+        medicine.count = currentCount - 1;
+      }
     } else {
+      // Medicine was un-marked -> restore available quantity/stock
       medicine.takenDate = "";
+      medicine.count = currentCount + 1;
     }
     await medicine.save();
 

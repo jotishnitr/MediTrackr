@@ -136,6 +136,7 @@ export default function MyMedicines({
 
                 <p className="med-info">
                   {med.dosage} {med.unit ? med.unit.toUpperCase() : "MG"} • {med.type}
+                  {med.count !== undefined && med.count !== null && med.count !== "" ? ` • Qty: ${med.count}` : ""}
                 </p>
 
                 <div className="card-divider"></div>

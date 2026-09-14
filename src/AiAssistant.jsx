@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import FeedbackForm from "./feedbackform";
 import { downloadReportAsPDF } from "./utils/pdfGenerator";
+import { useSpeechToText } from "./utils/useSpeechToText";
 import "./aiAssistant.css";
 
 export default function AiAssistance({
@@ -43,6 +44,15 @@ export default function AiAssistance({
       setCopiedIndex((prev) => (prev === index ? null : prev));
     }, 2000);
   };
+
+  const {
+    isListening,
+    toggleListening,
+  } = useSpeechToText({
+    onTranscript: (transcript) => {
+      setInput((prev) => (prev ? `${prev.trim()} ${transcript}` : transcript));
+    },
+  });
 
   const chatEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -379,6 +389,7 @@ export default function AiAssistance({
               name: med.name,
               dosage: med.dosage,
               unit: med.unit,
+              count: med.count !== undefined ? Number(med.count) || 0 : 0,
               type: med.type,
               time: normalizeTo24Hour(med.time),
               instructions: med.instructions || "",
@@ -888,7 +899,9 @@ export default function AiAssistance({
                 className="ai-text-input"
                 type="text"
                 placeholder={
-                  activeMode === "advisor"
+                  isListening
+                    ? "🎙️ Listening... Speak now"
+                    : activeMode === "advisor"
                     ? "Ask Health Advisor about symptoms, medicines, lab reports..."
                     : "Tell Copilot to add medicines, log vitals, optimize schedule..."
                 }
@@ -896,6 +909,17 @@ export default function AiAssistance({
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
+
+              <button
+                className={`ai-mic-btn ${isListening ? "listening" : ""}`}
+                onClick={toggleListening}
+                type="button"
+                title={isListening ? "Listening... Click to stop" : "Voice input (Speak to type)"}
+              >
+                <span className="material-symbols-outlined">
+                  {isListening ? "mic" : "mic_none"}
+                </span>
+              </button>
 
               <button
                 className="ai-send-btn"

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import "./helpBot.css";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useSpeechToText } from "./utils/useSpeechToText";
 
 export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const [messages, setMessages] = useState([]);
@@ -18,6 +19,15 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
       setCopiedIndex((prev) => (prev === index ? null : prev));
     }, 2000);
   };
+
+  const {
+    isListening,
+    toggleListening,
+  } = useSpeechToText({
+    onTranscript: (transcript) => {
+      setInput((prev) => (prev ? `${prev.trim()} ${transcript}` : transcript));
+    },
+  });
 
   const API_BASE = import.meta.env.VITE_API_URL || "https://meditrackr.onrender.com";
 
@@ -229,9 +239,20 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask your queries..."
+          placeholder={isListening ? "🎙️ Listening... Speak now" : "Ask your queries..."}
           disabled={loading}
         />
+        <button
+          className={`bot-mic-btn ${isListening ? "listening" : ""}`}
+          onClick={toggleListening}
+          type="button"
+          title={isListening ? "Listening... Click to stop" : "Speak to type"}
+          disabled={loading}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>
+            {isListening ? "mic" : "mic_none"}
+          </span>
+        </button>
         <button
           className="chat-send-btn"
           onClick={() => sendMessage()}

@@ -22,6 +22,12 @@ const medicineSchema = new mongoose.Schema({
     required: true,
   },
 
+  count: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+
   type: {
     type: String,
     enum: [

@@ -15,6 +15,7 @@ export default function MedicineModal({
     name: "",
     dosage: "",
     unit: "mg",
+    count: "",
     type: "Oral Tablet",
     time: "",
     instructions: "",
@@ -28,6 +29,7 @@ export default function MedicineModal({
         name: medicineData.name || "",
         dosage: medicineData.dosage !== undefined ? medicineData.dosage : "",
         unit: medicineData.unit || "mg",
+        count: medicineData.count !== undefined ? medicineData.count : "",
         type: medicineData.type || "Oral Tablet",
         time: medicineData.time || "",
         instructions: medicineData.instructions || "",
@@ -37,6 +39,7 @@ export default function MedicineModal({
         name: medicineData.name || "",
         dosage: medicineData.dosage !== undefined ? medicineData.dosage : "",
         unit: medicineData.unit || "mg",
+        count: medicineData.count !== undefined ? medicineData.count : "",
         type: medicineData.type || "Oral Tablet",
         time: medicineData.time || "",
         instructions: medicineData.instructions || "",
@@ -46,6 +49,7 @@ export default function MedicineModal({
         name: "",
         dosage: "",
         unit: "mg",
+        count: "",
         type: "Oral Tablet",
         time: "",
         instructions: "",
@@ -92,6 +96,7 @@ export default function MedicineModal({
               name: medDetails.name.trim(),
               dosage: Number(medDetails.dosage) || 0,
               unit: medDetails.unit,
+              count: medDetails.count !== "" ? Number(medDetails.count) : 0,
               type: medDetails.type,
               time: medDetails.time,
               instructions: medDetails.instructions,
@@ -126,6 +131,7 @@ export default function MedicineModal({
               name: medDetails.name.trim(),
               dosage: Number(medDetails.dosage) || 0,
               unit: medDetails.unit,
+              count: medDetails.count !== "" ? Number(medDetails.count) : 0,
               type: medDetails.type,
               time: medDetails.time,
               instructions: medDetails.instructions,
@@ -209,6 +215,18 @@ export default function MedicineModal({
                 <option>IU</option>
               </select>
             </div>
+          </div>
+
+          <div className="form-group">
+            <label>Quantity / Stock Count</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g. 30"
+              onChange={handleChange}
+              name="count"
+              value={medDetails.count}
+            />
           </div>
 
           <div className="form-group">

@@ -2,7 +2,7 @@ const Medicine = require("../models/Medicine.js");
 
 const updateMedicine = async (req, res) => {
   try {
-    const { id, name, dosage, unit, type, time, instructions, reminder } = req.body;
+    const { id, name, dosage, unit, count, type, time, instructions, reminder } = req.body;
     const medicineId = id || req.query.id;
 
     if (!medicineId) {
@@ -21,6 +21,7 @@ const updateMedicine = async (req, res) => {
         ...(name !== undefined && { name }),
         ...(dosage !== undefined && { dosage }),
         ...(unit !== undefined && { unit }),
+        ...(count !== undefined && { count: count !== "" ? Number(count) : 0 }),
         ...(type !== undefined && { type }),
         ...(time !== undefined && { time }),
         ...(instructions !== undefined && { instructions }),

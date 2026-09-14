@@ -18,7 +18,7 @@ cron.schedule("0 0 * * *", async () => {
             // 1. Log taken medicines if status is true and takenDate was before today
             if (medicine.status && medicine.takenDate && new Date(medicine.takenDate) < today) {
                 const takenDay = new Date(medicine.takenDate);
-                const dayExists = medicine.history.some(h => 
+                const dayExists = medicine.history.some(h =>
                     new Date(h.date).toDateString() === takenDay.toDateString()
                 );
                 if (!dayExists) {
@@ -42,7 +42,7 @@ cron.schedule("0 0 * * *", async () => {
                     continue;
                 }
 
-                const hasEntry = medicine.history.some(h => 
+                const hasEntry = medicine.history.some(h =>
                     new Date(h.date).toDateString() === checkDate.toDateString()
                 );
 
