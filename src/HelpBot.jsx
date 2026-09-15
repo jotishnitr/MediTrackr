@@ -23,6 +23,7 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
   const {
     isListening,
     toggleListening,
+    currentSpeechLang,
   } = useSpeechToText({
     onTranscript: (transcript) => {
       setInput((prev) => (prev ? `${prev.trim()} ${transcript}` : transcript));
@@ -253,14 +254,22 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isListening ? "🎙️ Listening... Speak now" : "Ask your queries..."}
+          placeholder={
+            isListening
+              ? `🎙️ Listening in ${currentSpeechLang?.nativeName || "English"}... Speak now`
+              : "Ask your queries..."
+          }
           disabled={loading}
         />
         <button
           className={`bot-mic-btn ${isListening ? "listening" : ""}`}
           onClick={toggleListening}
           type="button"
-          title={isListening ? "Listening... Click to stop" : "Speak to type"}
+          title={
+            isListening
+              ? `Listening in ${currentSpeechLang?.nativeName || "English"}... Click to stop`
+              : `Speak to type in ${currentSpeechLang?.nativeName || "English"} (${currentSpeechLang?.name || "English"})`
+          }
           disabled={loading}
         >
           <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>

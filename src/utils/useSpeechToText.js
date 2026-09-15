@@ -1,9 +1,30 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
-export function useSpeechToText({ onTranscript, onError } = {}) {
+export const SPEECH_LANG_MAP = {
+  en: { code: "en-IN", name: "English (India)", nativeName: "English" },
+  hi: { code: "hi-IN", name: "Hindi", nativeName: "हिन्दी" },
+  te: { code: "te-IN", name: "Telugu", nativeName: "తెలుగు" },
+  ta: { code: "ta-IN", name: "Tamil", nativeName: "தமிழ்" },
+  bn: { code: "bn-IN", name: "Bengali", nativeName: "বাংলা" },
+  mr: { code: "mr-IN", name: "Marathi", nativeName: "मराठी" },
+  gu: { code: "gu-IN", name: "Gujarati", nativeName: "ગુજરાતી" },
+  kn: { code: "kn-IN", name: "Kannada", nativeName: "ಕನ್ನಡ" },
+  ml: { code: "ml-IN", name: "Malayalam", nativeName: "മലയാളം" },
+  or: { code: "or-IN", name: "Odia", nativeName: "ଓଡ଼ିଆ" },
+  pa: { code: "pa-IN", name: "Punjabi", nativeName: "ਪੰਜਾਬੀ" },
+};
+
+export function useSpeechToText({ onTranscript, onError, lang } = {}) {
+  const { i18n } = useTranslation();
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
   const recognitionRef = useRef(null);
+
+  // Extract 2-letter language code from i18n or explicit prop
+  const currentLangKey = (lang || i18n?.language || "en").toLowerCase().slice(0, 2);
+  const speechConfig = SPEECH_LANG_MAP[currentLangKey] || SPEECH_LANG_MAP.en;
+  const recognitionLang = speechConfig.code;
 
   useEffect(() => {
     const SpeechRecognition =
@@ -37,7 +58,7 @@ export function useSpeechToText({ onTranscript, onError } = {}) {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
-      recognition.lang = "en-US";
+      recognition.lang = recognitionLang;
 
       recognition.onstart = () => {
         setIsListening(true);
@@ -74,7 +95,7 @@ export function useSpeechToText({ onTranscript, onError } = {}) {
       setIsListening(false);
       if (onError) onError(err.message);
     }
-  }, [onTranscript, onError]);
+  }, [onTranscript, onError, recognitionLang]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -102,6 +123,8 @@ export function useSpeechToText({ onTranscript, onError } = {}) {
   return {
     isListening,
     isSupported,
+    currentSpeechLang: speechConfig,
+    recognitionLang,
     startListening,
     stopListening,
     toggleListening,

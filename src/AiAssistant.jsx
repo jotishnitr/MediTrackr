@@ -51,6 +51,7 @@ export default function AiAssistance({
   const {
     isListening,
     toggleListening,
+    currentSpeechLang,
   } = useSpeechToText({
     onTranscript: (transcript) => {
       setInput((prev) => (prev ? `${prev.trim()} ${transcript}` : transcript));
@@ -918,7 +919,7 @@ export default function AiAssistance({
                 type="text"
                 placeholder={
                   isListening
-                    ? "🎙️ Listening... Speak now"
+                    ? `🎙️ Listening in ${currentSpeechLang?.nativeName || "English"}... Speak now`
                     : activeMode === "advisor"
                     ? "Ask Health Advisor about symptoms, medicines, lab reports..."
                     : "Tell Copilot to add medicines, log vitals, optimize schedule..."
@@ -932,7 +933,11 @@ export default function AiAssistance({
                 className={`ai-mic-btn ${isListening ? "listening" : ""}`}
                 onClick={toggleListening}
                 type="button"
-                title={isListening ? "Listening... Click to stop" : "Voice input (Speak to type)"}
+                title={
+                  isListening
+                    ? `Listening in ${currentSpeechLang?.nativeName || "English"}... Click to stop`
+                    : `Voice input in ${currentSpeechLang?.nativeName || "English"} (${currentSpeechLang?.name || "English"})`
+                }
               >
                 <span className="material-symbols-outlined">
                   {isListening ? "mic" : "mic_none"}
