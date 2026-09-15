@@ -716,81 +716,6 @@ export default function Dashboard({
             >
               <div className="health-card-label">{t("dashboard.symptomsNotes", "SYMPTOMS & NOTES")}</div>
 
-              <div className="health-card-value">
-                {bloodPressure ? (
-                  <>
-                    {bloodPressure} <span>mmHg</span>
-                  </>
-                ) : (
-                  <span className="health-card-empty">—</span>
-                )}
-              </div>
-
-              <div className="health-card-status stable">
-                <span style={{ color: bpInfo ? bpInfo.color : "#9ca3af" }}>
-                  {bpInfo ? bpInfo.tagline : "No log for today"}
-                </span>
-              </div>
-            </div>
-
-            <div className="health-card-icon pressure-icon">❤️</div>
-          </div>
-
-          <div className="health-card heart-card">
-            <div className="health-card-left">
-              <div className="health-card-label">SLEEP DURATION</div>
-
-              <div className="health-card-value">
-                {sleepHours != null && sleepHours !== "" && sleepHours > 0 ? (
-                  <>
-                    {sleepHours} <span>HRS</span>
-                  </>
-                ) : (
-                  <span className="health-card-empty">—</span>
-                )}
-              </div>
-
-              <div className="health-card-status neutral">
-                {sleepHealth || "No log for today"}
-              </div>
-            </div>
-
-            <div className="health-card-icon heart-icon">🌙</div>
-          </div>
-
-          <div className="health-card weight-card">
-            <div className="health-card-left">
-              <div className="health-card-label">WEIGHT</div>
-
-              <div className="health-card-value">
-                {weight != null && weight !== "" && weight > 0 ? (
-                  <>
-                    {weight} <span>kg</span>
-                  </>
-                ) : (
-                  <span className="health-card-empty">—</span>
-                )}
-              </div>
-
-              <div className="health-card-status warning">
-                {weight != null && weight !== "" && weight > 0 ? "Current Weight" : "No log for today"}
-              </div>
-            </div>
-
-            <div className="health-card-icon weight-icon">⚖️</div>
-          </div>
-
-          <div className="health-card symptoms-card">
-            <div
-              className="health-card-left"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                width: "100%",
-              }}
-            >
-              <div className="health-card-label">SYMPTOMS & NOTES</div>
-
               <div className="dashboard-symptoms-container">
                 {selectedSymptoms && selectedSymptoms.length > 0 ? (
                   <div className="dashboard-symptoms-list">
@@ -811,6 +736,12 @@ export default function Dashboard({
                     <strong>Notes:</strong> {notes}
                   </div>
                 ) : null}
+
+                {!notes && (!selectedSymptoms || selectedSymptoms.length === 0) && (
+                  <div className="health-card-status stable" style={{ marginTop: "4px" }}>
+                    <span>{t("dashboard.noLogToday", "No log for today")}</span>
+                  </div>
+                )}
               </div>
             </div>
 
