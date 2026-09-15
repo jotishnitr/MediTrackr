@@ -55,31 +55,45 @@ const AssistantHistory = require("../models/AssistantHistory");
 const { processUploadedFile } = require("../utils/fileProcessor");
 
 const gemini_models = [
-  "gemini-flash-latest",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro",
-  "gemini-1.5-flash-8b",
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
+  "gemini-3-flash",
+  "gemini-2.5-flash",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash-lite",
+  "gemini-flash-latest"
 ];
 
 // OpenRouter Free Vision models for prescriptions, lab tests, and image scans
 const openrouter_vision_models = [
-  "google/gemini-2.0-flash-exp:free",
-  "google/gemini-2.0-pro-exp-02-05:free",
-  "meta-llama/llama-3.2-11b-vision-instruct:free",
-  "meta-llama/llama-3.2-90b-vision-instruct:free",
-  "qwen/qwen-2.5-vl-72b-instruct:free",
-  "qwen/qwen-2-vl-72b-instruct:free"
+  "inclusionai/ling-3.0-flash-vl:free",
+  "nvidia/nemotron-3-nano-omni:free",
+  "google/gemma-4-26b-a4b:free",
+  "google/gemma-4-31b:free",
 ];
 
 // OpenRouter Free Document & Text models for PDF, Word docs, medical queries
 const openrouter_doc_models = [
-  "deepseek/deepseek-r1:free",
-  "deepseek/deepseek-chat:free",
-  "meta-llama/llama-3.3-70b-instruct:free",
-  "google/gemma-3-27b-it:free",
-  "mistralai/mistral-small-24b-instruct-2501:free",
-  "nvidia/nemotron-3.5-lightning:free"
+  "inclusionai/ling-3.0-flash-vl:free",
+  "nex-agi/nex-n2.5-mini:free",
+  "nex-agi/nex-n2.5-pro:free",
+  "inclusionai/ling-3.0-flash-sante:free",
+  "inclusionai/ling-3.0-flash-fin:free",
+  "dots-studio/dots-3-note-preview:free",
+  "dots-studio/dots3-note-preview:free",
+  "liquidai/lfm2.5-2.6b:free",
+  "nvidia/nemotron-3.5-lightning:free",
+  "thinking-machines/inkling-small:free",
+  "thinking-machines/inkling:free",
+  "poolside/laguna-s2.1:free",
+  "poolside/laguna-xs2.1:free",
+  "cohere/north-mini-code:free",
+  "nvidia/nemotron-3.5-content-safety:free",
+  "nvidia/nemotron-3-ultra:free",
+  "nvidia/nemotron-3-nano-omni:free",
+  "google/gemma-4-26b-a4b:free",
+  "google/gemma-4-31b:free",
+  "nvidia/nemotron-3-super:free",
 ];
 
 // Helper function to enforce a strict 15-second timeout per model request

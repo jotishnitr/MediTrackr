@@ -233,33 +233,36 @@ const executeTool = async (name, userId) => {
 
 
 const gemini_models = [
-  "gemini-flash-latest",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro",
-  "gemini-1.5-flash-8b",
-
+  "gemini-3.8-flash",      // newest
+  "gemini-3.7-flash",
+  "gemini-3-flash",
+  "gemini-2.5-flash",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash-lite",
+  "gemini-flash-latest"
 ];
 
 const openrouter_models = [
-  "nvidia/nemotron-3.5-lightning:free",
-  "minimax/minimax-m3:free",
-  "thinking-machines/inkling:free",
-  "thinking-machines/inkling-small:free",
-  "dots-studio/dots3-note-preview:free",
-  "google/gemma-4-31b:free",
-  "google/gemma-4-26b-a4b:free",
-  "inclusionai/ling-3.0-flash-fin:free",
+  "inclusionai/ling-3.0-flash-vl:free",
+  "nex-agi/nex-n2.5-mini:free",
+  "nex-agi/nex-n2.5-pro:free",
   "inclusionai/ling-3.0-flash-sante:free",
-  "cohere/north-mini-code:free",
-  "z-ai/glm5.2:free",
-  "nvidia/nemotron-3-super:free",
+  "inclusionai/ling-3.0-flash-fin:free",
+  "dots-studio/dots-3-note-preview:free",
+  "dots-studio/dots3-note-preview:free",
+  "liquidai/lfm2.5-2.6b:free",
+  "nvidia/nemotron-3.5-lightning:free",
+  "thinking-machines/inkling-small:free",
+  "thinking-machines/inkling:free",
   "poolside/laguna-s2.1:free",
-  "minimax/minimax-m2.7:free",
-  "nvidia/nemotron-3-nano-omni:free",
-  "nvidia/nemotron-3.5-content-safety:free",
   "poolside/laguna-xs2.1:free",
-  "liquidai/lfm2.5-2.6b:free"
+  "cohere/north-mini-code:free",
+  "nvidia/nemotron-3.5-content-safety:free",
+  "nvidia/nemotron-3-ultra:free",
+  "nvidia/nemotron-3-nano-omni:free",
+  "google/gemma-4-26b-a4b:free",
+  "google/gemma-4-31b:free",
+  "nvidia/nemotron-3-super:free",
 ];
 
 // Helper function to enforce a 15-second timeout per model request
