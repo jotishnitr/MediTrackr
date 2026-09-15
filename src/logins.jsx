@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "./logins.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export default function Login({
   onSignUpRedirect,
@@ -9,6 +11,7 @@ export default function Login({
   setCurrentPage,
   setIsAuthenticated,
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -80,6 +83,9 @@ export default function Login({
 
   return (
     <div className="login-page-container">
+      {/* Top Right Language Selector */}
+      <LanguageSelector variant="auth" />
+
       {/* Brand Header Row */}
       <div className="login-header-row">
         <img
@@ -92,9 +98,9 @@ export default function Login({
 
       {/* Main Login Card */}
       <main className="login-card">
-        <h2 className="login-card-title">Welcome Back</h2>
+        <h2 className="login-card-title">{t("auth.loginTitle", "Welcome Back")}</h2>
         <p className="login-card-subtitle">
-          Enter your credentials to access your health dashboard.
+          {t("auth.loginSubtitle", "Enter your credentials to access your health dashboard.")}
         </p>
 
         {error && (
@@ -133,7 +139,7 @@ export default function Login({
           {/* Email Input */}
           <div className="login-form-group">
             <label className="login-form-label" htmlFor="email">
-              Email Address
+              {t("auth.emailLabel", "Email Address")}
             </label>
             <div className="login-input-wrapper">
               <span className="material-symbols-outlined login-input-icon-left">
@@ -144,7 +150,7 @@ export default function Login({
                 id="email"
                 name="email"
                 className="login-form-input"
-                placeholder="name@example.com"
+                placeholder={t("auth.emailPlaceholder", "name@example.com")}
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -156,7 +162,7 @@ export default function Login({
           <div className="login-form-group">
             <div className="login-label-row">
               <label className="login-form-label" htmlFor="password">
-                Password
+                {t("auth.passwordLabel", "Password")}
               </label>
               <span
                 className="forgot-password-link"
@@ -171,7 +177,7 @@ export default function Login({
                   }
                 }}
               >
-                Forgot Password?
+                {t("auth.forgotPassword", "Forgot Password?")}
               </span>
             </div>
             <div className="login-input-wrapper">
@@ -209,7 +215,7 @@ export default function Login({
               onChange={(e) => setRememberMe(e.target.checked)}
             />
             <label htmlFor="rememberMe" className="remember-me-text">
-              Remember me for 30 days
+              Remember me
             </label>
           </div>
 
@@ -219,7 +225,7 @@ export default function Login({
             className="login-submit-btn"
             disabled={isLoading}
           >
-            <span>{isLoading ? "Logging in..." : "Login to Dashboard"}</span>
+            <span>{isLoading ? t("auth.signingIn", "Logging in...") : t("auth.signInBtn", "Login to Dashboard")}</span>
             {!isLoading && (
               <span className="material-symbols-outlined login-btn-arrow">
                 arrow_forward
@@ -229,7 +235,7 @@ export default function Login({
         </form>
 
         {/* Divider */}
-        <div className="login-divider">OR CONTINUE WITH</div>
+        <div className="login-divider">{t("auth.orContinueWith", "OR CONTINUE WITH")}</div>
 
         <div className="google-auth-btn-wrapper">
           <GoogleLogin
@@ -277,9 +283,9 @@ export default function Login({
 
         {/* Redirect to Sign Up */}
         <div className="signup-redirect">
-          Don't have an account?{" "}
+          {t("auth.dontHaveAccount", "Don't have an account?")}{" "}
           <span className="signup-link" onClick={onSignUpRedirect}>
-            Create Account
+            {t("auth.registerLink", "Create Account")}
           </span>
         </div>
       </main>

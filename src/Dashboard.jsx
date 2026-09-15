@@ -3,6 +3,7 @@ import { getMedicineStatus } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
 import { requestFCMToken, listenForForegroundMessages } from "./firebase";
 import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export default function Dashboard({
   setCurrentPage,
@@ -312,10 +313,11 @@ export default function Dashboard({
     >
       <div className="dashboard-header">
         <div className="dashboard-header-left">
-          <div className="dashboard-title">Dashboard</div>
+          <div className="dashboard-title">{t("dashboard.title", "Dashboard")}</div>
           {dateDisplay()}
         </div>
         <div className="dashboard-header-right">
+          <LanguageSelector variant="header" />
           <button
             className="notification-btn"
             onClick={() => {
@@ -323,7 +325,7 @@ export default function Dashboard({
                 onOpenNotificationModal();
               }
             }}
-            title="View Notifications"
+            title={t("notifications.title", "View Notifications")}
             aria-label="View Notifications"
           >
             <div className="notification-btn-icon-wrapper">
@@ -349,7 +351,7 @@ export default function Dashboard({
           </button>
           <div className="addMed-container">
             <button className="addMed-btn" onClick={handleOpenAdd}>
-              + Add Medicine
+              {t("dashboard.addMedicineBtn", "+ Add Medicine")}
             </button>
           </div>
         </div>
@@ -359,13 +361,13 @@ export default function Dashboard({
         <div className="progress-cards">
           <div className="total-med-container">
             <div className="totalMed-icon-container">
-              <img className="totalMed-icon" src="totalMed.png"></img>
+              <img className="totalMed-icon" src="totalMed.png" alt="total"></img>
             </div>
-            <div className="recently-added">{medicineTypes} Types</div>
+            <div className="recently-added">{medicineTypes} {t("dashboard.types", "Types")}</div>
             <div className="totalMed-number">{medicines.length}</div>
-            <div className="totalMed-title">Total Medicines</div>
+            <div className="totalMed-title">{t("dashboard.totalMedicines", "Total Medicines")}</div>
             <div className="present-time">
-              Last updated:{" "}
+              {t("dashboard.lastUpdated", "Last updated")}:{" "}
               {new Date().toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "2-digit",
@@ -376,14 +378,14 @@ export default function Dashboard({
 
           <div className="scheduledToday-container">
             <div className="scheduledToday-icon-container">
-              <img className="scheduledToday-icon" src="missedToday.png"></img>
+              <img className="scheduledToday-icon" src="missedToday.png" alt="missed"></img>
             </div>
-            <div className="scheduledToday-day">{missedToday} Missed</div>
+            <div className="scheduledToday-day">{missedToday} {t("dashboard.missed", "Missed")}</div>
             <div className="scheduledToday-number-container">
               <div className="scheduledToday-number">{missedToday}</div>
-              <div className="scheduledToday-unit">doses</div>
+              <div className="scheduledToday-unit">{t("dashboard.doses", "doses")}</div>
             </div>
-            <div className="scheduledToday-title">Missed Today</div>
+            <div className="scheduledToday-title">{t("dashboard.missedToday", "Missed Today")}</div>
             <div className="scheduledToday-progress-bar">
               <div
                 className="scheduledToday-progress-fill"
@@ -394,11 +396,11 @@ export default function Dashboard({
 
           <div className="dosesTaken-container">
             <div className="dosesTaken-icon-container">
-              <img className="dosesTaken-icon" src="dosesTaken.png"></img>
+              <img className="dosesTaken-icon" src="dosesTaken.png" alt="taken"></img>
             </div>
-            <div className="dosesTaken-percent">{dailyAdherence}% Daily</div>
+            <div className="dosesTaken-percent">{dailyAdherence}% {t("dashboard.daily", "Daily")}</div>
             <div className="dosesTaken-number">{takenToday}</div>
-            <div className="dosesTaken-title">Doses Taken</div>
+            <div className="dosesTaken-title">{t("dashboard.dosesTaken", "Doses Taken")}</div>
             <div className="dosesTaken-progress-bar">
               <div
                 className="dosesTaken-progress-fill"
@@ -412,11 +414,12 @@ export default function Dashboard({
               <img
                 className="remainingDoses-icon"
                 src="remainingDoses.png"
+                alt="remaining"
               ></img>
             </div>
-            <div className="remainingDoses-overdue">{pendingToday} overdue</div>
+            <div className="remainingDoses-overdue">{pendingToday} {t("dashboard.pending", "overdue")}</div>
             <div className="remainingDoses-number">{pendingToday}</div>
-            <div className="remainingDoses-title">Remaining Doses</div>
+            <div className="remainingDoses-title">{t("dashboard.remainingDoses", "Remaining Doses")}</div>
             <div className="remainingDoses-progress-bar">
               <div
                 className="remainingDoses-progress-fill"
@@ -431,14 +434,14 @@ export default function Dashboard({
             <div className="todaySchedule-header">
               <div className="todaySchedule-header-left">
                 <div className="todaySchedule-dot"></div>
-                <div className="schedule-title">Today's Schedule</div>
+                <div className="schedule-title">{t("dashboard.todaySchedule", "Today's Schedule")}</div>
               </div>
               <div className="todaySchedule-header-right">
                 <div
                   className="view-all"
                   onClick={() => setCurrentPage("myMedicines")}
                 >
-                  View All →
+                  {t("dashboard.viewAll", "View All →")}
                 </div>
               </div>
             </div>
@@ -513,7 +516,7 @@ export default function Dashboard({
           <div className="adherence-refills">
             <div className="weekly-adherence">
               <div className="weeklyAdherence-header">
-                <div className="weeklyAdherence-title">Weekly Adherence</div>
+                <div className="weeklyAdherence-title">{t("dashboard.weeklyAdherence", "Weekly Adherence")}</div>
 
                 <div className="this-week">THIS WEEK</div>
               </div>
@@ -557,7 +560,7 @@ export default function Dashboard({
                 <div className="adherence-rate-container">
                   <div className="adherence-rate-value">{adherenceRate}%</div>
 
-                  <div className="adherence-rate">ADHERENCE RATE</div>
+                  <div className="adherence-rate">{t("dashboard.takenRate", "ADHERENCE RATE")}</div>
                 </div>
 
                 <div className="adherence-missed-container">
@@ -565,7 +568,7 @@ export default function Dashboard({
                     {weeklyMissedRate}%
                   </div>
 
-                  <div className="adherence-missed">MISSED RATE</div>
+                  <div className="adherence-missed">{t("dashboard.missedRate", "MISSED RATE")}</div>
                 </div>
               </div>
             </div>
@@ -574,7 +577,7 @@ export default function Dashboard({
               <div className="upcoming-refills-header">
                 <div className="upcoming-refills-title-wrap">
                   <span className="material-symbols-outlined upcoming-refills-icon">inventory_2</span>
-                  <h2>Upcoming Refills</h2>
+                  <h2>{t("dashboard.upcomingRefills", "Upcoming Refills")}</h2>
                 </div>
                 {upcomingRefills.length > 0 && (
                   <button
@@ -582,7 +585,7 @@ export default function Dashboard({
                     onClick={() => setShowAllRefillsModal(true)}
                     type="button"
                   >
-                    View All →
+                    {t("dashboard.viewAll", "View All →")}
                   </button>
                 )}
               </div>
@@ -591,7 +594,7 @@ export default function Dashboard({
                 {upcomingRefills.length === 0 ? (
                   <div className="empty-refills">
                     <span className="empty-refills-icon">💊</span>
-                    <p>No medicines need refill soon</p>
+                    <p>{t("dashboard.refillSoon", "No medicines need refill soon")}</p>
                   </div>
                 ) : (
                   upcomingRefills.slice(0, 3).map((refill) => {
@@ -621,8 +624,8 @@ export default function Dashboard({
 
                         <div className={`refill-badge ${badgeClass}`}>
                           {refill.remainingDays === 0
-                            ? "Out of stock"
-                            : `${refill.remainingDays} ${refill.remainingDays === 1 ? "day" : "days"} left`}
+                            ? t("dashboard.refillSoon", "Out of stock")
+                            : `${refill.remainingDays} ${refill.remainingDays === 1 ? t("dashboard.daysLeft", "day left") : t("dashboard.daysLeft", "days left")}`}
                         </div>
                       </div>
                     );
@@ -636,7 +639,82 @@ export default function Dashboard({
         <div className="health-stats">
           <div className="health-card pressure-card">
             <div className="health-card-left">
-              <div className="health-card-label">BLOOD PRESSURE</div>
+              <div className="health-card-label">{t("dashboard.bloodPressure", "BLOOD PRESSURE")}</div>
+
+              <div className="health-card-value">
+                {bloodPressure ? (
+                  <>
+                    {bloodPressure} <span>mmHg</span>
+                  </>
+                ) : (
+                  <span className="health-card-empty">—</span>
+                )}
+              </div>
+
+              <div className="health-card-status stable">
+                <span style={{ color: bpInfo ? bpInfo.color : "#9ca3af" }}>
+                  {bpInfo ? bpInfo.tagline : t("dashboard.noLogToday", "No log for today")}
+                </span>
+              </div>
+            </div>
+
+            <div className="health-card-icon pressure-icon">❤️</div>
+          </div>
+
+          <div className="health-card heart-card">
+            <div className="health-card-left">
+              <div className="health-card-label">{t("dashboard.sleepDuration", "SLEEP DURATION")}</div>
+
+              <div className="health-card-value">
+                {sleepHours != null && sleepHours !== "" && sleepHours > 0 ? (
+                  <>
+                    {sleepHours} <span>HRS</span>
+                  </>
+                ) : (
+                  <span className="health-card-empty">—</span>
+                )}
+              </div>
+
+              <div className="health-card-status neutral">
+                {sleepHealth || t("dashboard.noLogToday", "No log for today")}
+              </div>
+            </div>
+
+            <div className="health-card-icon heart-icon">🌙</div>
+          </div>
+
+          <div className="health-card weight-card">
+            <div className="health-card-left">
+              <div className="health-card-label">{t("dashboard.weight", "WEIGHT")}</div>
+
+              <div className="health-card-value">
+                {weight != null && weight !== "" && weight > 0 ? (
+                  <>
+                    {weight} <span>kg</span>
+                  </>
+                ) : (
+                  <span className="health-card-empty">—</span>
+                )}
+              </div>
+
+              <div className="health-card-status warning">
+                {weight != null && weight !== "" && weight > 0 ? "Current Weight" : t("dashboard.noLogToday", "No log for today")}
+              </div>
+            </div>
+
+            <div className="health-card-icon weight-icon">⚖️</div>
+          </div>
+
+          <div className="health-card symptoms-card">
+            <div
+              className="health-card-left"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
+              }}
+            >
+              <div className="health-card-label">{t("dashboard.symptomsNotes", "SYMPTOMS & NOTES")}</div>
 
               <div className="health-card-value">
                 {bloodPressure ? (

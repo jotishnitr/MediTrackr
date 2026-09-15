@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function MedicineModal({
   isOpen,
@@ -9,6 +10,7 @@ export default function MedicineModal({
   setIsAuthenticated,
   setCurrentPage,
 }) {
+  const { t } = useTranslation();
   const isEditing = Boolean(medicineData && medicineData._id);
 
   const [medDetails, setMedDetails] = useState({
@@ -74,7 +76,7 @@ export default function MedicineModal({
     }
 
     if (!medDetails.name.trim() || !medDetails.time.trim()) {
-      alert("Please fill in medicine name and scheduled time");
+      alert(t("medicineModal.errorFillRequired", "Please fill in medicine name and scheduled time"));
       return;
     }
 
@@ -166,7 +168,11 @@ export default function MedicineModal({
     <div className="addMed-overlay" onClick={onClose}>
       <div className="addMed-modal" onClick={(e) => e.stopPropagation()}>
         <div className="addMed-header">
-          <h2>{isEditing ? "Edit Medicine" : "Add Medicine"}</h2>
+          <h2>
+            {isEditing
+              ? t("medicineModal.editTitle", "Edit Medicine")
+              : t("medicineModal.addTitle", "Add Medicine")}
+          </h2>
           <button className="close-btn" onClick={onClose} aria-label="Close">
             ✕
           </button>
@@ -174,10 +180,10 @@ export default function MedicineModal({
 
         <div className="addMed-body">
           <div className="form-group">
-            <label>Medicine Name</label>
+            <label>{t("medicineModal.nameLabel", "Medicine Name")}</label>
             <input
               type="text"
-              placeholder="e.g. Metformin HCl"
+              placeholder={t("medicineModal.namePlaceholder", "e.g. Metformin HCl")}
               onChange={handleChange}
               name="name"
               value={medDetails.name}
@@ -185,11 +191,11 @@ export default function MedicineModal({
           </div>
 
           <div className="form-group">
-            <label>Dosage</label>
+            <label>{t("medicineModal.dosageLabel", "Dosage")}</label>
             <div className="dosage-row">
               <input
                 type="number"
-                placeholder="500"
+                placeholder={t("medicineModal.dosagePlaceholder", "500")}
                 onChange={handleChange}
                 name="dosage"
                 value={medDetails.dosage}
@@ -218,11 +224,11 @@ export default function MedicineModal({
           </div>
 
           <div className="form-group">
-            <label>Quantity / Stock Count</label>
+            <label>{t("medicineModal.pillCountLabel", "Quantity / Stock Count")}</label>
             <input
               type="number"
               min="0"
-              placeholder="e.g. 30"
+              placeholder={t("medicineModal.pillCountPlaceholder", "e.g. 30")}
               onChange={handleChange}
               name="count"
               value={medDetails.count}
@@ -230,7 +236,7 @@ export default function MedicineModal({
           </div>
 
           <div className="form-group">
-            <label>Type</label>
+            <label>{t("medicineModal.typeLabel", "Type")}</label>
             <select
               onChange={handleChange}
               name="type"
@@ -255,7 +261,7 @@ export default function MedicineModal({
           </div>
 
           <div className="form-group">
-            <label>Time</label>
+            <label>{t("medicineModal.timeLabel", "Time")}</label>
             <input
               type="time"
               onChange={handleChange}
@@ -265,10 +271,10 @@ export default function MedicineModal({
           </div>
 
           <div className="form-group">
-            <label>Instructions</label>
+            <label>{t("medicineModal.instructionsLabel", "Instructions")}</label>
             <input
               type="text"
-              placeholder="e.g. After food"
+              placeholder={t("medicineModal.instructionsPlaceholder", "e.g. After food")}
               onChange={handleChange}
               name="instructions"
               value={medDetails.instructions}
@@ -283,11 +289,11 @@ export default function MedicineModal({
             >
               {isSubmitting
                 ? isEditing
-                  ? "Updating..."
-                  : "Saving..."
+                  ? t("common.loading", "Updating...")
+                  : t("healthLog.saving", "Saving...")
                 : isEditing
-                ? "Update Medicine"
-                : "Save Medicine"}
+                ? t("medicineModal.updateBtn", "Update Medicine")
+                : t("medicineModal.saveBtn", "Save Medicine")}
             </button>
           </div>
         </div>

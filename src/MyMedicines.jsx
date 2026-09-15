@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { getMedicineStatus } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export default function MyMedicines({
   setCurrentPage,
@@ -13,6 +15,7 @@ export default function MyMedicines({
   unreadNotificationsCount = 0,
   onOpenNotificationModal,
 }) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const safeMedicines = Array.isArray(medicines) ? medicines.filter(Boolean) : [];
 
@@ -41,11 +44,12 @@ export default function MyMedicines({
     >
       <div className="med-header">
         <div className="dashboard-header-left">
-          <h1>My Medicines</h1>
-          <p>{safeMedicines.length} ACTIVE PRESCRIPTIONS</p>
+          <h1>{t("medicines.title", "My Medicines")}</h1>
+          <p>{safeMedicines.length} {t("medicines.allPrescriptions", "ACTIVE PRESCRIPTIONS")}</p>
         </div>
 
         <div className="med-header-actions">
+          <LanguageSelector variant="header" />
           <button
             className="notification-btn"
             onClick={() => {
@@ -53,7 +57,7 @@ export default function MyMedicines({
                 onOpenNotificationModal();
               }
             }}
-            title="View Notifications"
+            title={t("notifications.title", "View Notifications")}
             aria-label="View Notifications"
           >
             <div className="notification-btn-icon-wrapper">
@@ -78,7 +82,7 @@ export default function MyMedicines({
             </div>
           </button>
           <button className="add-med-btn" onClick={handleOpenAdd}>
-            + Add Medicine
+            {t("medicines.addMedicine", "+ Add Medicine")}
           </button>
         </div>
       </div>
@@ -90,7 +94,7 @@ export default function MyMedicines({
 
         <input
           type="text"
-          placeholder="Search by medicine name..."
+          placeholder={t("medicines.searchPlaceholder", "Search by medicine name...")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -100,8 +104,8 @@ export default function MyMedicines({
         {filteredMedicines.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">💊</div>
-            <h3>No medicines found</h3>
-            <p>Search for another name or add a new medicine to get started.</p>
+            <h3>{t("medicines.noMedicinesFound", "No medicines found")}</h3>
+            <p>{t("medicines.addNewPrompt", "Search for another name or add a new medicine to get started.")}</p>
           </div>
         ) : (
           filteredMedicines.map((med, index) => {
@@ -115,7 +119,7 @@ export default function MyMedicines({
                   <div className="card-top-right-actions">
                     <button
                       className="med-edit-btn"
-                      title="Edit Medicine"
+                      title={t("medicines.edit", "Edit Medicine")}
                       onClick={() => handleOpenEdit(med)}
                       aria-label="Edit Medicine"
                     >
@@ -143,12 +147,12 @@ export default function MyMedicines({
 
                 <div className="card-bottom">
                   <div>
-                    <span className="card-label">INSTRUCTIONS</span>
+                    <span className="card-label">{t("medicines.instructions", "INSTRUCTIONS")}</span>
                     <h4>{med.instructions || "None"}</h4>
                   </div>
 
                   <div>
-                    <span className="card-label">TIME</span>
+                    <span className="card-label">{t("medicines.time", "TIME")}</span>
                     <h4>{med.time}</h4>
                   </div>
                 </div>

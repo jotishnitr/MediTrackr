@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import "./logins.css";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export default function ForgotPassword({ setCurrentPage, onSignInRedirect }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -64,6 +67,9 @@ export default function ForgotPassword({ setCurrentPage, onSignInRedirect }) {
 
   return (
     <div className="login-page-container">
+      {/* Top Right Language Selector */}
+      <LanguageSelector variant="auth" />
+
       {/* Brand Header Row */}
       <div className="login-header-row">
         <img
@@ -97,10 +103,9 @@ export default function ForgotPassword({ setCurrentPage, onSignInRedirect }) {
               lock_reset
             </span>
           </div>
-          <h2 className="login-card-title">Forgot Password?</h2>
+          <h2 className="login-card-title">{t("auth.forgotPassword", "Forgot Password?")}</h2>
           <p className="login-card-subtitle" style={{ marginBottom: "20px" }}>
-            Enter your registered email address and we'll send you a secure link
-            to reset your password.
+            Enter your registered email address and we'll send you a secure link to reset your password.
           </p>
         </div>
 
@@ -146,7 +151,7 @@ export default function ForgotPassword({ setCurrentPage, onSignInRedirect }) {
             {/* Email Input */}
             <div className="login-form-group">
               <label className="login-form-label" htmlFor="reset-email">
-                Email Address
+                {t("auth.emailLabel", "Email Address")}
               </label>
               <div className="login-input-wrapper">
                 <span className="material-symbols-outlined login-input-icon-left">
@@ -157,7 +162,7 @@ export default function ForgotPassword({ setCurrentPage, onSignInRedirect }) {
                   id="reset-email"
                   name="email"
                   className="login-form-input"
-                  placeholder="name@example.com"
+                  placeholder={t("auth.emailPlaceholder", "name@example.com")}
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -200,7 +205,7 @@ export default function ForgotPassword({ setCurrentPage, onSignInRedirect }) {
         <div className="signup-redirect" style={{ marginTop: "24px" }}>
           Remember your password?{" "}
           <span className="signup-link" onClick={handleBackToLogin}>
-            Back to Login
+            {t("auth.loginLink", "Sign In")}
           </span>
         </div>
       </main>

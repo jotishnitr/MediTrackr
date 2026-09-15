@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export default function HealthLog({
   getHealthLog,
@@ -22,6 +24,7 @@ export default function HealthLog({
   unreadNotificationsCount = 0,
   onOpenNotificationModal,
 }) {
+  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
 
   const symptomsList = [
@@ -100,12 +103,13 @@ export default function HealthLog({
       {/* Header */}
       <div className="med-header">
         <div className="health-log-header-left">
-          <h1 className="dashboard-title">Health Log</h1>
+          <h1 className="dashboard-title">{t("healthLog.title", "Health Log")}</h1>
           <p className="health-log-subtitle">
-            Track your daily wellness journey
+            {t("healthLog.subtitle", "Track your daily wellness journey")}
           </p>
         </div>
         <div className="health-log-header-right">
+          <LanguageSelector variant="header" />
           <button
             className="notification-btn"
             onClick={() => {
@@ -113,7 +117,7 @@ export default function HealthLog({
                 onOpenNotificationModal();
               }
             }}
-            title="View Notifications"
+            title={t("notifications.title", "View Notifications")}
             aria-label="View Notifications"
           >
             <div className="notification-btn-icon-wrapper">
@@ -145,7 +149,7 @@ export default function HealthLog({
               }
             }}
           >
-            + Add Medicine
+            {t("medicines.addMedicine", "+ Add Medicine")}
           </button>
         </div>
       </div>
@@ -226,38 +230,38 @@ export default function HealthLog({
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                 </svg>
               </span>
-              <h2>Vital Measurements</h2>
+              <h2>{t("healthLog.subtitle", "Vital Measurements")}</h2>
             </div>
 
             <div className="vitals-grid">
               <div className="vital-input-group">
-                <div className="section-label">DURATION OF SLEEP(HRS)</div>
+                <div className="section-label">{t("dashboard.sleepDuration", "DURATION OF SLEEP (HRS)")}</div>
                 <input
                   type="text"
                   className="vital-input"
-                  placeholder="e.g. 7.5"
+                  placeholder={t("healthLog.sleepPlaceholder", "e.g. 7.5")}
                   value={sleepHours ?? ""}
                   onChange={(e) => setSleepHours(e.target.value)}
                 />
               </div>
 
               <div className="vital-input-group">
-                <div className="section-label">BLOOD PRESSURE (mmHg)</div>
+                <div className="section-label">{t("dashboard.bloodPressure", "BLOOD PRESSURE (mmHg)")}</div>
                 <input
                   type="text"
                   className="vital-input"
-                  placeholder="e.g. 120/80"
+                  placeholder={t("healthLog.bpPlaceholder", "e.g. 120/80")}
                   value={bloodPressure || ""}
                   onChange={(e) => setBloodPressure(e.target.value)}
                 />
               </div>
 
               <div className="vital-input-group">
-                <div className="section-label">WEIGHT (KG)</div>
+                <div className="section-label">{t("dashboard.weight", "WEIGHT (KG)")}</div>
                 <input
                   type="text"
                   className="vital-input"
-                  placeholder="e.g. 70.5"
+                  placeholder={t("healthLog.weightPlaceholder", "e.g. 70.5")}
                   value={weight ?? ""}
                   onChange={(e) => setWeight(e.target.value)}
                 />
@@ -291,10 +295,10 @@ export default function HealthLog({
                 <polyline points="7 3 7 8 15 8"></polyline>
               </svg>
               <span className="btn-text">
-                {isSaving ? "SAVING..." : "SAVE DAILY LOG"}
+                {isSaving ? t("healthLog.saving", "SAVING...") : t("healthLog.saveLogBtn", "SAVE DAILY LOG")}
               </span>
             </button>
-            <div className="last-saved-text">LAST SAVED: {lastSaved}</div>
+            <div className="last-saved-text">{t("dashboard.lastUpdated", "LAST SAVED")}: {lastSaved}</div>
           </div>
         </div>
       </div>

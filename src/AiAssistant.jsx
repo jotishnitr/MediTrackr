@@ -4,6 +4,8 @@ import remarkGfm from "remark-gfm";
 import FeedbackForm from "./feedbackform";
 import { downloadReportAsPDF } from "./utils/pdfGenerator";
 import { useSpeechToText } from "./utils/useSpeechToText";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 import "./aiAssistant.css";
 
 export default function AiAssistance({
@@ -12,6 +14,7 @@ export default function AiAssistance({
   setCurrentPage,
   setIsAuthenticated,
 }) {
+  const { t } = useTranslation();
   // Mode toggle: "advisor" (Health Advisor - text Q&A only) or "copilot" (MediTrackr Copilot - functional actions)
   const [activeMode, setActiveMode] = useState("advisor");
 
@@ -745,8 +748,9 @@ export default function AiAssistance({
           </button>
         </div>
 
-        {/* Top-Right: Clear Chat and Feedback */}
+        {/* Top-Right: Language Selector, Clear Chat, and Feedback */}
         <div className="ai-header-right">
+          <LanguageSelector variant="header" />
           <button
             className="delete-history-btn"
             onClick={handleDeleteHistory}

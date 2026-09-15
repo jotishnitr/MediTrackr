@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import "./Register.css";
 import { GoogleLogin } from "@react-oauth/google";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthenticated }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -102,6 +105,9 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
 
   return (
     <div className="register-page-container">
+      {/* Top Right Language Selector */}
+      <LanguageSelector variant="auth" />
+
       {/* Brand Header */}
       <header className="register-header">
         <span className="logo-plus">
@@ -118,9 +124,9 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
 
       {/* Main Card */}
       <main className="register-card">
-        <h2 className="card-title">Create Account</h2>
+        <h2 className="card-title">{t("auth.registerTitle", "Create Account")}</h2>
         <p className="card-subtitle">
-          Access the next generation of personalized health management tools.
+          {t("auth.registerSubtitle", "Access the next generation of personalized health management tools.")}
         </p>
 
         {error && (
@@ -157,7 +163,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
           {/* Full Name */}
           <div className="form-group">
             <label className="form-label" htmlFor="name">
-              Full Name
+              {t("auth.nameLabel", "Full Name")}
             </label>
             <div className="input-wrapper">
               <span className="material-symbols-outlined input-icon">
@@ -168,7 +174,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
                 id="name"
                 name="name"
                 className="form-input"
-                placeholder="Enter your name"
+                placeholder={t("auth.namePlaceholder", "Enter your name")}
                 value={formData.name}
                 onChange={handleInputChange}
                 required
@@ -179,7 +185,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
           {/* Email Address */}
           <div className="form-group">
             <label className="form-label" htmlFor="email">
-              Email Address
+              {t("auth.emailLabel", "Email Address")}
             </label>
             <div className="input-wrapper">
               <span className="material-symbols-outlined input-icon">
@@ -190,7 +196,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
                 id="email"
                 name="email"
                 className="form-input"
-                placeholder="name@organization.com"
+                placeholder={t("auth.emailPlaceholder", "name@organization.com")}
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -202,7 +208,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
           <div className="form-row">
             <div className="form-group">
               <label className="form-label" htmlFor="password">
-                Password
+                {t("auth.passwordLabel", "Password")}
               </label>
               <div className="input-wrapper">
                 <span className="material-symbols-outlined input-icon">
@@ -223,7 +229,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
 
             <div className="form-group">
               <label className="form-label" htmlFor="confirmPassword">
-                Confirm
+                {t("auth.confirmPasswordLabel", "Confirm")}
               </label>
               <div className="input-wrapper">
                 <span className="material-symbols-outlined input-icon">
@@ -261,7 +267,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
 
           {/* Submit Button */}
           <button type="submit" className="submit-btn" disabled={isLoading}>
-            <span>{isLoading ? "Creating..." : "Create Account"}</span>
+            <span>{isLoading ? t("auth.signingUp", "Creating...") : t("auth.signUpBtn", "Create Account")}</span>
             {!isLoading && (
               <span className="material-symbols-outlined btn-arrow">
                 arrow_forward
@@ -271,7 +277,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
         </form>
 
         {/* Divider */}
-        <div className="register-divider">OR CONTINUE WITH</div>
+        <div className="register-divider">{t("auth.orContinueWith", "OR CONTINUE WITH")}</div>
 
         {/* Google Login */}
         <div className="google-auth-btn-wrapper">
@@ -320,9 +326,9 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
 
         {/* Redirect to Sign In */}
         <div className="signin-redirect">
-          Already have an account?{" "}
+          {t("auth.alreadyHaveAccount", "Already have an account?")}{" "}
           <span className="signin-link" onClick={onSignInRedirect}>
-            Sign In{" "}
+            {t("auth.loginLink", "Sign In")}{" "}
             <span className="material-symbols-outlined signin-icon">login</span>
           </span>
         </div>

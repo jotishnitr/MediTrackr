@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export default function NotificationModal({
   isOpen,
@@ -9,6 +10,7 @@ export default function NotificationModal({
   setIsAuthenticated,
   onNotificationRead,
 }) {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isMarkingRead, setIsMarkingRead] = useState(false);
@@ -266,10 +268,10 @@ export default function NotificationModal({
                 </svg>
               </div>
               <div className="notif-title-group">
-                <h2>Notifications</h2>
+                <h2>{t("notifications.title", "Notifications")}</h2>
                 {notifications.length > 0 && (
                   <span className="notif-count-badge">
-                    {notifications.length} new
+                    {notifications.length} {t("dashboard.pending", "new")}
                   </span>
                 )}
               </div>
@@ -281,7 +283,7 @@ export default function NotificationModal({
                   className="notif-mark-read-btn"
                   onClick={handleMarkAllAsRead}
                   disabled={isMarkingRead}
-                  title="Mark all notifications as read"
+                  title={t("notifications.markAllRead", "Mark all notifications as read")}
                 >
                   {isMarkingRead ? (
                     <span className="notif-spinner-small"></span>
@@ -290,7 +292,7 @@ export default function NotificationModal({
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      <span>Mark as read</span>
+                      <span>{t("notifications.markAllRead", "Mark as read")}</span>
                     </>
                   )}
                 </button>
@@ -298,7 +300,7 @@ export default function NotificationModal({
               <button
                 className="notif-close-btn"
                 onClick={onClose}
-                aria-label="Close notifications"
+                aria-label={t("common.close", "Close notifications")}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -313,7 +315,7 @@ export default function NotificationModal({
             {loading ? (
               <div className="notif-loading-state">
                 <div className="notif-spinner"></div>
-                <p>Checking for notifications...</p>
+                <p>{t("common.loading", "Checking for notifications...")}</p>
               </div>
             ) : error ? (
               <div className="notif-error-state">
@@ -331,8 +333,8 @@ export default function NotificationModal({
                     <circle cx="12" cy="8" r="1" fill="#4edea3" />
                   </svg>
                 </div>
-                <h3>All Caught Up!</h3>
-                <p>You have no unread reminders or alerts at the moment.</p>
+                <h3>{t("notifications.allCaughtUp", "All Caught Up!")}</h3>
+                <p>{t("notifications.noNotifications", "You have no unread reminders or alerts at the moment.")}</p>
               </div>
             ) : (
               <div className="notif-list">
@@ -462,7 +464,7 @@ export default function NotificationModal({
                 onClick={handleMarkAllAsRead}
                 disabled={isMarkingRead}
               >
-                {isMarkingRead ? "Marking all as read..." : "Mark all as read"}
+                {isMarkingRead ? "Marking all as read..." : t("notifications.markAllRead", "Mark all as read")}
               </button>
             </div>
           )}
@@ -471,3 +473,4 @@ export default function NotificationModal({
     </AnimatePresence>
   );
 }
+

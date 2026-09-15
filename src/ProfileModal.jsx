@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export default function ProfileModal({
   profileDetails = {},
@@ -8,6 +10,7 @@ export default function ProfileModal({
   setCurrentPage,
   setIsAuthenticated,
 }) {
+  const { t } = useTranslation();
   const safeProfile = profileDetails || {};
 
   // Check if we need to show the input form first (e.g. if fields like Age, Blood Type are unset)
@@ -154,12 +157,6 @@ export default function ProfileModal({
       familyMembersEmails: finalFamilyEmails,
     });
 
-    // Sync weight back to health vitals if weight was updated
-    if (formData.weight) {
-      localStorage.setItem("weight", formData.weight);
-      window.dispatchEvent(new Event("storage"));
-    }
-
     // Sync to backend addHealthProfile
     fetch(`${import.meta.env.VITE_API_URL}/addHealthProfile`, {
       method: "POST",
@@ -218,16 +215,19 @@ export default function ProfileModal({
       <div className="profile-modal">
         <div className="profile-modal-content">
           <div className="profile-modal-header">
-            <h2>Health & Family Profile</h2>
-            <button className="profile-close-btn" onClick={onClose}>
-              ✕
-            </button>
+            <h2>{t("profile.title", "Health & Family Profile")}</h2>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <LanguageSelector variant="header" />
+              <button className="profile-close-btn" onClick={onClose}>
+                ✕
+              </button>
+            </div>
           </div>
 
           {isEditing ? (
             <form onSubmit={handleSave} className="profile-form">
               <div className="profile-form-group">
-                <label>Full Name</label>
+                <label>{t("profile.fullName", "Full Name")}</label>
                 <input
                   type="text"
                   name="name"
@@ -240,7 +240,7 @@ export default function ProfileModal({
 
               <div className="profile-form-row">
                 <div className="profile-form-group">
-                  <label>Age</label>
+                  <label>{t("profile.age", "Age")}</label>
                   <input
                     type="number"
                     name="age"
@@ -251,7 +251,7 @@ export default function ProfileModal({
                 </div>
 
                 <div className="profile-form-group">
-                  <label>Blood Type</label>
+                  <label>{t("profile.bloodGroup", "Blood Type")}</label>
                   <select
                     name="bloodType"
                     value={formData.bloodType}
@@ -272,7 +272,7 @@ export default function ProfileModal({
 
               <div className="profile-form-row">
                 <div className="profile-form-group">
-                  <label>Height (cm)</label>
+                  <label>{t("profile.height", "Height (cm)")}</label>
                   <input
                     type="number"
                     name="height"
@@ -283,7 +283,7 @@ export default function ProfileModal({
                 </div>
 
                 <div className="profile-form-group">
-                  <label>Weight (kg)</label>
+                  <label>{t("profile.weight", "Weight (kg)")}</label>
                   <input
                     type="number"
                     name="weight"
@@ -295,7 +295,7 @@ export default function ProfileModal({
               </div>
 
               <div className="profile-form-group">
-                <label>Known Allergies / Chronic Conditions</label>
+                <label>{t("profile.allergies", "Known Allergies / Chronic Conditions")}</label>
                 <input
                   type="text"
                   name="allergies"
@@ -306,7 +306,7 @@ export default function ProfileModal({
               </div>
 
               <div className="profile-form-group">
-                <label>Emergency Contact (Name & Phone)</label>
+                <label>{t("profile.emergencyContact", "Emergency Contact (Name & Phone)")}</label>
                 <input
                   type="text"
                   name="emergencyContact"
@@ -317,7 +317,7 @@ export default function ProfileModal({
               </div>
 
               <div className="profile-form-group">
-                <label>Family Members (Link by Email)</label>
+                <label>{t("profile.familyConnections", "Family Members (Link by Email)")}</label>
                 <div className="family-email-input-row">
                   <input
                     type="email"
@@ -329,7 +329,7 @@ export default function ProfileModal({
                         handleAddFamilyEmail();
                       }
                     }}
-                    placeholder="e.g. member@gmail.com"
+                    placeholder={t("profile.familyEmailPlaceholder", "e.g. member@gmail.com")}
                   />
                   <button
                     type="button"

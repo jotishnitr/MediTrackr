@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 export default function SearchMedicine({
   setCurrentPage,
@@ -9,6 +11,7 @@ export default function SearchMedicine({
   unreadNotificationsCount = 0,
   onOpenNotificationModal,
 }) {
+  const { t } = useTranslation();
   const [currentPopular, setCurrentPopular] = useState("");
   const [search, setSearch] = useState("");
   const [notFound, setNotFound] = useState(false);
@@ -250,11 +253,12 @@ export default function SearchMedicine({
     >
       <div className="search-header">
         <div className="dashboard-header-left">
-          <h1>Search Medicine</h1>
-          <p>Discover medicines and treatment options</p>
+          <h1>{t("search.title", "Search Medicines")}</h1>
+          <p>{t("search.subtitle", "Search FDA-verified drug information, uses, and manufacturers")}</p>
         </div>
 
         <div className="med-header-actions">
+          <LanguageSelector variant="header" />
           <button
             className="notification-btn"
             onClick={() => {
@@ -262,7 +266,7 @@ export default function SearchMedicine({
                 onOpenNotificationModal();
               }
             }}
-            title="View Notifications"
+            title={t("notifications.title", "View Notifications")}
             aria-label="View Notifications"
           >
             <div className="notification-btn-icon-wrapper">
@@ -294,19 +298,19 @@ export default function SearchMedicine({
               }
             }}
           >
-            + Add Medicine
+            {t("medicines.addMedicine", "+ Add Medicine")}
           </button>
         </div>
       </div>
 
       <div className={`search-box ${searching ? "searching" : ""}`}>
         <span className="material-symbols-outlined">
-          <img src="search.png"></img>
+          <img src="search.png" alt="search"></img>
         </span>
 
         <input
           type="text"
-          placeholder="Search by medicine name, generic name..."
+          placeholder={t("search.searchPlaceholder", "Search by medicine name, generic name...")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -322,10 +326,10 @@ export default function SearchMedicine({
           {searching ? (
             <div className="search-loader">
               <span className="search-spinner"></span>
-              <span>Searching</span>
+              <span>{t("search.searching", "Searching...")}</span>
             </div>
           ) : (
-            "Search"
+            t("search.searchBtn", "Search")
           )}
         </button>
       </div>

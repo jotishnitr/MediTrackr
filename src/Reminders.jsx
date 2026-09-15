@@ -1,6 +1,8 @@
 import React from "react";
 import { getMedicineStatus } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 import {
   requestPermission,
   scheduleReminder,
@@ -19,6 +21,7 @@ export default function Reminders({
   unreadNotificationsCount = 0,
   onOpenNotificationModal,
 }) {
+  const { t } = useTranslation();
   // Helper to format time to { time: "HH:MM", ampm: "AM/PM" }
   const formatTime = (timeStr) => {
     if (!timeStr) return { time: "--:--", ampm: "" };
@@ -210,11 +213,13 @@ export default function Reminders({
     >
       {/* Header */}
       <div className="reminders-header">
-        <div className="reminders-header-left">
-          <h1>Reminders</h1>
-          <p>Manage your daily schedules and alert configurations</p>
+        <div className="dashboard-header-left">
+          <h1>{t("reminders.title", "Reminders")}</h1>
+          <p>{t("reminders.subtitle", "Daily medication schedule & browser notifications")}</p>
         </div>
-        <div className="reminders-header-right">
+
+        <div className="reminders-header-actions">
+          <LanguageSelector variant="header" />
           <button
             className="notification-btn"
             onClick={() => {
@@ -222,7 +227,7 @@ export default function Reminders({
                 onOpenNotificationModal();
               }
             }}
-            title="View Notifications"
+            title={t("notifications.title", "View Notifications")}
             aria-label="View Notifications"
           >
             <div className="notification-btn-icon-wrapper">
@@ -254,7 +259,7 @@ export default function Reminders({
               }
             }}
           >
-            + Add Medicine
+            {t("medicines.addMedicine", "+ Add Medicine")}
           </button>
         </div>
       </div>
@@ -265,15 +270,15 @@ export default function Reminders({
           {/* Stats Boxes */}
           <div className="reminders-stats-row">
             <div className="reminder-stat-card taken">
-              <span className="stat-label">TAKEN</span>
+              <span className="stat-label">{t("dashboard.taken", "TAKEN")}</span>
               <span className="stat-value">{takenCount}</span>
             </div>
             <div className="reminder-stat-card pending">
-              <span className="stat-label">PENDING</span>
+              <span className="stat-label">{t("dashboard.pending", "PENDING")}</span>
               <span className="stat-value">{pendingCount}</span>
             </div>
             <div className="reminder-stat-card missed">
-              <span className="stat-label">MISSED</span>
+              <span className="stat-label">{t("dashboard.missed", "MISSED")}</span>
               <span className="stat-value">{missedCount}</span>
             </div>
           </div>
@@ -282,8 +287,8 @@ export default function Reminders({
           <div className="schedule-panel">
             <div className="schedule-panel-header">
               <div className="schedule-title-area">
-                <h2>Today's Schedule</h2>
-                <span className="pending-badge">{pendingCount} PENDING</span>
+                <h2>{t("reminders.todayReminders", "Today's Reminders")}</h2>
+                <span className="pending-badge">{pendingCount} {t("dashboard.pending", "PENDING")}</span>
               </div>
               <div className="schedule-controls"></div>
             </div>
@@ -291,8 +296,7 @@ export default function Reminders({
             {safeMedicines.length === 0 ? (
               <div className="empty-schedule">
                 <p>
-                  No medicines scheduled for today. Add medicines to get
-                  started.
+                  {t("dashboard.noMedicinesToday", "No medicines scheduled for today. Add medicines to get started.")}
                 </p>
               </div>
             ) : (

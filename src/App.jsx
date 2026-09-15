@@ -290,6 +290,17 @@ export default function App() {
     }
   }, [currentPage]);
 
+  // Ensure profileDetails and health logs are not stored in localStorage
+  React.useEffect(() => {
+    try {
+      localStorage.removeItem("profileDetails");
+      localStorage.removeItem("weight");
+      localStorage.removeItem("healthLog");
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Profile modal states
   const [showProfileModal, setShowProfileModal] = React.useState(false);
   const [profileDetails, setProfileDetails] = React.useState({

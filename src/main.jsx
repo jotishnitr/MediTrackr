@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { HashRouter } from "react-router-dom";
 // Deploy trigger: 2026-07-25
+import "./i18n.js";
 import "./index.css";
 import App from "./App.jsx";
 

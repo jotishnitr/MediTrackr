@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
+
 export default function Navbar({
   currentPage,
   setCurrentPage,
@@ -9,6 +12,8 @@ export default function Navbar({
   setIsAuthenticated,
   requireAuth,
 }) {
+  const { t } = useTranslation();
+
   return (
     <>
       {/* Mobile Sticky Header */}
@@ -24,18 +29,21 @@ export default function Navbar({
           <img className="mobile-logo-icon" src="icon.png" alt="logo" />
           <span className="mobile-logo-title">MediTrackr</span>
         </div>
-        <div
-          className="mobile-profile-avatar"
-          onClick={() => {
-            if (typeof requireAuth === "function" && !requireAuth()) return;
-            setShowProfileModal(true);
-          }}
-        >
-          <img
-            src="person-logo.png"
-            className="person-logo-small"
-            alt="avatar"
-          />
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <LanguageSelector variant="compact" />
+          <div
+            className="mobile-profile-avatar"
+            onClick={() => {
+              if (typeof requireAuth === "function" && !requireAuth()) return;
+              setShowProfileModal(true);
+            }}
+          >
+            <img
+              src="person-logo.png"
+              className="person-logo-small"
+              alt="avatar"
+            />
+          </div>
         </div>
       </div>
 
@@ -75,7 +83,7 @@ export default function Navbar({
           </div>
 
           <div className="navbar-links-container">
-            <div className="navbar-headers">OVERVIEW</div>
+            <div className="navbar-headers">{t("nav.overview", "OVERVIEW")}</div>
 
             <div
               className={
@@ -95,10 +103,10 @@ export default function Navbar({
                   alt="dashboard"
                 ></img>
               </div>
-              <div className="navbar-link">Dashboard</div>
+              <div className="navbar-link">{t("nav.dashboard", "Dashboard")}</div>
             </div>
 
-            <div className="navbar-headers">MEDICINES</div>
+            <div className="navbar-headers">{t("nav.medicines", "MEDICINES")}</div>
 
             <div
               className={
@@ -118,7 +126,7 @@ export default function Navbar({
                   alt="medicines"
                 ></img>
               </div>
-              <div className="navbar-link">My Medicines</div>
+              <div className="navbar-link">{t("nav.myMedicines", "My Medicines")}</div>
             </div>
 
             <div
@@ -139,7 +147,7 @@ export default function Navbar({
                   alt="reminders"
                 ></img>
               </div>
-              <div className="navbar-link">Reminders</div>
+              <div className="navbar-link">{t("nav.reminders", "Reminders")}</div>
             </div>
 
             <div
@@ -160,10 +168,10 @@ export default function Navbar({
                   alt="search"
                 ></img>
               </div>
-              <div className="navbar-link">Search Medicines</div>
+              <div className="navbar-link">{t("nav.searchMedicines", "Search Medicines")}</div>
             </div>
 
-            <div className="navbar-headers">WELLNESS</div>
+            <div className="navbar-headers">{t("nav.wellness", "WELLNESS")}</div>
             <div
               className={
                 currentPage === "HealthLog"
@@ -182,10 +190,10 @@ export default function Navbar({
                   alt="health log"
                 ></img>
               </div>
-              <div className="navbar-link">Health Log</div>
+              <div className="navbar-link">{t("nav.healthLog", "Health Log")}</div>
             </div>
 
-            <div className="navbar-headers">Health Assistance</div>
+            <div className="navbar-headers">{t("nav.healthAssistance", "Health Assistance")}</div>
             <div
               className={
                 currentPage === "aiHealthAssistance"
@@ -204,7 +212,7 @@ export default function Navbar({
                   alt="health log"
                 ></img>
               </div>
-              <div className="navbar-link">AI Advisor & Copilot</div>
+              <div className="navbar-link">{t("nav.aiAdvisorCopilot", "AI Advisor & Copilot")}</div>
             </div>
           </div>
         </div>
@@ -230,12 +238,12 @@ export default function Navbar({
 
               <div className="person-details-container">
                 <div className="person-name">
-                  {profileDetails?.name || "Set Profile"}
+                  {profileDetails?.name || t("nav.setProfile", "Set Profile")}
                 </div>
                 <div className="account-type">
                   {profileDetails?.bloodType
-                    ? `Blood Type: ${profileDetails.bloodType}`
-                    : "Personal account"}
+                    ? `${t("nav.bloodType", "Blood Type")}: ${profileDetails.bloodType}`
+                    : t("nav.personalAccount", "Personal account")}
                 </div>
               </div>
             </div>
@@ -269,7 +277,7 @@ export default function Navbar({
             <span className="material-symbols-outlined logout-icon">
               logout
             </span>
-            <span>Sign Out</span>
+            <span>{t("nav.signOut", "Sign Out")}</span>
           </button>
         </div>
       </section>
