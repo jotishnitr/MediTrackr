@@ -67,6 +67,12 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cors(corsOption));
 
 app.use(cookieParser());
+
+// Keep-alive health check endpoints for external cron / ping services
+app.get(["/", "/ping", "/health"], (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 app.use("/", fetchFDA);
 app.use("/", addMedicine);
 app.use("/", updateMedicine);
