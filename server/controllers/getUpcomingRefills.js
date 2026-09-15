@@ -6,20 +6,12 @@ const getUpcomingRefills = async (req, res) => {
       userId: req.user.id,
     });
 
-    // Calculate daily frequency for each medicine name to accurately compute remaining days
-    const frequencyMap = {};
-    for (const med of medicines) {
-      const normalizedName = (med.name || "").trim().toLowerCase();
-      frequencyMap[normalizedName] = (frequencyMap[normalizedName] || 0) + 1;
-    }
-
     const upcomingRefills = [];
 
     for (const medicine of medicines) {
-      const normalizedName = (medicine.name || "").trim().toLowerCase();
-      const dailyFrequency = frequencyMap[normalizedName] || 1;
-      const count = typeof medicine.count === "number" ? medicine.count : 0;
-      const remainingDays = Math.max(0, Math.floor(count / dailyFrequency));
+      const count = typeof medicine.count === "number" ? medicine.count : (Number(medicine.count) || 0);
+      const dosage = Number(medicine.dosage) > 0 ? Number(medicine.dosage) : 1;
+      const remainingDays = Math.max(0, Math.floor(count / dosage));
 
       upcomingRefills.push({
         id: medicine._id,

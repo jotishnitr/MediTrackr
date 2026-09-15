@@ -76,21 +76,13 @@ const checkRefills = async () => {
 
           if (!medicines.length) continue;
 
-          // Calculate daily dose frequency by normalized medicine name
-          const frequencyMap = {};
-          for (const med of medicines) {
-            const normalizedName = (med.name || "").trim().toLowerCase();
-            frequencyMap[normalizedName] = (frequencyMap[normalizedName] || 0) + 1;
-          }
-
           // Identify medicines needing refill (<= 3 days of stock remaining)
           const urgentRefills = [];
 
           for (const med of medicines) {
-            const normalizedName = (med.name || "").trim().toLowerCase();
-            const dailyFrequency = frequencyMap[normalizedName] || 1;
-            const count = typeof med.count === "number" ? med.count : 0;
-            const remainingDays = Math.max(0, Math.floor(count / dailyFrequency));
+            const count = typeof med.count === "number" ? med.count : (Number(med.count) || 0);
+            const dosage = Number(med.dosage) > 0 ? Number(med.dosage) : 1;
+            const remainingDays = Math.max(0, Math.floor(count / dosage));
 
             if (remainingDays <= 3) {
               urgentRefills.push({
