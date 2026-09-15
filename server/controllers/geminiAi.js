@@ -78,9 +78,10 @@ const ChatHistory = require("../models/ChatHistory");
 
 const gemini_models = [
   "gemini-flash-latest",
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-3.7-flash"
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
+  "gemini-1.5-flash-8b",
 ];
 
 // OpenRouter Free Text/Chat models for app assistance

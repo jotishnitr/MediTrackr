@@ -56,14 +56,16 @@ const { processUploadedFile } = require("../utils/fileProcessor");
 
 const gemini_models = [
   "gemini-flash-latest",
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-3.6-flash",
-  "gemini-3.7-flash"
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
+  "gemini-1.5-flash-8b",
 ];
 
 // OpenRouter Free Vision models for prescriptions, lab tests, and image scans
 const openrouter_vision_models = [
+  "google/gemini-2.0-flash-exp:free",
+  "google/gemini-2.0-pro-exp-02-05:free",
   "meta-llama/llama-3.2-11b-vision-instruct:free",
   "meta-llama/llama-3.2-90b-vision-instruct:free",
   "qwen/qwen-2.5-vl-72b-instruct:free",
