@@ -2,9 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import "./helpBot.css";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useTranslation } from "react-i18next";
 import { useSpeechToText } from "./utils/useSpeechToText";
+import { translateToEnglish, translateFromEnglish } from "./utils/translator";
 
 export default function HelpBot({ setShowHelpBot, showHelpBot }) {
+  const { i18n } = useTranslation();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -102,16 +105,45 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
     setInput("");
     setLoading(true);
 
+    const currentLangKey = (i18n?.language || "en").toLowerCase().slice(0, 2);
+
     try {
+      // Translate to English for backend LLM if user input is in another language
+      let textForLlm = messageText;
+      if (currentLangKey !== "en" && messageText) {
+        try {
+          const translatedPrompt = await translateToEnglish(messageText, currentLangKey);
+          if (translatedPrompt) {
+            textForLlm = translatedPrompt;
+          }
+        } catch (tErr) {
+          console.warn("HelpBot prompt translation error:", tErr);
+        }
+      }
+
       const res = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageText }),
+        body: JSON.stringify({ message: textForLlm }),
       });
       const data = await res.json();
       if (data && data.reply) {
-        const botMsg = { sender: "bot", text: data.reply };
+        let finalReply = data.reply;
+
+        // Translate response back into user's language
+        if (currentLangKey !== "en" && data.reply) {
+          try {
+            const translatedReply = await translateFromEnglish(data.reply, currentLangKey);
+            if (translatedReply) {
+              finalReply = translatedReply;
+            }
+          } catch (tErr) {
+            console.warn("HelpBot reply translation error:", tErr);
+          }
+        }
+
+        const botMsg = { sender: "bot", text: finalReply };
         setMessages((prev) => [...prev, botMsg]);
       } else {
         setMessages((prev) => [

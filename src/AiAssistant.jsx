@@ -6,6 +6,7 @@ import { downloadReportAsPDF } from "./utils/pdfGenerator";
 import { useSpeechToText } from "./utils/useSpeechToText";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
+import { translateToEnglish, translateFromEnglish } from "./utils/translator";
 import "./aiAssistant.css";
 
 export default function AiAssistance({
@@ -14,7 +15,7 @@ export default function AiAssistance({
   setCurrentPage,
   setIsAuthenticated,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // Mode toggle: "advisor" (Health Advisor - text Q&A only) or "copilot" (MediTrackr Copilot - functional actions)
   const [activeMode, setActiveMode] = useState("advisor");
 
@@ -287,7 +288,22 @@ export default function AiAssistance({
     setImagePreview("");
     setLoading(true);
 
+    const currentLangKey = (i18n?.language || "en").toLowerCase().slice(0, 2);
+
     try {
+      // Step 1: Translate user prompt to English if not already in English
+      let textForLlm = currentMsgText;
+      if (currentLangKey !== "en" && currentMsgText) {
+        try {
+          const translatedPrompt = await translateToEnglish(currentMsgText, currentLangKey);
+          if (translatedPrompt) {
+            textForLlm = translatedPrompt;
+          }
+        } catch (tErr) {
+          console.warn("Failed to translate user input to English:", tErr);
+        }
+      }
+
       if (activeMode === "advisor") {
         // Mode 1: Health Advisor (Text / Medical Q&A)
         const response = await fetch(
@@ -296,12 +312,26 @@ export default function AiAssistance({
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: currentMsgText, file: fileData }),
+            body: JSON.stringify({ message: textForLlm, file: fileData }),
           },
         );
 
         if (response.ok) {
           const data = await response.json();
+          let finalReply = data.reply;
+
+          // Step 2: Translate English response back into user's language if needed
+          if (currentLangKey !== "en" && data.reply) {
+            try {
+              const translatedReply = await translateFromEnglish(data.reply, currentLangKey);
+              if (translatedReply) {
+                finalReply = translatedReply;
+              }
+            } catch (tErr) {
+              console.warn("Failed to translate assistant reply to target language:", tErr);
+            }
+          }
+
           setAdvisorMessages((prev) => {
             const updated = [...prev];
             if (updated.length > 0 && data.userTime) {
@@ -314,7 +344,7 @@ export default function AiAssistance({
               ...updated,
               {
                 sender: "assistant",
-                text: data.reply,
+                text: finalReply,
                 time: getCurrentTime(data.modelTime),
               },
             ];
@@ -331,7 +361,7 @@ export default function AiAssistance({
             credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              text: currentMsgText,
+              text: textForLlm,
               file: fileData,
             }),
           },
@@ -339,11 +369,25 @@ export default function AiAssistance({
 
         if (response.ok) {
           const data = await response.json();
+          let finalReply = data.reply;
+
+          // Step 2: Translate English response back into user's language if needed
+          if (currentLangKey !== "en" && data.reply) {
+            try {
+              const translatedReply = await translateFromEnglish(data.reply, currentLangKey);
+              if (translatedReply) {
+                finalReply = translatedReply;
+              }
+            } catch (tErr) {
+              console.warn("Failed to translate copilot reply to target language:", tErr);
+            }
+          }
+
           setCopilotMessages((prev) => [
             ...prev,
             {
               sender: "assistant",
-              text: data.reply,
+              text: finalReply,
               action: data.action,
               actionData: data.actionData,
               requiresConfirmation: data.requiresConfirmation,
