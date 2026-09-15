@@ -326,7 +326,7 @@ function markdownToReportHtml(markdown, userName, reportDate) {
 function getReportStyles() {
   return `
     .meditrackr-report-root {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: "Helvetica Neue", "Proxima Nova", "Circular", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       color: #0f172a !important;
       background: #ffffff !important;
       padding: 28px 32px;

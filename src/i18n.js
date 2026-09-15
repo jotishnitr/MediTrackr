@@ -13,6 +13,11 @@ import kn from "./locales/kn.json";
 import ml from "./locales/ml.json";
 import or from "./locales/or.json";
 import pa from "./locales/pa.json";
+import ur from "./locales/ur.json";
+import as from "./locales/as.json";
+import sa from "./locales/sa.json";
+import ne from "./locales/ne.json";
+import mai from "./locales/mai.json";
 
 export const SUPPORTED_LANGUAGES = [
   { code: "en", name: "English", nativeName: "English" },
@@ -26,6 +31,11 @@ export const SUPPORTED_LANGUAGES = [
   { code: "ml", name: "Malayalam", nativeName: "മലയാളം" },
   { code: "or", name: "Odia", nativeName: "ଓଡ଼ିଆ" },
   { code: "pa", name: "Punjabi", nativeName: "ਪੰਜਾਬੀ" },
+  { code: "ur", name: "Urdu", nativeName: "اردو" },
+  { code: "as", name: "Assamese", nativeName: "অসমীয়া" },
+  { code: "sa", name: "Sanskrit", nativeName: "संस्कृतम्" },
+  { code: "ne", name: "Nepali", nativeName: "नेपाली" },
+  { code: "mai", name: "Maithili", nativeName: "मैथिली" },
 ];
 
 const resources = {
@@ -40,6 +50,11 @@ const resources = {
   ml: { translation: ml },
   or: { translation: or },
   pa: { translation: pa },
+  ur: { translation: ur },
+  as: { translation: as },
+  sa: { translation: sa },
+  ne: { translation: ne },
+  mai: { translation: mai },
 };
 
 // Check if a saved language preference exists

@@ -1,5 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+:root {
+  --font-heading: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
 
 * {
   margin: 0;
@@ -11,9 +18,18 @@ html {
   scroll-behavior: smooth;
 }
 
+body, button, input, select, textarea {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, .dashboard-title, .schedule-title, .medicine-title, .navbar-title, .health-log-title {
+  font-family: var(--font-heading);
+}
+
 body {
   background-color: #0b1326;
   color: #dae2fd;
+  font-family: var(--font-body);
 }
 
 .navbar {
@@ -87,63 +103,73 @@ body {
 }
 
 .navbar-title {
-  font-family: Manrope, serif;
-  font-size: 24px;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 800;
   color: #4edea3;
-  text-shadow: 0 0 12px rgba(78, 222, 163, 0.25);
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 16px rgba(78, 222, 163, 0.3);
 }
 
 .navbar-tagline {
-  font-family: JetBrains Mono, serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: rgba(78, 222, 163, 0.6);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(78, 222, 163, 0.7);
 }
 
 .navbar-links-container {
   display: flex;
   flex-direction: column;
-  padding-top: 30px;
+  padding-top: 24px;
 }
 
 .navbar-headers {
-  font-family: JetBrains Mono, serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: rgba(187, 202, 191, 0.4);
-  padding-left: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  padding-left: 20px;
   padding-right: 16px;
-  padding-top: 14px;
+  padding-top: 16px;
   padding-bottom: 8px;
-  margin-left: 12px;
+  margin-left: 0;
 }
 
 .navbar-link-container {
   display: flex;
   flex-direction: row;
-  width: 85%;
-  padding: 10px 20px;
-  margin-left: 20px;
+  width: 88%;
+  padding: 10px 18px;
+  margin-left: 16px;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .navbar-link {
-  font-family: Inter, serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: #bbcabf;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #e2e8f0;
+  transition: color 0.2s ease;
 }
 
 .navbar-link-container:hover {
-  background: rgba(45, 52, 73, 0.5);
-  color: #dae2fd;
+  background: rgba(45, 52, 73, 0.6);
   border-radius: 12px;
   transition: all 0.2s ease;
+}
+
+.navbar-link-container:hover .navbar-link {
+  color: #ffffff;
 }
 
 .navbar-link-container.active {
@@ -158,6 +184,7 @@ body {
 
 .navbar-link-container.active .navbar-link {
   color: #4edea3;
+  font-weight: 700;
 }
 
 .navbar-link-container.active .navbar-icons {
@@ -165,7 +192,7 @@ body {
 }
 
 .navbar-icons {
-  color: #bbcabf;
+  color: #94a3b8;
 }
 
 .profile-container {
@@ -242,10 +269,10 @@ body {
 }
 
 .person-name {
-  font-family: Inter, serif;
-  font-size: 16px;
+  font-family: var(--font-heading);
+  font-size: 15px;
   font-weight: 700;
-  color: #dae2fd;
+  color: #ffffff;
   transition: color 0.2s ease;
   cursor: pointer;
 }
@@ -255,10 +282,10 @@ body {
 }
 
 .account-type {
-  font-family: Inter, serif;
-  font-size: 10px;
-  font-weight: 400;
-  color: #bbcabf;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #94a3b8;
 }
 
 .sensors {
@@ -305,7 +332,7 @@ body {
   border: 1px dashed rgba(255, 94, 94, 0.25);
   border-radius: 12px;
   color: #ff6b6b;
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -365,6 +392,7 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   position: sticky;
   top: 0;
   z-index: 40;
@@ -373,18 +401,22 @@ body {
       rgba(11, 19, 38, 0.55));
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0 24px;
 }
 
-.dashboard-header-left {
+.dashboard-header-left,
+.health-log-header-left {
   display: flex;
   flex-direction: column;
-  margin: auto;
-  margin-left: 40px;
+  justify-content: center;
+  margin: 0;
+  margin-left: 0;
+  padding: 0;
 }
 
 .dashboard-title,
 .search-header h1 {
-  font-family: Manrope, serif;
+  font-family: var(--font-heading);
   font-size: 32px;
   font-weight: 700;
   color: #dae2fd;
@@ -394,10 +426,11 @@ body {
   display: flex;
   flex-direction: row;
   gap: 5px;
+  margin-top: 4px;
 }
 
 .dashboard-greeting {
-  font-family: Inter, serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 400;
   color: #bbcabf;
@@ -434,7 +467,7 @@ body {
 
 .addMed-btn {
   background: linear-gradient(135deg, #4edea3 0%, #10b981 100%);
-  font-family: Inter;
+  font-family: var(--font-body);
   cursor: pointer;
   border: none;
   font-size: 15px;
@@ -1449,17 +1482,17 @@ body {
 }
 
 .weeklyAdherence-title {
-  font-family: Manrope;
-  font-size: 22px;
+  font-family: var(--font-heading);
+  font-size: 20px;
   font-weight: 700;
   color: #dae2fd;
 }
 
 .this-week {
-  font-family: "JetBrains Mono";
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   color: #4edea3;
 }
 
@@ -1520,8 +1553,8 @@ body {
 }
 
 .day-label {
-  font-family: Inter;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 600;
   color: #bbcabf;
 }
@@ -1543,14 +1576,14 @@ body {
 }
 
 .adherence-rate-value {
-  font-family: Manrope;
+  font-family: var(--font-heading);
   font-size: 32px;
   font-weight: 800;
   color: #4edea3;
 }
 
 .adherence-missed-value {
-  font-family: Manrope;
+  font-family: var(--font-heading);
   font-size: 32px;
   font-weight: 800;
   color: #ffb4ab;
@@ -1558,7 +1591,7 @@ body {
 
 .adherence-rate,
 .adherence-missed {
-  font-family: "JetBrains Mono";
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1600,7 +1633,7 @@ body {
 
 .upcoming-refills-header h2 {
   color: #ffffff;
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font-heading);
   font-size: 1.35rem;
   font-weight: 700;
   margin: 0;
@@ -1610,7 +1643,7 @@ body {
   background: rgba(78, 222, 163, 0.1);
   border: 1px solid rgba(78, 222, 163, 0.25);
   color: #4edea3;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 12.5px;
   font-weight: 600;
   padding: 5px 12px;
@@ -1822,7 +1855,7 @@ body {
   background: rgba(78, 222, 163, 0.15);
   border: 1px solid rgba(78, 222, 163, 0.35);
   color: #4edea3;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 13.5px;
   font-weight: 600;
   padding: 10px 24px;
@@ -1845,22 +1878,18 @@ body {
 .med-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding-bottom: 20px;
+  align-items: center;
+  padding: 0 24px;
   margin-bottom: 32px;
 }
 
 /* TITLE */
 .my-medicines {
-  font-family: Manrope, serif;
-}
-
-.med-header {
-  align-items: center;
+  font-family: var(--font-body);
 }
 
 .med-header h1 {
-  font-family: Manrope, serif;
+  font-family: var(--font-heading);
   padding-top: 10px;
   font-size: 32px;
   font-weight: 700;
@@ -1882,7 +1911,7 @@ body {
 .add-med-btn {
   background: linear-gradient(135deg, #4edea3 0%, #10b981 100%);
   margin: 0;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--font-body);
   cursor: pointer;
   border: none;
   font-size: 15px;
@@ -2009,7 +2038,7 @@ body {
 }
 
 .empty-state h3 {
-  font-family: Manrope, sans-serif;
+  font-family: var(--font-heading);
   font-size: 20px;
   font-weight: 700;
   color: #dae2fd;
@@ -2017,7 +2046,7 @@ body {
 }
 
 .empty-state p {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   color: rgba(187, 202, 191, 0.6);
   line-height: 1.6;
@@ -2455,7 +2484,7 @@ body {
   padding: 36px 24px;
   border-radius: 20px;
   background: radial-gradient(circle at center, rgba(78, 222, 163, 0.05), transparent 70%),
-              linear-gradient(135deg, rgba(22, 31, 52, 0.95), rgba(16, 24, 42, 0.95));
+    linear-gradient(135deg, rgba(22, 31, 52, 0.95), rgba(16, 24, 42, 0.95));
   border: 1px solid rgba(78, 222, 163, 0.2);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease-out;
@@ -2479,7 +2508,7 @@ body {
 }
 
 .no-medicine-title {
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 700;
   color: #ffffff;
@@ -2487,7 +2516,7 @@ body {
 }
 
 .no-medicine-desc {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 0.95rem;
   color: #bbcabf;
   line-height: 1.6;
@@ -2645,7 +2674,7 @@ body {
 }
 
 .health-card-value {
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font-heading);
   font-size: 38px;
   font-weight: 800;
   color: #dae2fd;
@@ -2741,7 +2770,7 @@ body {
 .searchMedicine {
   min-height: 100vh;
   margin-left: 280px;
-  font-family: Manrope, serif;
+  font-family: var(--font-body);
 }
 
 .search-header h1 {
@@ -3186,23 +3215,27 @@ body {
       rgba(11, 19, 38, 0.55));
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0 24px;
 }
 
 .reminders-header-left {
   display: flex;
   flex-direction: column;
-  margin-left: 40px;
+  justify-content: center;
+  margin: 0;
+  margin-left: 0;
+  padding: 0;
 }
 
 .reminders-header-left h1 {
-  font-family: Manrope, serif;
+  font-family: var(--font-heading);
   font-size: 32px;
   font-weight: 700;
   color: #dae2fd;
 }
 
 .reminders-header-left p {
-  font-family: Inter, serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 400;
   color: #bbcabf;
@@ -3330,14 +3363,14 @@ body {
 }
 
 .schedule-title-area h2 {
-  font-family: Manrope, sans-serif;
+  font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 700;
   color: #dae2fd;
 }
 
 .pending-badge {
-  font-family: JetBrains Mono, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   color: #4edea3;
@@ -3876,21 +3909,37 @@ body {
   margin-left: 280px;
 }
 
+.health-log-header {
+  padding: 0 24px;
+}
+
 .health-log-header-left {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin: auto;
-  margin-left: 42px;
+  justify-content: center;
+  margin: 0;
+  margin-left: 0;
+  padding: 0;
+}
+
+.health-log-title {
+  font-family: var(--font-heading) !important;
+  font-size: 32px;
+  font-weight: 700;
+  color: #dae2fd;
+  letter-spacing: -0.02em;
 }
 
 .health-log-subtitle {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body) !important;
   font-size: 14px;
   font-weight: 400;
   color: #bbcabf;
   margin-top: 4px;
   text-align: left;
+  text-transform: none !important;
+  letter-spacing: normal !important;
 }
 
 .health-log-header-right {
@@ -4008,7 +4057,7 @@ body {
   border-radius: 14px;
   padding: 16px;
   color: #dae2fd;
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.6;
   resize: vertical;
@@ -4046,7 +4095,7 @@ body {
   border-radius: 14px;
   padding: 14px 18px;
   color: #dae2fd;
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   outline: none;
   transition: all 0.25s ease;
@@ -4106,7 +4155,7 @@ body {
 }
 
 .save-log-btn span.btn-text {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 700;
   color: #003824;
@@ -4120,7 +4169,7 @@ body {
 }
 
 .last-saved-text {
-  font-family: JetBrains Mono, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   color: rgba(187, 202, 191, 0.4);
@@ -4175,13 +4224,13 @@ body {
   color: #a5b4fc;
   padding: 4px 10px;
   border-radius: 6px;
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 500;
 }
 
 .dashboard-notes-preview {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   color: rgba(187, 202, 191, 0.7);
   background: rgba(15, 23, 42, 0.4);
@@ -4194,7 +4243,7 @@ body {
 }
 
 .no-symptoms {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   color: rgba(187, 202, 191, 0.5);
   font-style: italic;
@@ -5377,15 +5426,33 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 24px 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .dashboard-header-right,
-.reminders-header-right,
+.reminders-header-actions,
 .health-log-header-right,
 .med-header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.dashboard-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #dae2fd;
+  letter-spacing: -0.3px;
+}
+
+.dashboard-greeting {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #8b9bb4;
+  margin-top: 4px;
 }
 
 /* Notification Popup / Modal Overlay (No blur, transparent backdrop) */
@@ -5573,7 +5640,9 @@ body {
 }
 
 @keyframes notifSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .notif-loading-state p,
@@ -5889,24 +5958,1099 @@ body {
   cursor: not-allowed;
 }
 
-@media (max-width: 600px) {
-  .notif-modal {
-    max-height: 90vh;
-    border-radius: 16px;
+/* ==========================================================================
+   RESPONSIVE DESIGN SYSTEM (MOBILE, TABLET, DESKTOP)
+   ========================================================================== */
+
+/* Base overrides for mobile elements (Hidden on Desktop) */
+.mobile-header {
+  display: none;
+}
+
+.mobile-sidebar-close {
+  display: none;
+}
+
+/* Modals Accessibility & Scrolling on small viewports */
+.addMed-modal,
+.profile-modal {
+  max-height: 85vh;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 24px;
+}
+
+.addMed-modal::-webkit-scrollbar,
+.profile-modal::-webkit-scrollbar {
+  display: none;
+}
+
+/* Media Query: Tablets & Mobile (Width <= 1024px) */
+@media (max-width: 1024px) {
+
+  /* Align modals to the top and allow page-level scrolling on the overlay */
+  .addMed-overlay,
+  .profile-modal-overlay {
+    align-items: flex-start !important;
+    padding: 24px 16px 36px 16px !important;
+    overflow-y: auto !important;
   }
-  .notif-header {
+
+  .addMed-modal,
+  .profile-modal {
+    margin-top: 0 !important;
+    margin-bottom: 20px !important;
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 520px !important;
+  }
+
+  /* Mobile Sticky Header Bar */
+  .mobile-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(11, 19, 38, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0 16px;
+    z-index: 995;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  .menu-toggle-btn {
+    background: none;
+    border: none;
+    color: #4edea3;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+  }
+
+  .menu-toggle-btn:hover {
+    background: rgba(78, 222, 163, 0.1);
+  }
+
+  .menu-toggle-btn span {
+    font-size: 26px;
+  }
+
+  .mobile-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-logo-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+  }
+
+  .mobile-logo-title {
+    font-family: 'Manrope', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #4edea3;
+    text-shadow: 0 0 10px rgba(78, 222, 163, 0.2);
+  }
+
+  .mobile-profile-avatar {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .person-logo-small {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(78, 222, 163, 0.35);
+    box-shadow: 0 0 10px rgba(78, 222, 163, 0.15);
+  }
+
+  /* Backdrop Overlay for open drawer */
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 7, 18, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 998;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* Sidebar Drawer styling */
+  .navbar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 999;
+    box-shadow: 25px 0 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .navbar.open {
+    transform: translateX(0);
+  }
+
+  .mobile-sidebar-close {
+    display: flex;
+    justify-content: flex-end;
     padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-  .notif-body {
-    padding: 12px 14px;
+
+  .mobile-sidebar-close button {
+    background: none;
+    border: none;
+    color: #bbcabf;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
   }
-  .notif-footer {
-    padding: 10px 14px 14px;
+
+  .mobile-sidebar-close button:hover {
+    color: #fff;
   }
+
+  .mobile-sidebar-close button span {
+    font-size: 22px;
+  }
+
+  /* Main Container Layouts - Remove margins & shift for mobile header */
+  .dashboard,
+  .my-medicines,
+  .searchMedicine,
+  .reminders,
+  .health-log,
+  .ai-assistant {
+    margin-left: 0 !important;
+    padding-top: 76px;
+    padding-bottom: 40px;
+    min-height: 100vh;
+  }
+
+  /* Page Subheaders - Clean flex row with wrapping */
+  .dashboard-header,
+  .med-header,
+  .search-header,
+  .reminders-header {
+    position: static;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 20px;
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    backdrop-filter: none;
+  }
+
+  .dashboard-header-left,
+  .health-log-header-left,
+  .reminders-header-left {
+    margin-left: 0;
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .dashboard-title,
+  .search-header h1,
+  .med-header h1,
+  .reminders-header-left h1 {
+    font-size: 24px;
+    letter-spacing: -0.3px;
+  }
+
+  /* Highlight headings and reduce text below on mobile (Dashboard, Health Log & Search Medicines) */
+  .dashboard-title,
+  .health-log-header-left h1,
+  .search-header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.4px;
+    margin: 0;
+    text-shadow: 0 0 16px rgba(78, 222, 163, 0.18);
+  }
+
+  .dashboard-greeting,
+  .health-log-subtitle,
+  .search-header p {
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+    color: #8b9bb4 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    line-height: 1.35 !important;
+    margin-top: 3px !important;
+    max-width: 250px;
+    opacity: 0.85;
+  }
+
+  .dashboard-header-right,
+  .reminders-header-actions,
+  .health-log-header-right,
+  .med-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .add-med-btn,
+  .addMed-btn {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 13.5px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
   .notification-btn {
-    margin-right: 8px;
     width: 40px;
     height: 40px;
     min-width: 40px;
+    border-radius: 10px;
   }
-}
+
+  /* Progress cards grid style for tablets/mobile */
+  .progress-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    width: 100%;
+    padding: 16px 20px;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+
+  .total-med-container,
+  .scheduledToday-container,
+  .dosesTaken-container,
+  .remainingDoses-container {
+    width: 100%;
+    min-height: 145px;
+    padding: 14px 14px 12px 14px;
+    border-radius: 18px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .totalMed-icon-container,
+  .scheduledToday-icon-container,
+  .dosesTaken-icon-container,
+  .remainingDoses-icon-container {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    margin-bottom: 0;
+  }
+
+  .totalMed-icon,
+  .scheduledToday-icon,
+  .dosesTaken-icon,
+  .remainingDoses-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .totalMed-number,
+  .scheduledToday-number,
+  .dosesTaken-number,
+  .remainingDoses-number {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 8px;
+    margin-bottom: 2px;
+  }
+
+  .scheduledToday-number-container {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 8px;
+    margin-bottom: 2px;
+  }
+
+  .scheduledToday-number-container .scheduledToday-number {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .scheduledToday-unit {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 0;
+  }
+
+  .totalMed-title,
+  .scheduledToday-title,
+  .dosesTaken-title,
+  .remainingDoses-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #8b9bb4;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 0;
+    margin-bottom: 2px;
+  }
+
+  .recently-added,
+  .scheduledToday-day,
+  .dosesTaken-percent,
+  .remainingDoses-overdue {
+    top: 14px;
+    right: 14px;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .scheduledToday-progress-bar,
+  .dosesTaken-progress-bar,
+  .remainingDoses-progress-bar {
+    height: 4px;
+    margin-top: 6px;
+    border-radius: 4px;
+  }
+
+  .present-time {
+    display: none;
+  }
+
+  /* Grid/Flex column wrap for schedule/adherence section */
+  .schedule-weeklyAdhere {
+    flex-direction: column;
+    padding: 16px 20px;
+    gap: 18px;
+    box-sizing: border-box;
+  }
+
+  .adherence-refills {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .schedule-container,
+  .weekly-adherence {
+    width: 100%;
+    max-height: none;
+    padding: 20px;
+    box-sizing: border-box;
+    border-radius: 20px;
+  }
+
+  .schedule-title {
+    font-size: 22px;
+  }
+
+  /* Health Stats (Dashboard bottom widgets) */
+  .health-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    padding: 0 20px 40px 20px;
+    gap: 14px;
+    box-sizing: border-box;
+  }
+
+  .health-card {
+    width: 100%;
+    min-height: 140px;
+    padding: 18px;
+    border-radius: 18px;
+    box-sizing: border-box;
+  }
+
+  .health-card-value {
+    font-size: 32px;
+  }
+
+  /* Health Log Page Grid */
+  .health-log-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    width: 100%;
+    padding: 16px 20px 40px 20px;
+    box-sizing: border-box;
+  }
+
+  .health-log-card {
+    padding: 22px;
+    border-radius: 20px;
+  }
+
+  /* Reminders Page Grid */
+  .reminders-main-grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+    padding: 16px 20px 40px 20px;
+    gap: 20px;
+    box-sizing: border-box;
+  }
+}
+
+/* Media Query: Tablets & Small Screen Widths (<= 768px) */
+@media (max-width: 768px) {
+
+  /* Medicine Card Grid adjustments */
+  .medicine-grid-myMedicines {
+    grid-template-columns: 1fr;
+    padding: 14px 16px;
+    gap: 14px;
+  }
+
+  .medicine-card-myMed {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .medicine-card-myMed h2 {
+    font-size: 22px;
+  }
+
+  .medicine-grid {
+    grid-template-columns: 1fr;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0 16px 30px 16px;
+    gap: 14px;
+  }
+
+  .medicine-info-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .medicine-title {
+    font-size: 22px;
+  }
+
+  /* Search Page Items */
+  .search-container {
+    margin: 0;
+    padding: 0 16px;
+  }
+
+  .search-box {
+    margin: 0;
+    padding: 6px 10px;
+    border-radius: 14px;
+  }
+
+  .search-box button {
+    padding: 8px 18px;
+    font-size: 13.5px;
+    border-radius: 10px;
+  }
+
+  .popular-title,
+  .section-title,
+  .results-title,
+  .results-subtitle {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .category-row {
+    margin-left: 0;
+    margin-right: 0;
+    gap: 8px;
+    padding: 0 0 14px 0;
+  }
+
+  .category-btn {
+    padding: 6px 14px;
+    font-size: 12.5px;
+  }
+
+  /* Reminders / Schedule page layouts */
+  .reminders-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .reminder-stat-card {
+    padding: 12px 8px;
+    min-height: 80px;
+    border-radius: 14px;
+    text-align: center;
+  }
+
+  .reminder-stat-card .stat-value {
+    font-size: 24px;
+  }
+
+  .reminder-stat-card .stat-label {
+    font-size: 10px;
+  }
+
+  /* Vitals in Health Log */
+  .vitals-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  /* Modals */
+  .addMed-modal,
+  .profile-modal,
+  .refill-modal {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 20px 16px;
+  }
+
+  /* Search Medicines Mobile Layout & Margins */
+  .searchMedicine {
+    padding: 76px 20px 60px 20px !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .searchMedicine .search-header {
+    padding: 16px 0 !important;
+    margin: 0 0 10px 0;
+    width: 100%;
+  }
+
+  .searchMedicine .search-box {
+    margin: 12px 0 24px 0 !important;
+    width: 100%;
+    padding: 10px 16px !important;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .searchMedicine .section-title {
+    margin: 0 0 12px 0 !important;
+    font-size: 11.5px !important;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #94a3b8;
+  }
+
+  .searchMedicine .category-row {
+    margin: 0 0 28px 0 !important;
+    gap: 8px !important;
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .searchMedicine .category-row button {
+    padding: 8px 14px !important;
+    font-size: 12.5px !important;
+    border-radius: 999px;
+  }
+
+  .searchMedicine .results-title {
+    margin: 0 0 6px 0 !important;
+    font-size: 12px !important;
+    letter-spacing: 0.12em;
+  }
+
+  .searchMedicine .results-subtitle {
+    margin: 0 0 20px 0 !important;
+    font-size: 13px !important;
+    color: #94a3b8;
+  }
+
+  .searchMedicine .medicine-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    padding: 0 !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .searchMedicine .discover-card,
+  .searchMedicine .medicine-info-card,
+  .searchMedicine .no-medicine-found-card {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px 18px !important;
+    border-radius: 18px !important;
+    box-sizing: border-box;
+  }
+}
+
+/* Media Query: Compact Mobile Screens (<= 600px) */
+@media (max-width: 600px) {
+
+  .dashboard,
+  .my-medicines,
+  .searchMedicine,
+  .reminders,
+  .health-log,
+  .ai-assistant {
+    padding-top: 72px;
+    padding-bottom: 30px;
+  }
+
+  .dashboard-header,
+  .med-header,
+  .search-header,
+  .reminders-header {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .dashboard-title,
+  .health-log-header-left h1,
+  .search-header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+  }
+
+  .med-header h1,
+  .reminders-header-left h1 {
+    font-size: 21px;
+    font-weight: 800;
+  }
+
+  .dashboard-greeting,
+  .health-log-subtitle,
+  .search-header p {
+    font-size: 10.5px !important;
+    font-weight: 500 !important;
+    color: #8b9bb4 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    line-height: 1.3 !important;
+    margin-top: 2px !important;
+    max-width: 210px;
+    opacity: 0.85;
+  }
+
+  .reminders-header p,
+  .med-header p {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Progress cards on mobile: 2 column neat grid */
+  .progress-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .total-med-container,
+  .scheduledToday-container,
+  .dosesTaken-container,
+  .remainingDoses-container {
+    min-height: 135px;
+    padding: 12px 12px 10px 12px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .totalMed-icon-container,
+  .scheduledToday-icon-container,
+  .dosesTaken-icon-container,
+  .remainingDoses-icon-container {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    margin-bottom: 0;
+  }
+
+  .totalMed-icon,
+  .scheduledToday-icon,
+  .dosesTaken-icon,
+  .remainingDoses-icon {
+    width: 17px;
+    height: 17px;
+  }
+
+  .totalMed-number,
+  .scheduledToday-number,
+  .dosesTaken-number,
+  .remainingDoses-number {
+    font-size: 26px;
+    font-weight: 800;
+    margin-top: 6px;
+    margin-bottom: 1px;
+    line-height: 1;
+  }
+
+  .scheduledToday-number-container {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    margin-top: 6px;
+    margin-bottom: 1px;
+  }
+
+  .scheduledToday-number-container .scheduledToday-number {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .scheduledToday-unit {
+    font-size: 10px;
+    color: #64748b;
+    margin-bottom: 0;
+  }
+
+  .totalMed-title,
+  .scheduledToday-title,
+  .dosesTaken-title,
+  .remainingDoses-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #8b9bb4;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    margin-top: 0;
+    margin-bottom: 1px;
+  }
+
+  .recently-added,
+  .scheduledToday-day,
+  .dosesTaken-percent,
+  .remainingDoses-overdue {
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 3px 6px;
+    top: 10px;
+    right: 10px;
+    border-radius: 5px;
+  }
+
+  .scheduledToday-progress-bar,
+  .dosesTaken-progress-bar,
+  .remainingDoses-progress-bar {
+    height: 3.5px;
+    margin-top: 4px;
+    border-radius: 3px;
+  }
+
+  .present-time {
+    display: none;
+  }
+
+  .schedule-weeklyAdhere {
+    padding: 10px 14px;
+    gap: 14px;
+  }
+
+  .schedule-container,
+  .weekly-adherence,
+  .upcoming-refills-card {
+    padding: 16px 14px;
+    border-radius: 18px;
+  }
+
+  /* Reminders timeline cards stacked layout to avoid squishing */
+  .timeline-wrapper {
+    padding-left: 18px;
+  }
+
+  .timeline-node {
+    left: -18px;
+  }
+
+  .timeline-line {
+    left: -10px;
+  }
+
+  .timeline-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .timeline-card::before {
+    top: 0;
+    bottom: 0;
+    width: 3px;
+  }
+
+  .time-block {
+    width: 100%;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .time-value {
+    font-size: 18px;
+  }
+
+  .medicine-name {
+    font-size: 16px;
+  }
+
+  .med-info-block {
+    padding-left: 0;
+  }
+
+  .card-actions {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 10px;
+    margin-top: 2px;
+  }
+
+  .toggle-notification-wrap {
+    align-items: center;
+  }
+
+  .check-btn.action {
+    width: 34px;
+    height: 34px;
+  }
+
+  .check-btn.taken span {
+    font-size: 28px;
+  }
+
+  /* Notifications Popup on mobile */
+  .notif-modal.notif-popup-anchored {
+    top: 68px !important;
+    right: 10px !important;
+    left: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: 82vh !important;
+    border-radius: 16px;
+  }
+
+  .notif-header {
+    padding: 14px 16px;
+  }
+
+  .notif-body {
+    padding: 12px 14px;
+  }
+
+  .notif-footer {
+    padding: 10px 14px 14px;
+  }
+
+  /* Search Medicines Compact Mobile Padding & Margins */
+  .searchMedicine {
+    padding: 72px 14px 40px 14px !important;
+  }
+
+  .searchMedicine .search-header {
+    padding: 12px 0 !important;
+  }
+
+  .searchMedicine .search-box {
+    margin: 10px 0 20px 0 !important;
+    padding: 8px 12px !important;
+    border-radius: 14px;
+    gap: 8px;
+  }
+
+  .searchMedicine .search-box input {
+    font-size: 13.5px;
+  }
+
+  .searchMedicine .search-box button {
+    padding: 10px 16px !important;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .searchMedicine .category-row {
+    margin: 0 0 22px 0 !important;
+    gap: 6px !important;
+  }
+
+  .searchMedicine .category-row button {
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .searchMedicine .discover-card,
+  .searchMedicine .medicine-info-card {
+    padding: 16px 14px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* Media Query: Extra Small Mobile Screens (<= 480px) */
+@media (max-width: 480px) {
+
+  /* Profile Vitals & Forms columns count */
+  .profile-form-row,
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .profile-modal {
+    padding: 18px 14px;
+    border-radius: 18px;
+  }
+
+  .addMed-modal {
+    border-radius: 18px;
+  }
+
+  .addMed-header,
+  .addMed-body {
+    padding: 16px;
+  }
+
+  .addMed-header h2 {
+    font-size: 20px;
+  }
+
+  /* Weekly adherence columns slim width */
+  .weeklyAdherence-bar {
+    height: 110px;
+    margin-bottom: 16px;
+    gap: 4px;
+  }
+
+  .day-bars {
+    height: 80px;
+    gap: 2px;
+    width: 20px;
+  }
+
+  .taken-bar,
+  .missed-bar {
+    width: 8px;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .day-label {
+    font-size: 8.5px;
+  }
+
+  .weeklyAdherence-details {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .adherence-rate-value,
+  .adherence-missed-value {
+    font-size: 24px;
+  }
+
+  /* Dashboard Medicine item details wrapping */
+  .medicine-container {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .capsule-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+    border-radius: 10px;
+  }
+
+  .medName {
+    font-size: 16px;
+  }
+
+  .time-status {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+
+  .time {
+    font-size: 16px;
+  }
+
+  .status-taken,
+  .status-pending,
+  .status-missed {
+    margin-top: 0;
+  }
+
+  .vitals-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .symptom-pill {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .save-log-btn {
+    height: 46px;
+    font-size: 13.5px;
+    padding: 0 16px;
+  }
+}
+
+/* Media Query: Ultra-Compact Mobile (< 380px) */
+@media (max-width: 380px) {
+  .progress-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-header,
+  .med-header,
+  .search-header,
+  .reminders-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-header-right,
+  .reminders-header-actions,
+  .health-log-header-right,
+  .med-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .add-med-btn,
+  .addMed-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}

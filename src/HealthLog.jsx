@@ -101,9 +101,9 @@ export default function HealthLog({
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
       {/* Header */}
-      <div className="med-header">
-        <div className="health-log-header-left">
-          <h1 className="dashboard-title">{t("healthLog.title", "Health Log")}</h1>
+      <div className="dashboard-header health-log-header">
+        <div className="dashboard-header-left health-log-header-left">
+          <h1 className="dashboard-title health-log-title">{t("healthLog.title", "Health Log")}</h1>
           <p className="health-log-subtitle">
             {t("healthLog.subtitle", "Track your daily wellness journey")}
           </p>
@@ -230,7 +230,7 @@ export default function HealthLog({
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                 </svg>
               </span>
-              <h2>{t("healthLog.subtitle", "Vital Measurements")}</h2>
+              <h2>{t("healthLog.vitalsTitle", "Vital Measurements")}</h2>
             </div>
 
             <div className="vitals-grid">

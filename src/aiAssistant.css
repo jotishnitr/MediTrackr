@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   color: #dae2fd;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   position: relative;
   overflow: hidden;
 }
@@ -39,7 +39,7 @@
       rgba(11, 19, 38, 0.55));
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 0 40px;
+  padding: 0 24px;
   gap: 20px;
 }
 
@@ -1173,6 +1173,19 @@
   .ai-send-btn {
     width: 38px;
     height: 38px;
+  }
+
+  .action-card-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .action-btn-confirm,
+  .action-btn-discard {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 8px;
+    font-size: 12px;
   }
 }
 

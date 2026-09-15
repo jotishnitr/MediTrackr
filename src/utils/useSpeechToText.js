@@ -13,6 +13,11 @@ export const SPEECH_LANG_MAP = {
   ml: { code: "ml-IN", name: "Malayalam", nativeName: "മലയാളം" },
   or: { code: "or-IN", name: "Odia", nativeName: "ଓଡ଼ିଆ" },
   pa: { code: "pa-IN", name: "Punjabi", nativeName: "ਪੰਜਾਬੀ" },
+  ur: { code: "ur-IN", name: "Urdu", nativeName: "اردو" },
+  as: { code: "as-IN", name: "Assamese", nativeName: "অসমীয়া" },
+  sa: { code: "sa-IN", name: "Sanskrit", nativeName: "संस्कृतम्" },
+  ne: { code: "ne-NP", name: "Nepali", nativeName: "नेपाली" },
+  mai: { code: "hi-IN", name: "Maithili", nativeName: "मैथिली" },
 };
 
 export function useSpeechToText({ onTranscript, onError, lang } = {}) {

@@ -633,7 +633,7 @@ export default function App() {
         />
       )}
 
-      {!isAuthPage && (
+      {!isAuthPage && currentPage !== "aiHealthAssistance" && (
         <>
           {showHelpBot ? (
             <HelpBot
@@ -644,6 +644,7 @@ export default function App() {
             <div
               className="chatbot-launcher"
               onClick={() => setShowHelpBot(true)}
+              aria-label="Open Support Chatbot"
             >
               <img src="forum.png" alt="Help Bot Launcher" />
             </div>

@@ -75,6 +75,7 @@
     opacity: 0;
     transform: translateY(-8px) scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -187,54 +188,87 @@
   width: 100%;
 }
 
-.lang-selector-container.auth {
-  position: absolute;
-  top: 24px;
-  right: 28px;
-  z-index: 100;
-}
-
-/* Profile Variant - Inside Profile Container */
-.lang-selector-container.profile {
+/* Compact Variant (e.g. in Mobile Top Header) */
+.lang-selector-container.compact {
   position: relative;
-  z-index: 20;
+  z-index: 105;
 }
 
-.lang-selector-container.profile .lang-trigger-btn {
-  padding: 5px 10px;
+.lang-selector-container.compact .lang-trigger-btn {
+  padding: 6px 10px;
   font-size: 12px;
   background: rgba(78, 222, 163, 0.08);
   border: 1px solid rgba(78, 222, 163, 0.22);
-  border-radius: 9px;
+  border-radius: 10px;
   gap: 5px;
   color: #dae2fd;
 }
 
-.lang-selector-container.profile .lang-trigger-btn:hover,
-.lang-selector-container.profile.open .lang-trigger-btn {
+.lang-selector-container.compact .lang-trigger-btn:hover,
+.lang-selector-container.compact.open .lang-trigger-btn {
   background: rgba(78, 222, 163, 0.16);
   border-color: #4edea3;
   color: #ffffff;
 }
 
-.lang-selector-container.profile .lang-icon {
-  font-size: 15px !important;
+.lang-selector-container.compact .lang-icon {
+  font-size: 16px !important;
 }
 
-.lang-selector-container.profile .lang-label {
-  font-size: 11.5px;
-  font-weight: 500;
+.lang-selector-container.compact .lang-label {
+  font-size: 12px;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.lang-selector-container.profile .lang-arrow {
-  font-size: 15px !important;
+.lang-selector-container.compact .lang-arrow {
+  font-size: 16px !important;
 }
 
-.lang-selector-container.profile .lang-dropdown-menu {
-  bottom: calc(100% + 10px);
-  top: auto;
+.lang-selector-container.compact .lang-dropdown-menu {
+  top: calc(100% + 6px);
   right: 0;
   left: auto;
-  width: 200px;
+  width: 210px;
+  max-height: 320px;
 }
 
+/* =========================================================
+   RESPONSIVE MEDIA QUERIES FOR LANGUAGE SELECTOR
+   ========================================================= */
+@media (max-width: 1024px) {
+
+  /* On mobile and tablet screens (<1024px), the sticky top .mobile-header already has the LanguageSelector.
+     Hide page-level header language dropdowns to avoid confusing duplicate UI elements. */
+  .lang-selector-container.header {
+    display: none !important;
+  }
+
+  .lang-selector-container.auth {
+    top: 16px;
+    right: 16px;
+  }
+
+  .lang-dropdown-menu {
+    width: 200px;
+    max-height: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lang-selector-container.compact .lang-label {
+    max-width: 65px;
+    font-size: 11px;
+  }
+
+  .lang-selector-container.compact .lang-trigger-btn {
+    padding: 5px 8px;
+    gap: 4px;
+  }
+
+  .lang-dropdown-menu {
+    width: 190px;
+    max-height: 260px;
+  }
+}

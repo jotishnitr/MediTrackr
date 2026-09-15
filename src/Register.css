@@ -397,7 +397,8 @@
   max-width: 360px;
   height: 44px;
   margin: 16px auto;
-  border-radius: 6px; /* matches standard Google button corner radius */
+  border-radius: 6px;
+  /* matches standard Google button corner radius */
   overflow: hidden;
   box-sizing: border-box;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
