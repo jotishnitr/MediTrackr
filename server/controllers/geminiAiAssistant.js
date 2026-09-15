@@ -55,12 +55,13 @@ const AssistantHistory = require("../models/AssistantHistory");
 const { processUploadedFile } = require("../utils/fileProcessor");
 
 const gemini_models = [
-  "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-3-flash",
-  "gemini-2.5-flash",
+  "gemini-3.6-flash",    // most stable free model right now
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
   "gemini-3.1-flash-lite",
-  "gemini-2.5-flash-lite",
+  "gemini-3.7-flash",
+  "gemini-3.8-flash",
+  "gemini-2.5-pro",
   "gemini-flash-latest"
 ];
 
@@ -96,8 +97,8 @@ const openrouter_doc_models = [
   "nvidia/nemotron-3-super:free",
 ];
 
-// Helper function to enforce a strict 15-second timeout per model request
-const withTimeout = (promise, ms = 15000) => {
+// Helper function to enforce a strict 30-second timeout per model request
+const withTimeout = (promise, ms = 30000) => {
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
     timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${ms / 1000}s`)), ms);
@@ -165,7 +166,7 @@ const geminiAiAssistant = async (req, res) => {
           chat.sendMessage({
             message: geminiInput,
           }),
-          15000
+          30000
         );
 
         if (response?.text) {
@@ -179,7 +180,7 @@ const geminiAiAssistant = async (req, res) => {
     }
 
     // ==========================================================
-    // STAGE 2: If Gemini Fails -> Automatic Fallback to OpenRouter (15s timeout each)
+    // STAGE 2: If Gemini Fails -> Automatic Fallback to OpenRouter (30s timeout each)
     // ==========================================================
     if (!aiReply) {
       console.warn("[Health Advisor] Gemini failed or timed out. Routing automatically to OpenRouter fallback models...");
@@ -226,7 +227,7 @@ const geminiAiAssistant = async (req, res) => {
               max_tokens: 4096,
               messages: openrouterMessages,
             }),
-            15000
+            30000
           );
 
           const replyText = completion.choices?.[0]?.message?.content;

@@ -865,10 +865,16 @@ export default function AiAssistance({
                 </span>
                 <span className="time-stamp">{getCurrentTime()}</span>
               </div>
-              <div className="typing-indicator">
-                <div className="typing-dot"></div>
-                <div className="typing-dot"></div>
-                <div className="typing-dot"></div>
+              <div className="typing-indicator-wrapper">
+                <div className="typing-indicator">
+                  <div className="typing-dot"></div>
+                  <div className="typing-dot"></div>
+                  <div className="typing-dot"></div>
+                </div>
+                <div className="ai-free-tier-notice">
+                  <span className="material-symbols-outlined notice-icon">hourglass_top</span>
+                  <span>Please wait for response... Responses may take longer on the free version of <strong>MediTrackr</strong>. Paid version with instant high-speed infrastructure will be available soon!</span>
+                </div>
               </div>
             </div>
           )}

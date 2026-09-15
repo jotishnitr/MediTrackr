@@ -273,6 +273,9 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
               <span></span>
               <span></span>
             </div>
+            <div className="bot-free-tier-notice">
+              <span>Please wait for response... Processing takes longer on the free version of <strong>MediTrackr</strong>. Paid version will be available soon.</span>
+            </div>
           </div>
         )}
 

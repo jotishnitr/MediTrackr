@@ -233,12 +233,13 @@ const executeTool = async (name, userId) => {
 
 
 const gemini_models = [
-  "gemini-3.8-flash",      // newest
-  "gemini-3.7-flash",
-  "gemini-3-flash",
-  "gemini-2.5-flash",
+  "gemini-3.6-flash",    // most stable free model right now
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
   "gemini-3.1-flash-lite",
-  "gemini-2.5-flash-lite",
+  "gemini-3.7-flash",
+  "gemini-3.8-flash",
+  "gemini-2.5-pro",
   "gemini-flash-latest"
 ];
 
@@ -265,8 +266,8 @@ const openrouter_models = [
   "nvidia/nemotron-3-super:free",
 ];
 
-// Helper function to enforce a 15-second timeout per model request
-const withTimeout = (promise, ms = 15000) => {
+// Helper function to enforce a 30-second timeout per model request
+const withTimeout = (promise, ms = 30000) => {
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
     timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${ms / 1000}s`)), ms);
@@ -344,7 +345,7 @@ const copilot = async (req, res) => {
           }
         });
 
-        const geminiRes = await withTimeout(chat.sendMessage({ message: geminiInput }), 15000);
+        const geminiRes = await withTimeout(chat.sendMessage({ message: geminiInput }), 30000);
 
         if (geminiRes?.functionCalls?.length > 0) {
           // Resolve ALL parallel tool calls
@@ -364,7 +365,7 @@ const copilot = async (req, res) => {
             chat.sendMessage({
               message: functionResponses
             }),
-            15000
+            30000
           );
 
           // Handle multi-turn follow-up tool calls if model requests additional data
@@ -384,7 +385,7 @@ const copilot = async (req, res) => {
               chat.sendMessage({
                 message: nextResponses
               }),
-              15000
+              30000
             );
           }
 
@@ -428,7 +429,7 @@ const copilot = async (req, res) => {
               ],
               tools: openrouterTools
             }),
-            15000
+            30000
           );
 
           const msg = response.choices?.[0]?.message;
@@ -455,7 +456,7 @@ const copilot = async (req, res) => {
                   ...toolMessages
                 ]
               }),
-              15000
+              30000
             );
             const followUpText = followUpRes.choices?.[0]?.message?.content;
             if (followUpText) {
@@ -488,7 +489,7 @@ const copilot = async (req, res) => {
                       }
                     ]
                   }),
-                  15000
+                  30000
                 );
                 const followUpText = followUpRes.choices?.[0]?.message?.content;
                 if (followUpText && !followUpText.includes("<tool_call>")) {

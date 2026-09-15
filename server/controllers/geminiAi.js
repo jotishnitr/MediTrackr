@@ -77,12 +77,13 @@ const openrouter = require("../openrouter");
 const ChatHistory = require("../models/ChatHistory");
 
 const gemini_models = [
-  "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-3-flash",
-  "gemini-2.5-flash",
+  "gemini-3.6-flash",    // most stable free model right now
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
   "gemini-3.1-flash-lite",
-  "gemini-2.5-flash-lite",
+  "gemini-3.7-flash",
+  "gemini-3.8-flash",
+  "gemini-2.5-pro",
   "gemini-flash-latest"
 ];
 
@@ -110,7 +111,7 @@ const openrouter_models = [
   "nvidia/nemotron-3-super:free",
 ];
 
-const withTimeout = (promise, ms = 15000) => {
+const withTimeout = (promise, ms = 30000) => {
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
     timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${ms / 1000}s`)), ms);
@@ -152,7 +153,7 @@ const geminiAi = async (req, res) => {
             systemInstruction: SYSTEM_PROMPT,
           },
         });
-        const response = await withTimeout(chat.sendMessage({ message }), 15000);
+        const response = await withTimeout(chat.sendMessage({ message }), 30000);
         if (response && response.text) {
           replyText = response.text;
           providerUsed = `gemini (${gm})`;
@@ -185,7 +186,7 @@ const geminiAi = async (req, res) => {
               temperature: 0.7,
               max_tokens: 800,
             }),
-            15000
+            30000
           );
 
           const choiceText = completion.choices?.[0]?.message?.content;
