@@ -125,7 +125,7 @@ JSON Schema:
 --------------------------------------------------
 Trigger: User asks to organize, rearrange, or optimize their daily medication timetable (e.g. "Optimize my daily medication schedule for morning, afternoon, and bedtime").
 Instruction:
-- ALWAYS first call the `getMedicines` tool to retrieve the user's active medication list from the database.
+- ALWAYS first call the getMedicines tool to retrieve the user's active medication list from the database.
 - If the user has active medicines:
   - Analyze their active medicines, check for potential timing conflicts, and construct an optimized daily timetable.
   - Present the timetable in clean, beautiful, structured Markdown with clear headings:

@@ -19,13 +19,21 @@ export default function AiAssistance({
   // Mode toggle: "advisor" (Health Advisor - text Q&A only) or "copilot" (MediTrackr Copilot - functional actions)
   const [activeMode, setActiveMode] = useState("advisor");
 
+  // Helper to extract clean user display name
+  const getUserDisplayName = (name) => {
+    if (!name || typeof name !== "string") return "there";
+    const trimmed = name.trim();
+    if (!trimmed || trimmed.toLowerCase() === "user name" || trimmed.toLowerCase() === "user") return "there";
+    return trimmed;
+  };
+
   // Health Advisor messages
   const [advisorMessages, setAdvisorMessages] = useState([]);
   // Copilot messages
   const [copilotMessages, setCopilotMessages] = useState([
     {
       sender: "assistant",
-      text: `👋 Hi ${profileDetails?.name || "there"}! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
+      text: `👋 Hi ${getUserDisplayName(profileDetails?.name)}! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
       time: getCurrentTime(),
     },
   ]);
@@ -127,7 +135,7 @@ export default function AiAssistance({
             {
               sender: "assistant",
               text: `Hello ${
-                profileDetails?.name || "there"
+                getUserDisplayName(profileDetails?.name)
               }! I am your **Health Advisor**. How can I assist with your health questions or document reviews today?`,
               time: getCurrentTime(),
             },
@@ -165,7 +173,7 @@ export default function AiAssistance({
             {
               sender: "assistant",
               text: `👋 Hi ${
-                profileDetails?.name || "there"
+                getUserDisplayName(profileDetails?.name)
               }! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
               time: getCurrentTime(),
             },
@@ -176,6 +184,44 @@ export default function AiAssistance({
       console.error("Failed to load Copilot history:", err);
     }
   };
+
+  // Synchronize greeting when profile details are loaded
+  useEffect(() => {
+    const displayName = getUserDisplayName(profileDetails?.name);
+    if (displayName && displayName !== "there") {
+      setCopilotMessages((prev) => {
+        if (
+          prev.length === 1 &&
+          prev[0].sender === "assistant" &&
+          prev[0].text?.includes("I am your **MediTrackr Copilot**")
+        ) {
+          return [
+            {
+              ...prev[0],
+              text: `👋 Hi ${displayName}! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
+            },
+          ];
+        }
+        return prev;
+      });
+
+      setAdvisorMessages((prev) => {
+        if (
+          prev.length === 1 &&
+          prev[0].sender === "assistant" &&
+          prev[0].text?.includes("I am your **Health Advisor**")
+        ) {
+          return [
+            {
+              ...prev[0],
+              text: `Hello ${displayName}! I am your **Health Advisor**. How can I assist with your health questions or document reviews today?`,
+            },
+          ];
+        }
+        return prev;
+      });
+    }
+  }, [profileDetails?.name]);
 
   const handleDeleteHistory = async () => {
     if (typeof requireAuth === "function" && !requireAuth()) return;
@@ -195,7 +241,7 @@ export default function AiAssistance({
             {
               sender: "assistant",
               text: `Hello ${
-                profileDetails?.name || "there"
+                getUserDisplayName(profileDetails?.name)
               }! How can I help you today?`,
               time: getCurrentTime(),
             },

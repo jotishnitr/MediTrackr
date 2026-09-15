@@ -240,6 +240,13 @@ export default function App() {
 
         if (data.success) {
           setIsAuthenticated(true);
+          if (data.user?.name) {
+            setProfileDetails((prev) => ({
+              ...prev,
+              name: data.user.name,
+              email: data.user.email || prev.email,
+            }));
+          }
           if (isAuthRoute || path === "/") {
             navigate("/dashboard");
           }
@@ -304,7 +311,7 @@ export default function App() {
   // Profile modal states
   const [showProfileModal, setShowProfileModal] = React.useState(false);
   const [profileDetails, setProfileDetails] = React.useState({
-    name: "User Name",
+    name: "",
     age: "",
     bloodType: "",
     height: "",
