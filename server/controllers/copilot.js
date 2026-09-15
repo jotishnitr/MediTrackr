@@ -123,29 +123,20 @@ JSON Schema:
 --------------------------------------------------
 3. FUNCTION: SCHEDULE & REMINDER OPTIMIZER
 --------------------------------------------------
-Trigger: User asks to organize, rearrange, or optimize their daily medication timetable.
-Instruction: Generate a structured schedule avoiding overlapping conflicting doses with times in 24-hour 'HH:MM' format.
-
-JSON Schema:
-\`\`\`json
-{
-  "action": "OPTIMIZE_SCHEDULE",
-  "schedule": {
-    "morning": [
-      { "name": "string", "dosage": "number", "unit": "string", "time": "08:00", "withFood": true }
-    ],
-    "afternoon": [
-      { "name": "string", "dosage": "number", "unit": "string", "time": "13:00", "withFood": true }
-    ],
-    "evening": [
-      { "name": "string", "dosage": "number", "unit": "string", "time": "19:00", "withFood": false }
-    ],
-    "bedtime": [
-      { "name": "string", "dosage": "number", "unit": "string", "time": "22:00", "withFood": false }
-    ]
-  }
-}
-\`\`\`
+Trigger: User asks to organize, rearrange, or optimize their daily medication timetable (e.g. "Optimize my daily medication schedule for morning, afternoon, and bedtime").
+Instruction:
+- ALWAYS first call the `getMedicines` tool to retrieve the user's active medication list from the database.
+- If the user has active medicines:
+  - Analyze their active medicines, check for potential timing conflicts, and construct an optimized daily timetable.
+  - Present the timetable in clean, beautiful, structured Markdown with clear headings:
+    - 🌅 **Morning Schedule (e.g., 08:00 AM)**: Medicines, dosages, instructions (e.g., "Take after breakfast with water")
+    - ☀️ **Afternoon Schedule (e.g., 01:00 PM - 02:00 PM)**: Medicines, dosages, instructions
+    - 🌆 **Evening Schedule (e.g., 07:00 PM - 08:00 PM)**: Medicines, dosages, instructions (e.g., "Take after dinner")
+    - 🌙 **Bedtime Schedule (e.g., 10:00 PM)**: Medicines, dosages, instructions
+  - Include spacing guidance (e.g., "Keep 4–6 hours gap between doses") and safety notes.
+- If the user has NO active medicines in their record:
+  - Politely state that no medicines are currently registered in their profile.
+  - Provide a recommended daily routine timetable template for common medication classes, and invite them to add their medicines by saying *"Add [medicine name] [dosage] at [time]"* or by uploading a prescription image.
 
 --------------------------------------------------
 4. FUNCTION: COMPREHENSIVE HEALTH & MEDICATION ANALYSIS REPORT (Self or Family)
@@ -164,8 +155,8 @@ Instruction:
   - End with the standard medical advisory disclaimer.
 
 === GENERAL RULES ===
-1. When generating JSON output for functional actions (ADD_MEDICINES, LOG_HEALTH_VITALS, OPTIMIZE_SCHEDULE), ensure valid JSON syntax without extra conversational filler around the JSON block.
-2. For informational queries about saved records, family members, or report generation, use tools to fetch real data and respond in structured, professional Markdown.
+1. When generating JSON output for functional actions (ADD_MEDICINES, LOG_HEALTH_VITALS), ensure valid JSON syntax without extra conversational filler around the JSON block.
+2. For informational queries about saved records, family members, schedule optimization, or report generation, use tools to fetch real data and respond in structured, professional Markdown.
 3. CRITICAL FOR MEDICINE TIME: All medication times MUST be in strict 24-hour 'HH:MM' format (e.g., '08:00', '13:30', '21:00'). NEVER output 'AM' or 'PM' in time fields.
 `;
 
@@ -533,18 +524,33 @@ const copilot = async (req, res) => {
         time: normalizeTo24Hour(med.time),
       }));
     } else if (parsedData?.action === "OPTIMIZE_SCHEDULE" && parsedData?.schedule) {
-      for (const slot of Object.keys(parsedData.schedule)) {
-        if (Array.isArray(parsedData.schedule[slot])) {
-          parsedData.schedule[slot] = parsedData.schedule[slot].map((med) => ({
-            ...med,
-            time: normalizeTo24Hour(med.time),
-          }));
+      // If the model produced raw JSON for OPTIMIZE_SCHEDULE, format it into a rich markdown timetable
+      let scheduleMd = `### 📅 Optimized Daily Medication Timetable\n\n`;
+      const timeSlotNames = {
+        morning: "🌅 Morning (08:00 AM)",
+        afternoon: "☀️ Afternoon (01:00 PM)",
+        evening: "🌆 Evening (07:00 PM)",
+        bedtime: "🌙 Bedtime (10:00 PM)"
+      };
+
+      for (const [slot, items] of Object.entries(parsedData.schedule)) {
+        const slotLabel = timeSlotNames[slot.toLowerCase()] || `⏰ ${slot.toUpperCase()}`;
+        scheduleMd += `#### ${slotLabel}\n`;
+        if (Array.isArray(items) && items.length > 0) {
+          items.forEach((m) => {
+            scheduleMd += `- **${m.name}** (${m.dosage || ''} ${m.unit || ''}) at \`${m.time || '08:00'}\` ${m.withFood !== undefined ? (m.withFood ? '• *Take with food*' : '• *Take on empty stomach / before food*') : ''}\n`;
+          });
+        } else {
+          scheduleMd += `- *No medications scheduled in this slot.*\n`;
         }
+        scheduleMd += `\n`;
       }
+      scheduleMd += `\n> 💡 **Tip**: Keep an even gap between multiple doses and maintain daily hydration. Check with your doctor if adjusting prescribed timings.`;
+      aiResponse = scheduleMd;
     }
 
     const action = parsedData?.action || null;
-    const hasAction = Boolean(action);
+    const hasAction = action === "ADD_MEDICINES" || action === "LOG_HEALTH_VITALS";
 
     // Save interaction to CopilotHistory
     if (userId) {

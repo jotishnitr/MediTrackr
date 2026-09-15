@@ -545,6 +545,11 @@ export default function AiAssistance({
   const renderActionPreviewCard = (msg, msgIndex) => {
     if (!msg.actionData || !msg.action) return null;
 
+    const hasMedicines = msg.action === "ADD_MEDICINES" && Array.isArray(msg.actionData?.medicines) && msg.actionData.medicines.length > 0;
+    const hasVitals = msg.action === "LOG_HEALTH_VITALS" && msg.actionData?.data;
+
+    if (!hasMedicines && !hasVitals) return null;
+
     const actionState = actionStates[msgIndex];
     if (actionState?.status === "discarded") {
       return (
@@ -583,7 +588,7 @@ export default function AiAssistance({
 
         <div className="action-card-body">
           {/* Case 1: ADD_MEDICINES */}
-          {msg.action === "ADD_MEDICINES" && msg.actionData?.medicines && (
+          {hasMedicines && (
             msg.actionData.medicines.map((med, idx) => (
               <div key={idx} className="action-item-card">
                 <div className="action-item-main">
@@ -608,7 +613,7 @@ export default function AiAssistance({
           )}
 
           {/* Case 2: LOG_HEALTH_VITALS */}
-          {msg.action === "LOG_HEALTH_VITALS" && msg.actionData?.data && (
+          {hasVitals && (
             <div className="action-item-card">
               <div className="action-item-main">
                 <span>Date: {msg.actionData.data.date || "Today"}</span>
@@ -661,8 +666,10 @@ export default function AiAssistance({
 
   // Render message content
   const renderMessageContent = (msg, index) => {
-    // If it's a raw JSON reply from copilot, display clean text or action preview
-    const isJsonBlock = msg.text.trim().startsWith("```json") || msg.text.trim().startsWith("{");
+    // If it's a raw JSON action without explanatory text, show confirmation card only. Otherwise show markdown content.
+    const isActionJsonOnly =
+      Boolean(msg.requiresConfirmation) &&
+      (msg.text?.trim().startsWith("```json") || msg.text?.trim().startsWith("{"));
     const isReportMessage =
       msg.sender === "assistant" &&
       !msg.requiresConfirmation &&
@@ -674,7 +681,7 @@ export default function AiAssistance({
 
     return (
       <>
-        {!isJsonBlock && (
+        {(!isActionJsonOnly || !msg.requiresConfirmation) && msg.text && (
           <div className="markdown-content">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
