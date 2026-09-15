@@ -44,6 +44,7 @@ const respondConnection = require("./routes/respondConnection");
 const getUpcomingRefills = require("./routes/getUpcomingRefills");
 require("./utils/reminderScheduler");
 require("./utils/resetMedicineStatus");
+require("./utils/reminderRefill");
 const connectDB = require("./config/db.js");
 
 const app = express();

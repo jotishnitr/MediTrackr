@@ -628,7 +628,21 @@ export default function AiAssistance({
       <>
         {!isJsonBlock && (
           <div className="markdown-content">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                a: ({ node, ...props }) => (
+                  <a
+                    {...props}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ai-markdown-link"
+                  />
+                ),
+              }}
+            >
+              {msg.text}
+            </ReactMarkdown>
           </div>
         )}
         {msg.image && (

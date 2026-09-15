@@ -259,6 +259,22 @@
   font-size: 12px;
 }
 
+.msg-bot a,
+.msg-bot .ai-markdown-link {
+  color: #4edea3;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  word-break: break-all;
+}
+
+.msg-bot a:hover,
+.msg-bot .ai-markdown-link:hover {
+  color: #67e8f9;
+  text-shadow: 0 0 8px rgba(78, 222, 163, 0.5);
+}
+
 .bot-msg-actions {
   display: flex;
   justify-content: flex-end;

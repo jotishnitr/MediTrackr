@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { getMedicineStatus } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
 import { requestFCMToken, listenForForegroundMessages } from "./firebase";
+import { useTranslation } from "react-i18next";
+
 export default function Dashboard({
   setCurrentPage,
   medicines,
@@ -20,6 +22,7 @@ export default function Dashboard({
   unreadNotificationsCount = 0,
   onOpenNotificationModal,
 }) {
+  const { t } = useTranslation();
 
 
   useEffect(() => {
@@ -597,8 +600,8 @@ export default function Dashboard({
                     const badgeClass = isUrgent
                       ? "refill-urgent"
                       : isWarning
-                      ? "refill-warning"
-                      : "refill-normal";
+                        ? "refill-warning"
+                        : "refill-normal";
 
                     return (
                       <div
@@ -782,8 +785,8 @@ export default function Dashboard({
                         const badgeClass = isUrgent
                           ? "refill-urgent"
                           : isWarning
-                          ? "refill-warning"
-                          : "refill-normal";
+                            ? "refill-warning"
+                            : "refill-normal";
 
                         return (
                           <tr key={item.id || item._id}>

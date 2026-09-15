@@ -13,7 +13,7 @@ import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
 import MedicineModal from "./MedicineModal";
 import NotificationModal from "./NotificationModal";
-
+import "./i18n";
 import React from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
@@ -60,22 +60,22 @@ export default function App() {
     (normalizedPath.includes("forgot-password")
       ? "ForgotPassword"
       : normalizedPath.includes("reset-password")
-      ? "ResetPassword"
-      : normalizedPath.includes("login")
-      ? "Login"
-      : normalizedPath.includes("register")
-      ? "Register"
-      : normalizedPath.includes("search")
-      ? "SearchMedicines"
-      : normalizedPath.includes("medicine")
-      ? "myMedicines"
-      : normalizedPath.includes("remaind") || normalizedPath.includes("remind")
-      ? "Remainders"
-      : normalizedPath.includes("healthlog")
-      ? "HealthLog"
-      : normalizedPath.includes("ai")
-      ? "aiHealthAssistance"
-      : "Dashboard");
+        ? "ResetPassword"
+        : normalizedPath.includes("login")
+          ? "Login"
+          : normalizedPath.includes("register")
+            ? "Register"
+            : normalizedPath.includes("search")
+              ? "SearchMedicines"
+              : normalizedPath.includes("medicine")
+                ? "myMedicines"
+                : normalizedPath.includes("remaind") || normalizedPath.includes("remind")
+                  ? "Remainders"
+                  : normalizedPath.includes("healthlog")
+                    ? "HealthLog"
+                    : normalizedPath.includes("ai")
+                      ? "aiHealthAssistance"
+                      : "Dashboard");
 
   // Router-aware page switcher for all child components
   const setCurrentPage = (pageName) => {

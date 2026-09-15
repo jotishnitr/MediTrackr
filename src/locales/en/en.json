@@ -1,0 +1,9 @@
+{
+  "dashboard": "Dashboard",
+  "healthLog": "Health Log",
+  "reminders": "Reminders",
+  "medicines": "Medicines",
+  "searchMedicine": "Search Medicine",
+  "addMedicine": "Add Medicine",
+  "logout": "Logout"
+}

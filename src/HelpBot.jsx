@@ -182,7 +182,21 @@ export default function HelpBot({ setShowHelpBot, showHelpBot }) {
             className={msg.sender === "user" ? "msg-user" : "msg-bot"}
           >
             <div className="markdown-content">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  a: ({ node, ...props }) => (
+                    <a
+                      {...props}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ai-markdown-link"
+                    />
+                  ),
+                }}
+              >
+                {msg.text}
+              </ReactMarkdown>
             </div>
             {msg.sender !== "user" && msg.text && (
               <div className="bot-msg-actions">
