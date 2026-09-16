@@ -50,6 +50,9 @@
     "pillsLeft": "pills left",
     "daysLeft": "days left",
     "viewAll": "View All",
+    "buyOptions": "Buy Options",
+    "buy": "Buy",
+    "orderRefill": "Order Refill",
     "healthReport": "Generate Health Report"
   },
   "medicines": {

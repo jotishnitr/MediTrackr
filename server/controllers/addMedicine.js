@@ -5,6 +5,8 @@ const addMedicine = async (req, res) => {
   try {
     const {
       name,
+      actualName,
+      days,
       dosage,
       unit,
       count,
@@ -39,9 +41,14 @@ const addMedicine = async (req, res) => {
       }
     }
 
+    const allDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const assignedDays = Array.isArray(days) && days.length > 0 ? days : allDays;
+
     const medicine = await Medicine.create({
       userId: targetId,
       name,
+      actualName: actualName ? actualName.trim() : "",
+      days: assignedDays,
       dosage,
       unit,
       count: count !== undefined && count !== "" ? Number(count) : 0,

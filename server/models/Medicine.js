@@ -10,6 +10,15 @@ const medicineSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  actualName: {
+    type: String,
+    default: "",
+  },
+
+  days: {
+    type: [String],
+    default: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+  },
 
   dosage: {
     type: Number,

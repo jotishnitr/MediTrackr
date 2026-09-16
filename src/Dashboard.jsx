@@ -47,6 +47,7 @@ export default function Dashboard({
   const [weeklyData, setWeeklyData] = React.useState([]);
   const [upcomingRefills, setUpcomingRefills] = React.useState([]);
   const [showAllRefillsModal, setShowAllRefillsModal] = React.useState(false);
+  const [selectedBuyMedicine, setSelectedBuyMedicine] = React.useState(null);
 
   React.useEffect(() => {
     async function fetchWeeklyData() {
@@ -93,33 +94,40 @@ export default function Dashboard({
     fetchUpcomingRefills();
   }, [medicines]);
 
+  const currentDayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
   const safeMedicines = Array.isArray(medicines) ? medicines.filter(Boolean) : [];
 
-  const missedToday = safeMedicines.filter(
+  // Filter medicines scheduled for today
+  const todayMedicines = safeMedicines.filter((med) => {
+    if (!med.days || !Array.isArray(med.days) || med.days.length === 0) return true;
+    return med.days.includes(currentDayName) || med.days.includes(currentDayName.slice(0, 3));
+  });
+
+  const missedToday = todayMedicines.filter(
     (medicine) => getMedicineStatus(medicine) === "MISSED",
   ).length;
 
   const missedAdherence =
-    safeMedicines.length === 0
+    todayMedicines.length === 0
       ? 0
-      : Math.round((missedToday / safeMedicines.length) * 100);
+      : Math.round((missedToday / todayMedicines.length) * 100);
 
   const medicineTypes = new Set(safeMedicines.map((med) => med.type)).size;
-  const takenToday = safeMedicines.filter((med) => med.status).length;
+  const takenToday = todayMedicines.filter((med) => med.status).length;
 
   const dailyAdherence =
-    safeMedicines.length === 0
+    todayMedicines.length === 0
       ? 0
-      : Math.round((takenToday / safeMedicines.length) * 100);
+      : Math.round((takenToday / todayMedicines.length) * 100);
 
-  const pendingToday = safeMedicines.filter(
+  const pendingToday = todayMedicines.filter(
     (med) => getMedicineStatus(med) === "PENDING",
   ).length;
 
   const pendingAdherence =
-    safeMedicines.length === 0
+    todayMedicines.length === 0
       ? 0
-      : Math.round((pendingToday / safeMedicines.length) * 100);
+      : Math.round((pendingToday / todayMedicines.length) * 100);
   let totalTaken = 0;
   let totalMissed = 0;
   if (weeklyData.length !== 0) {
@@ -134,6 +142,13 @@ export default function Dashboard({
 
   const weeklyMissedRate =
     totalDoses === 0 ? 0 : Math.round((totalMissed / totalDoses) * 100);
+
+  const formatDaysLabel = (days) => {
+    if (!days || !Array.isArray(days) || days.length === 7) return "Daily";
+    if (days.length === 5 && !days.includes("Saturday") && !days.includes("Sunday")) return "Weekdays";
+    if (days.length === 2 && days.includes("Saturday") && days.includes("Sunday")) return "Weekends";
+    return days.map((d) => d.slice(0, 3)).join(", ");
+  };
 
   function handleOpenAdd() {
     if (typeof onOpenAddMedicine === "function") {
@@ -446,71 +461,89 @@ export default function Dashboard({
               </div>
             </div>
 
-            {safeMedicines.map((medicine) => (
-              <div className="medicine-container" key={medicine._id}>
-                <div className="capsule-icon">💊</div>
-                <div className="details-container">
-                  <div className="medName">{medicine.name}</div>
-                  <div className="med-time-container">
-                    <div className="med-quantity">
-                      {medicine.dosage} {medicine.unit.toUpperCase()}
-                    </div>
-                    <div> • </div>
-                    <div className="med-type">{medicine.type}</div>
-                    <div> • </div>
-                    <div className="med-time">{medicine.instructions}</div>
-                  </div>
-                </div>
-                <div className="time-status">
-                  <div className="time">{medicine.time}</div>
-                  <div
-                    className={
-                      getMedicineStatus(medicine) === "TAKEN"
-                        ? "status-taken"
-                        : getMedicineStatus(medicine) === "MISSED"
-                          ? "status-missed"
-                          : "status-pending"
-                    }
-                  >
-                    {getMedicineStatus(medicine)}
-                  </div>
-                </div>
-                <div className="checkbox">
-                  {getMedicineStatus(medicine) === "MISSED" ? (
-                    <input
-                      className="missedCheckbox"
-                      type="checkbox"
-                      checked={medicine.status}
-                      onChange={() => statusChange(medicine._id)}
-                    ></input>
-                  ) : (
-                    <input
-                      type="checkbox"
-                      checked={medicine.status}
-                      onChange={() => statusChange(medicine._id)}
-                    ></input>
-                  )}
-                </div>
-                <div className="med-actions-container">
-                  <button
-                    className="med-edit-btn"
-                    title="Edit Medicine"
-                    onClick={() => handleOpenEdit(medicine)}
-                    aria-label="Edit Medicine"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>edit</span>
-                  </button>
-                  <div className="del-btn-container">
-                    <img
-                      src="del-btn.png"
-                      className="del-btn"
-                      onClick={() => deleteMedicine(medicine._id)}
-                      alt="Delete Medicine"
-                    ></img>
-                  </div>
-                </div>
+            {todayMedicines.length === 0 ? (
+              <div className="empty-schedule-state" style={{ padding: "40px 20px", textAlign: "center", color: "#8b9bb4" }}>
+                <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>🌿</span>
+                <p style={{ margin: 0, fontSize: "14px", color: "#94a3b8" }}>No medicines scheduled for {currentDayName}</p>
               </div>
-            ))}
+            ) : (
+              todayMedicines.map((medicine) => (
+                <div className="medicine-container" key={medicine._id}>
+                  <div className="capsule-icon">💊</div>
+                  <div className="details-container">
+                    <div className="medName">
+                      {medicine.name}
+                      {medicine.actualName && medicine.actualName !== medicine.name && (
+                        <span className="med-actual-name-chip">({medicine.actualName})</span>
+                      )}
+                    </div>
+                    <div className="med-time-container">
+                      <div className="med-quantity">
+                        {medicine.dosage} {medicine.unit.toUpperCase()}
+                      </div>
+                      <div> • </div>
+                      <div className="med-type">{medicine.type}</div>
+                      <div> • </div>
+                      <div className="med-days-tag">{formatDaysLabel(medicine.days)}</div>
+                      {medicine.instructions && (
+                        <>
+                          <div> • </div>
+                          <div className="med-time">{medicine.instructions}</div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="time-status">
+                    <div className="time">{medicine.time}</div>
+                    <div
+                      className={
+                        getMedicineStatus(medicine) === "TAKEN"
+                          ? "status-taken"
+                          : getMedicineStatus(medicine) === "MISSED"
+                            ? "status-missed"
+                            : "status-pending"
+                      }
+                    >
+                      {getMedicineStatus(medicine)}
+                    </div>
+                  </div>
+                  <div className="checkbox">
+                    {getMedicineStatus(medicine) === "MISSED" ? (
+                      <input
+                        className="missedCheckbox"
+                        type="checkbox"
+                        checked={medicine.status}
+                        onChange={() => statusChange(medicine._id)}
+                      ></input>
+                    ) : (
+                      <input
+                        type="checkbox"
+                        checked={medicine.status}
+                        onChange={() => statusChange(medicine._id)}
+                      ></input>
+                    )}
+                  </div>
+                  <div className="med-actions-container">
+                    <button
+                      className="med-edit-btn"
+                      title="Edit Medicine"
+                      onClick={() => handleOpenEdit(medicine)}
+                      aria-label="Edit Medicine"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>edit</span>
+                    </button>
+                    <div className="del-btn-container">
+                      <img
+                        src="del-btn.png"
+                        className="del-btn"
+                        onClick={() => deleteMedicine(medicine._id)}
+                        alt="Delete Medicine"
+                      ></img>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           <div className="adherence-refills">
@@ -610,9 +643,9 @@ export default function Dashboard({
                       <div
                         className="refill-item"
                         key={refill.id || refill._id}
-                        onClick={() => setShowAllRefillsModal(true)}
+                        onClick={() => setSelectedBuyMedicine(refill)}
                         style={{ cursor: "pointer" }}
-                        title="Click to view all upcoming refills"
+                        title="Click to view buy options & refill links"
                       >
                         <div className="refill-left">
                           <span className={`refill-dot ${badgeClass}-dot`}></span>
@@ -622,10 +655,25 @@ export default function Dashboard({
                           </div>
                         </div>
 
-                        <div className={`refill-badge ${badgeClass}`}>
-                          {refill.remainingDays === 0
-                            ? t("dashboard.refillSoon", "Out of stock")
-                            : `${refill.remainingDays} ${refill.remainingDays === 1 ? t("dashboard.daysLeft", "day left") : t("dashboard.daysLeft", "days left")}`}
+                        <div className="refill-right-actions">
+                          <div className={`refill-badge ${badgeClass}`}>
+                            {refill.remainingDays === 0
+                              ? t("dashboard.refillSoon", "Out of stock")
+                              : `${refill.remainingDays} ${refill.remainingDays === 1 ? t("dashboard.daysLeft", "day left") : t("dashboard.daysLeft", "days left")}`}
+                          </div>
+
+                          <button
+                            type="button"
+                            className="refill-card-buy-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBuyMedicine(refill);
+                            }}
+                            title="View Buy Options & Links"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>shopping_bag</span>
+                            <span>{t("dashboard.buy", "Buy")}</span>
+                          </button>
                         </div>
                       </div>
                     );
@@ -785,6 +833,7 @@ export default function Dashboard({
                         <th>Stock Count</th>
                         <th>Time</th>
                         <th>Remaining Days</th>
+                        <th style={{ textAlign: "center" }}>Buy Options</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -820,6 +869,17 @@ export default function Dashboard({
                                   : `${item.remainingDays} ${item.remainingDays === 1 ? "day" : "days"} left`}
                               </span>
                             </td>
+                            <td style={{ textAlign: "center" }}>
+                              <button
+                                type="button"
+                                className="refill-table-buy-btn"
+                                onClick={() => setSelectedBuyMedicine(item)}
+                                title="View Buy Options & Links"
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>shopping_bag</span>
+                                <span>Buy Options</span>
+                              </button>
+                            </td>
                           </tr>
                         );
                       })}
@@ -833,6 +893,274 @@ export default function Dashboard({
               <button
                 className="refill-modal-close-btn"
                 onClick={() => setShowAllRefillsModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Medicine Buy Options Modal */}
+      {selectedBuyMedicine && (
+        <div className="addMed-overlay" onClick={() => setSelectedBuyMedicine(null)}>
+          <div className="addMed-modal refill-buy-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="addMed-header">
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div className="buy-modal-header-icon">
+                  <span className="material-symbols-outlined" style={{ color: "#4edea3", fontSize: "24px" }}>
+                    shopping_bag
+                  </span>
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: "19px", fontWeight: "700" }}>Buy & Refill Options</h2>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "#8b9bb4" }}>
+                    Order <strong style={{ color: "#dae2fd" }}>{selectedBuyMedicine.actualName || selectedBuyMedicine.name}</strong> from verified pharmacies
+                  </p>
+                </div>
+              </div>
+              <button
+                className="close-btn"
+                onClick={() => setSelectedBuyMedicine(null)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="refill-buy-modal-body">
+              {/* Medicine Overview Card */}
+              <div className="refill-summary-card">
+                <div className="refill-summary-left">
+                  <div className="refill-summary-icon">💊</div>
+                  <div>
+                    <h3 className="refill-summary-title">
+                      {selectedBuyMedicine.name}
+                      {selectedBuyMedicine.actualName && selectedBuyMedicine.actualName !== selectedBuyMedicine.name && (
+                        <span style={{ fontSize: "13px", fontWeight: "normal", color: "#67e8f9", marginLeft: "8px" }}>
+                          ({selectedBuyMedicine.actualName})
+                        </span>
+                      )}
+                    </h3>
+                    <div className="refill-summary-meta">
+                      <span className="meta-pill">{selectedBuyMedicine.type || "Oral Tablet"}</span>
+                      {selectedBuyMedicine.dosage && (
+                        <span className="meta-pill">Dosage: {selectedBuyMedicine.dosage} {selectedBuyMedicine.unit || ""}</span>
+                      )}
+                      <span className="meta-pill">Current Stock: {selectedBuyMedicine.count ?? 0}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="refill-summary-badge-wrap">
+                  <span
+                    className={`refill-badge ${
+                      selectedBuyMedicine.remainingDays <= 3
+                        ? "refill-urgent"
+                        : selectedBuyMedicine.remainingDays <= 7
+                        ? "refill-warning"
+                        : "refill-normal"
+                    }`}
+                  >
+                    {selectedBuyMedicine.remainingDays === 0
+                      ? "Out of stock"
+                      : `${selectedBuyMedicine.remainingDays} days left`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Verified myUpchar Match Products (if returned from backend API) */}
+              {selectedBuyMedicine.buyOptions?.myUpcharProducts &&
+                selectedBuyMedicine.buyOptions.myUpcharProducts.length > 0 && (
+                  <div className="myupchar-section">
+                    <div className="section-label-chip">
+                      <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "#f27935" }}>verified</span>
+                      <span>Verified Medicine from myUpchar API</span>
+                    </div>
+
+                    <div className="myupchar-products-grid">
+                      {selectedBuyMedicine.buyOptions.myUpcharProducts.map((prod, idx) => (
+                        <div key={prod.productId || idx} className="myupchar-product-card">
+                          <div className="myupchar-prod-header">
+                            {prod.image && (
+                              <img
+                                src={prod.image}
+                                alt={prod.name}
+                                className="myupchar-prod-img"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
+                            )}
+                            <div className="myupchar-prod-info">
+                              <h4 className="myupchar-prod-name">{prod.name}</h4>
+                              {prod.manufacturer && (
+                                <p className="myupchar-prod-mfg">Mfg: {prod.manufacturer}</p>
+                              )}
+                              {prod.form && <p className="myupchar-prod-form">{prod.form}</p>}
+                            </div>
+                          </div>
+
+                          <div className="myupchar-prod-footer">
+                            {prod.price ? (
+                              <div className="myupchar-pricing">
+                                <span className="myupchar-price">₹{prod.price.finalPrice || prod.price.mrp}</span>
+                                {prod.price.finalPrice && prod.price.mrp > prod.price.finalPrice && (
+                                  <>
+                                    <span className="myupchar-mrp">₹{prod.price.mrp}</span>
+                                    <span className="myupchar-discount">({prod.price.discountPerc}% OFF)</span>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="myupchar-mfg">Available Online</span>
+                            )}
+
+                            <a
+                              href={prod.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="myupchar-buy-btn"
+                            >
+                              <span>View Product</span>
+                              <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>open_in_new</span>
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Instant Pharmacy Store Options */}
+              <div className="pharmacies-list-section">
+                <div className="section-label-chip">
+                  <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "#4edea3" }}>local_pharmacy</span>
+                  <span>Order from Trusted Online Pharmacies</span>
+                </div>
+
+                <div className="pharmacy-cards-grid">
+                  {(
+                    selectedBuyMedicine.buyOptions?.buyLinks || [
+                      {
+                        name: "Tata 1mg",
+                        tagline: "Express Delivery & Lab Tests",
+                        url: `https://www.1mg.com/search/all?name=${encodeURIComponent(selectedBuyMedicine.name)}`,
+                        accentColor: "#ff6f61",
+                        badge: "Fast Delivery",
+                        icon: "local_shipping",
+                      },
+                      {
+                        name: "Apollo Pharmacy",
+                        tagline: "24/7 Delivery & 100% Genuine",
+                        url: `https://www.apollopharmacy.in/search-medicines/${encodeURIComponent(selectedBuyMedicine.name)}`,
+                        accentColor: "#00b2a9",
+                        badge: "24/7 Delivery",
+                        icon: "verified",
+                      },
+                      {
+                        name: "PharmEasy",
+                        tagline: "Discounts & Cashback on Medicines",
+                        url: `https://pharmeasy.in/search/all?name=${encodeURIComponent(selectedBuyMedicine.name)}`,
+                        accentColor: "#10847e",
+                        badge: "Discounts",
+                        icon: "percent",
+                      },
+                      {
+                        name: "Netmeds",
+                        tagline: "India Ki Pharmacy since 1914",
+                        url: `https://www.netmeds.com/catalogsearch/result?q=${encodeURIComponent(selectedBuyMedicine.name)}`,
+                        accentColor: "#24aeb1",
+                        badge: "Best Value",
+                        icon: "storefront",
+                      },
+                      {
+                        name: "myUpchar Store",
+                        tagline: "Allopathy, Ayurveda & Homeopathy",
+                        url: `https://www.myupchar.com/search?q=${encodeURIComponent(selectedBuyMedicine.name)}`,
+                        accentColor: "#f27935",
+                        badge: "Ayurveda & Meds",
+                        icon: "medication",
+                      },
+                      {
+                        name: "Amazon Pharmacy",
+                        tagline: "Prime Fast Free Delivery",
+                        url: `https://www.amazon.in/s?k=${encodeURIComponent(selectedBuyMedicine.name + " medicine")}`,
+                        accentColor: "#ff9900",
+                        badge: "Prime Shipping",
+                        icon: "shopping_bag",
+                      },
+                    ]
+                  ).map((store, sIdx) => (
+                    <div key={store.name || sIdx} className="pharmacy-card">
+                      <div className="pharmacy-card-top">
+                        <div
+                          className="pharmacy-logo-box"
+                          style={{
+                            borderColor: `${store.accentColor || "#4edea3"}35`,
+                            background: `${store.accentColor || "#4edea3"}12`
+                          }}
+                        >
+                          <span
+                            className="material-symbols-outlined pharmacy-icon"
+                            style={{ color: store.accentColor || "#4edea3" }}
+                          >
+                            {store.icon || "local_pharmacy"}
+                          </span>
+                        </div>
+                        <div className="pharmacy-info">
+                          <h4 className="pharmacy-name">{store.name}</h4>
+                          <p className="pharmacy-tagline">{store.tagline}</p>
+                        </div>
+                      </div>
+
+                      <div className="pharmacy-card-bottom">
+                        <span
+                          className="pharmacy-badge"
+                          style={{
+                            background: `${store.accentColor || "#4edea3"}18`,
+                            color: store.accentColor || "#4edea3",
+                            borderColor: `${store.accentColor || "#4edea3"}35`,
+                          }}
+                        >
+                          {store.badge}
+                        </span>
+
+                        <a
+                          href={store.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="pharmacy-order-btn"
+                          style={{
+                            borderColor: `${store.accentColor || "#4edea3"}45`,
+                          }}
+                        >
+                          <span>Order Online</span>
+                          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>open_in_new</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="addMed-footer"
+              style={{
+                padding: "14px 24px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+                flexWrap: "wrap",
+                gap: "10px"
+              }}
+            >
+              <span style={{ fontSize: "12px", color: "#64748b", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>💡</span> Always check dosage and valid prescription before ordering online.
+              </span>
+              <button
+                className="refill-modal-close-btn"
+                onClick={() => setSelectedBuyMedicine(null)}
               >
                 Close
               </button>

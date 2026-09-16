@@ -9,8 +9,13 @@ const getMedicine = async (req, res) => {
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
 
+    const { day } = req.query;
+
     for (let medicine of medicines) {
       let changed = false;
+      const medDays = Array.isArray(medicine.days) && medicine.days.length > 0
+        ? medicine.days
+        : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
       // 1. Log taken medicines if status is true and takenDate was before today
       if (medicine.status && medicine.takenDate && new Date(medicine.takenDate) < today) {
@@ -26,7 +31,7 @@ const getMedicine = async (req, res) => {
         changed = true;
       }
 
-      // 2. Backfill missed days (last 7 days) if there's no history entry
+      // 2. Backfill missed days (last 7 days) if there's no history entry AND it was scheduled on that day
       const createdDate = new Date(new Date(medicine._id.getTimestamp()).toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       createdDate.setHours(0, 0, 0, 0);
 
@@ -36,6 +41,13 @@ const getMedicine = async (req, res) => {
         checkDate.setHours(0, 0, 0, 0);
 
         if (checkDate < createdDate) {
+          continue;
+        }
+
+        const checkDayName = checkDate.toLocaleDateString("en-US", { weekday: "long" });
+        const isScheduledOnDay = medDays.includes(checkDayName) || medDays.includes(checkDayName.slice(0, 3));
+
+        if (!isScheduledOnDay) {
           continue;
         }
 
@@ -54,7 +66,21 @@ const getMedicine = async (req, res) => {
       }
     }
 
-    res.status(200).json(medicines);
+    let result = medicines;
+    if (day) {
+      const targetDay = day.toLowerCase() === "today" 
+        ? now.toLocaleDateString("en-US", { weekday: "long" }) 
+        : day;
+      
+      result = medicines.filter(m => {
+        const mDays = Array.isArray(m.days) && m.days.length > 0
+          ? m.days
+          : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        return mDays.some(d => d.toLowerCase() === targetDay.toLowerCase() || d.toLowerCase() === targetDay.slice(0, 3).toLowerCase());
+      });
+    }
+
+    res.status(200).json(result);
   } catch (err) {
     res.status(500).json({
       success: false,

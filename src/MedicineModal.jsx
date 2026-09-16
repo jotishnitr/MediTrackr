@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
+const DAYS_OF_WEEK = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 export default function MedicineModal({
   isOpen,
   onClose,
@@ -15,6 +25,8 @@ export default function MedicineModal({
 
   const [medDetails, setMedDetails] = useState({
     name: "",
+    actualName: "",
+    days: [...DAYS_OF_WEEK],
     dosage: "",
     unit: "mg",
     count: "",
@@ -29,6 +41,8 @@ export default function MedicineModal({
     if (medicineData && medicineData._id) {
       setMedDetails({
         name: medicineData.name || "",
+        actualName: medicineData.actualName || "",
+        days: Array.isArray(medicineData.days) && medicineData.days.length > 0 ? medicineData.days : [...DAYS_OF_WEEK],
         dosage: medicineData.dosage !== undefined ? medicineData.dosage : "",
         unit: medicineData.unit || "mg",
         count: medicineData.count !== undefined ? medicineData.count : "",
@@ -39,6 +53,8 @@ export default function MedicineModal({
     } else if (medicineData && medicineData.name) {
       setMedDetails({
         name: medicineData.name || "",
+        actualName: medicineData.actualName || "",
+        days: Array.isArray(medicineData.days) && medicineData.days.length > 0 ? medicineData.days : [...DAYS_OF_WEEK],
         dosage: medicineData.dosage !== undefined ? medicineData.dosage : "",
         unit: medicineData.unit || "mg",
         count: medicineData.count !== undefined ? medicineData.count : "",
@@ -49,6 +65,8 @@ export default function MedicineModal({
     } else {
       setMedDetails({
         name: "",
+        actualName: "",
+        days: [...DAYS_OF_WEEK],
         dosage: "",
         unit: "mg",
         count: "",
@@ -67,6 +85,34 @@ export default function MedicineModal({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const toggleDay = (day) => {
+    setMedDetails((prev) => {
+      const exists = prev.days.includes(day);
+      if (exists) {
+        if (prev.days.length <= 1) return prev; // keep at least 1 day
+        return { ...prev, days: prev.days.filter((d) => d !== day) };
+      } else {
+        return { ...prev, days: [...prev.days, day] };
+      }
+    });
+  };
+
+  const setPresetDays = (preset) => {
+    if (preset === "all") {
+      setMedDetails((prev) => ({ ...prev, days: [...DAYS_OF_WEEK] }));
+    } else if (preset === "weekdays") {
+      setMedDetails((prev) => ({
+        ...prev,
+        days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      }));
+    } else if (preset === "weekends") {
+      setMedDetails((prev) => ({
+        ...prev,
+        days: ["Saturday", "Sunday"],
+      }));
+    }
   };
 
   const handleSubmit = async () => {
@@ -96,6 +142,8 @@ export default function MedicineModal({
             body: JSON.stringify({
               id: medicineData._id,
               name: medDetails.name.trim(),
+              actualName: medDetails.actualName.trim(),
+              days: medDetails.days,
               dosage: Number(medDetails.dosage) || 0,
               unit: medDetails.unit,
               count: medDetails.count !== "" ? Number(medDetails.count) : 0,
@@ -131,6 +179,8 @@ export default function MedicineModal({
             },
             body: JSON.stringify({
               name: medDetails.name.trim(),
+              actualName: medDetails.actualName.trim(),
+              days: medDetails.days,
               dosage: Number(medDetails.dosage) || 0,
               unit: medDetails.unit,
               count: medDetails.count !== "" ? Number(medDetails.count) : 0,
@@ -180,13 +230,27 @@ export default function MedicineModal({
 
         <div className="addMed-body">
           <div className="form-group">
-            <label>{t("medicineModal.nameLabel", "Medicine Name")}</label>
+            <label>{t("medicineModal.nameLabel", "Medicine Name / Label")}</label>
             <input
               type="text"
-              placeholder={t("medicineModal.namePlaceholder", "e.g. Metformin HCl")}
+              placeholder={t("medicineModal.namePlaceholder", "e.g. Homeopathy morning, BP tablet")}
               onChange={handleChange}
               name="name"
               value={medDetails.name}
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>{t("medicineModal.actualNameLabel", "Actual / Generic Medicine Name")}</span>
+              <span style={{ fontSize: "11px", color: "#67e8f9", fontWeight: "normal" }}>Optional (for buy links)</span>
+            </label>
+            <input
+              type="text"
+              placeholder={t("medicineModal.actualNamePlaceholder", "e.g. Arnica Montana, Metformin HCl, Amlodipine")}
+              onChange={handleChange}
+              name="actualName"
+              value={medDetails.actualName}
             />
           </div>
 
@@ -268,6 +332,64 @@ export default function MedicineModal({
               name="time"
               value={medDetails.time}
             />
+          </div>
+
+          <div className="form-group">
+            <div className="days-picker-header">
+              <label style={{ margin: 0 }}>{t("medicineModal.scheduleDaysLabel", "Schedule Days")}</label>
+              <div className="days-presets-row">
+                <button
+                  type="button"
+                  className={`day-preset-btn ${medDetails.days.length === 7 ? "active" : ""}`}
+                  onClick={() => setPresetDays("all")}
+                >
+                  Every Day
+                </button>
+                <button
+                  type="button"
+                  className={`day-preset-btn ${
+                    medDetails.days.length === 5 &&
+                    !medDetails.days.includes("Saturday") &&
+                    !medDetails.days.includes("Sunday")
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={() => setPresetDays("weekdays")}
+                >
+                  Weekdays
+                </button>
+                <button
+                  type="button"
+                  className={`day-preset-btn ${
+                    medDetails.days.length === 2 &&
+                    medDetails.days.includes("Saturday") &&
+                    medDetails.days.includes("Sunday")
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={() => setPresetDays("weekends")}
+                >
+                  Weekends
+                </button>
+              </div>
+            </div>
+
+            <div className="days-pills-grid">
+              {DAYS_OF_WEEK.map((day) => {
+                const isSelected = medDetails.days.includes(day);
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    className={`day-pill-btn ${isSelected ? "active" : ""}`}
+                    onClick={() => toggleDay(day)}
+                    title={day}
+                  >
+                    {day.slice(0, 3)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="form-group">

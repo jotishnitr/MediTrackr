@@ -2,7 +2,7 @@ const Medicine = require("../models/Medicine.js");
 
 const updateMedicine = async (req, res) => {
   try {
-    const { id, name, dosage, unit, count, type, time, instructions, reminder } = req.body;
+    const { id, name, actualName, days, dosage, unit, count, type, time, instructions, reminder } = req.body;
     const medicineId = id || req.query.id;
 
     if (!medicineId) {
@@ -12,6 +12,9 @@ const updateMedicine = async (req, res) => {
       });
     }
 
+    const allDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const assignedDays = Array.isArray(days) && days.length > 0 ? days : undefined;
+
     const updatedMedicine = await Medicine.findOneAndUpdate(
       {
         _id: medicineId,
@@ -19,6 +22,8 @@ const updateMedicine = async (req, res) => {
       },
       {
         ...(name !== undefined && { name }),
+        ...(actualName !== undefined && { actualName: actualName ? actualName.trim() : "" }),
+        ...(assignedDays !== undefined && { days: assignedDays }),
         ...(dosage !== undefined && { dosage }),
         ...(unit !== undefined && { unit }),
         ...(count !== undefined && { count: count !== "" ? Number(count) : 0 }),

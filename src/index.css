@@ -1870,6 +1870,660 @@ body {
   box-shadow: 0 4px 16px rgba(78, 222, 163, 0.3);
 }
 
+/* Refill Card Action Buttons */
+.refill-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refill-card-buy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(78, 222, 163, 0.15), rgba(103, 232, 249, 0.15));
+  border: 1px solid rgba(78, 222, 163, 0.4);
+  color: #4edea3;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.02em;
+}
+
+.refill-card-buy-btn:hover {
+  background: linear-gradient(135deg, #4edea3, #2dd4bf);
+  color: #08101f;
+  border-color: #4edea3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(78, 222, 163, 0.35);
+}
+
+.refill-table-buy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(78, 222, 163, 0.12);
+  border: 1px solid rgba(78, 222, 163, 0.35);
+  color: #4edea3;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refill-table-buy-btn:hover {
+  background: #4edea3;
+  color: #08101f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(78, 222, 163, 0.3);
+}
+
+/* Refill Buy Options Modal */
+.refill-buy-modal {
+  max-width: 760px !important;
+  width: 94% !important;
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(17, 26, 46, 0.98), rgba(9, 15, 29, 0.98)) !important;
+  border: 1px solid rgba(78, 222, 163, 0.25) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(78, 222, 163, 0.12) !important;
+}
+
+.buy-modal-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(78, 222, 163, 0.15);
+  border: 1px solid rgba(78, 222, 163, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.refill-buy-modal-body {
+  padding: 20px 24px;
+  max-height: 520px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.refill-buy-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.refill-buy-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+}
+
+/* Refill Summary Card */
+.refill-summary-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.refill-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.refill-summary-icon {
+  font-size: 28px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(78, 222, 163, 0.1);
+  border: 1px solid rgba(78, 222, 163, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refill-summary-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.refill-summary-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.meta-pill {
+  font-size: 11.5px;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.section-label-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #dae2fd;
+  margin-bottom: 12px;
+}
+
+/* myUpchar Products Grid */
+.myupchar-section {
+  background: rgba(242, 121, 53, 0.05);
+  border: 1px solid rgba(242, 121, 53, 0.25);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.myupchar-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.myupchar-product-card {
+  background: rgba(13, 20, 36, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.myupchar-product-card:hover {
+  border-color: rgba(242, 121, 53, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(242, 121, 53, 0.15);
+}
+
+.myupchar-prod-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.myupchar-prod-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.myupchar-prod-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.myupchar-prod-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 2px 0;
+  line-height: 1.3;
+}
+
+.myupchar-prod-mfg {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.myupchar-prod-form {
+  font-size: 11px;
+  color: #67e8f9;
+  margin: 2px 0 0 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.myupchar-prod-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.myupchar-pricing {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.myupchar-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4edea3;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.myupchar-mrp {
+  font-size: 11.5px;
+  color: #8b9bb4;
+  text-decoration: line-through;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.myupchar-discount {
+  font-size: 11px;
+  color: #ffb95f;
+  font-weight: 600;
+}
+
+.myupchar-buy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(242, 121, 53, 0.18);
+  border: 1px solid rgba(242, 121, 53, 0.45);
+  color: #ff9b6a;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.myupchar-buy-btn:hover {
+  background: #f27935;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Pharmacy Store Cards Grid */
+.pharmacies-list-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.pharmacy-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.pharmacy-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 124px;
+}
+
+.pharmacy-card:hover {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(78, 222, 163, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.pharmacy-card-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.pharmacy-logo-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.pharmacy-icon {
+  font-size: 20px;
+}
+
+.pharmacy-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.pharmacy-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pharmacy-tagline {
+  font-size: 11px;
+  color: #8b9bb4;
+  margin: 3px 0 0 0;
+  line-height: 1.3;
+  min-height: 28px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pharmacy-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: auto;
+}
+
+.pharmacy-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 7px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.pharmacy-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.pharmacy-order-btn:hover {
+  background: #4edea3;
+  border-color: #4edea3 !important;
+  color: #08101f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(78, 222, 163, 0.3);
+}
+
+@media (max-width: 768px) {
+  .pharmacy-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .pharmacy-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .refill-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ============================================================
+   MEDICINE DAYS SELECTOR (FORM) & DASHBOARD DAY TABS
+   ============================================================ */
+
+/* Modal Days Picker */
+.days-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.days-presets-row {
+  display: flex;
+  gap: 6px;
+}
+
+.day-preset-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.day-preset-btn:hover {
+  background: rgba(78, 222, 163, 0.15);
+  color: #4edea3;
+  border-color: rgba(78, 222, 163, 0.3);
+}
+
+.day-preset-btn.active {
+  background: rgba(78, 222, 163, 0.2);
+  color: #4edea3;
+  border-color: #4edea3;
+  font-weight: 700;
+}
+
+.days-pills-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.day-pill-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #8b9bb4;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 8px 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+}
+
+.day-pill-btn:hover {
+  background: rgba(78, 222, 163, 0.08);
+  border-color: rgba(78, 222, 163, 0.3);
+  color: #dae2fd;
+  transform: translateY(-1px);
+}
+
+.day-pill-btn.active {
+  background: linear-gradient(135deg, rgba(78, 222, 163, 0.25), rgba(45, 212, 191, 0.25));
+  border-color: #4edea3;
+  color: #4edea3;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(78, 222, 163, 0.2);
+}
+
+/* Dashboard Schedule Day Tabs */
+.schedule-days-selector {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+  background: rgba(10, 16, 30, 0.4);
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.schedule-day-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #8b9bb4;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  font-family: var(--font-body);
+}
+
+.schedule-day-tab:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
+.schedule-day-tab.active {
+  background: linear-gradient(135deg, rgba(78, 222, 163, 0.18), rgba(45, 212, 191, 0.12));
+  border-color: rgba(78, 222, 163, 0.4);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 10px rgba(78, 222, 163, 0.15);
+}
+
+.day-tab-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.day-tab-count {
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #67e8f9;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 5px;
+  border-radius: 6px;
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+.schedule-day-tab.active .day-tab-count {
+  background: rgba(78, 222, 163, 0.25);
+  color: #4edea3;
+}
+
+.day-tab-today-badge {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  font-size: 8px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: #08101f;
+  background: #4edea3;
+  padding: 1px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Empty Schedule State */
+.empty-schedule-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #8b9bb4;
+  gap: 10px;
+}
+
+.empty-schedule-icon {
+  font-size: 32px;
+}
+
+.empty-schedule-state p {
+  margin: 0;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.empty-schedule-add-btn {
+  background: rgba(78, 222, 163, 0.15);
+  border: 1px solid rgba(78, 222, 163, 0.35);
+  color: #4edea3;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.empty-schedule-add-btn:hover {
+  background: #4edea3;
+  color: #08101f;
+  transform: translateY(-1px);
+}
+
+/* Medicine Item Badges */
+.med-days-tag {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #67e8f9;
+  background: rgba(103, 232, 249, 0.1);
+  border: 1px solid rgba(103, 232, 249, 0.25);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.med-actual-name-chip {
+  font-size: 12.5px;
+  color: #67e8f9;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
 /* =========================
    MY MEDICINES PAGE
 ========================= */

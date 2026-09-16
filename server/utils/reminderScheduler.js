@@ -23,15 +23,26 @@ cron.schedule("* * * * *", async () => {
     });
     const currentTime = formatTimeIST(now);
 
-    console.log(`Checking reminders: ${currentDate} ${currentTime} IST`);
+    const currentDayName = now.toLocaleDateString("en-US", {
+      timeZone: "Asia/Kolkata",
+      weekday: "long",
+    });
+
+    console.log(`Checking reminders: ${currentDate} (${currentDayName}) ${currentTime} IST`);
 
     // -------------------------------------------------------------
     // 1. Direct Medicine Reminders (Due at Current Time)
     // -------------------------------------------------------------
-    const medicines = await Medicine.find({
+    const rawMedicines = await Medicine.find({
       reminder: true,
       time: currentTime,
       status: false,
+    });
+
+    // Only process medicines scheduled for today's day of week
+    const medicines = rawMedicines.filter((m) => {
+      if (!m.days || m.days.length === 0) return true;
+      return m.days.includes(currentDayName) || m.days.includes(currentDayName.slice(0, 3));
     });
 
     if (medicines.length > 0) {
