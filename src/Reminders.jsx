@@ -135,6 +135,13 @@ export default function Reminders({
     }
     const updatedMedicine = await response.json();
     if (!updatedMedicine || !updatedMedicine._id) return;
+
+    if (updatedMedicine.reminder) {
+      await scheduleReminder(updatedMedicine);
+    } else {
+      await cancelReminder(updatedMedicine._id);
+    }
+
     setMedicines((prev) =>
       (Array.isArray(prev) ? prev.filter(Boolean) : []).map((medicine) =>
         medicine._id === updatedMedicine._id ? updatedMedicine : medicine,
@@ -204,8 +211,14 @@ export default function Reminders({
   }
 
   React.useEffect(() => {
-    requestPermission();
-  }, []);
+    async function syncNativeReminders() {
+      await requestPermission();
+      if (Array.isArray(medicines) && medicines.length > 0) {
+        await rescheduleAll(medicines);
+      }
+    }
+    syncNativeReminders();
+  }, [medicines]);
 
   return (
     <motion.section

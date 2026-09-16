@@ -5,7 +5,16 @@ const Settings = require("../models/Settings");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { sendWelcomeEmail } = require("../utils/email");
-const client = new OAuth2Client(process.env.CLIENT_ID);
+
+const allowedAudiences = Array.from(new Set([
+    process.env.CLIENT_ID,
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.VITE_GOOGLE_CLIENT_ID,
+    "711869519678-7v2vpv2v718oi30i5h0j018vlueogk8f.apps.googleusercontent.com",
+    "770843042549-a23osvk5au9hdavm1ere0heehatv409v.apps.googleusercontent.com"
+].filter(Boolean)));
+
+const client = new OAuth2Client();
 
 const googleLogin = async (req, res) => {
     try {
@@ -19,8 +28,9 @@ const googleLogin = async (req, res) => {
 
         const ticket = await client.verifyIdToken({
             idToken: credential,
-            audience: process.env.CLIENT_ID,
+            audience: allowedAudiences,
         });
+
         const payload = ticket.getPayload();
         const {
             sub,

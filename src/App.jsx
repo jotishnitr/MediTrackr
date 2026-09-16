@@ -18,6 +18,7 @@ import React from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { subscribeUser } from "./utils/pushNotification";
+import { initNotificationChannel, setupNotificationListeners } from "./utils/notificationUtils";
 
 // Mapping between routes and section page names
 const pathToPageMap = {
@@ -179,13 +180,17 @@ export default function App() {
     }
 
     init();
+    initNotificationChannel();
+    setupNotificationListeners((action) => {
+      navigate("/reminders");
+    });
   }, []);
 
   React.useEffect(() => {
     function handleMessage(event) {
       console.log("Received message:", event.data);
 
-      if (event.data.type === "PLAY_NOTIFICATION_SOUND") {
+      if (event.data && event.data.type === "PLAY_NOTIFICATION_SOUND") {
         console.log("Playing sound...");
 
         const audio = new Audio("/sounds/notificationSound.mp3");
@@ -202,11 +207,13 @@ export default function App() {
       }
     }
 
-    navigator.serviceWorker.addEventListener("message", handleMessage);
+    if (navigator && "serviceWorker" in navigator && navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener("message", handleMessage);
 
-    return () => {
-      navigator.serviceWorker.removeEventListener("message", handleMessage);
-    };
+      return () => {
+        navigator.serviceWorker.removeEventListener("message", handleMessage);
+      };
+    }
   }, []);
 
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);

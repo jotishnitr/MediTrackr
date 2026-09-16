@@ -1,5 +1,18 @@
 {
   "appId": "com.meditrackr.app",
   "appName": "MediTrackr",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_launcher",
+      "iconColor": "#2563eb",
+      "sound": "notificationsound.mp3"
+    }
+  }
 }
+
+

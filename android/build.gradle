@@ -22,8 +22,12 @@ allprojects {
         google()
         mavenCentral()
     }
+    buildDir = "${System.getProperty('user.home')}/.meditrackr_build/${project.name}"
 }
 
 task clean(type: Delete) {
-    delete rootProject.buildDir
+    delete "${System.getProperty('user.home')}/.meditrackr_build"
 }
+
+
+
