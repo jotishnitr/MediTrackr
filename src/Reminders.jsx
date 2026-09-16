@@ -1,5 +1,5 @@
 import React from "react";
-import { getMedicineStatus } from "./utils/medicineUtils";
+import { getMedicineStatus, formatDaysLabel, isMedicineScheduledToday } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
@@ -68,14 +68,18 @@ export default function Reminders({
 
   const safeMedicines = Array.isArray(medicines) ? medicines.filter(Boolean) : [];
 
-  // Calculate stats dynamically from safeMedicines prop
-  const takenCount = safeMedicines.filter(
+  // Filter medicines scheduled for today
+  const currentDayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
+  const todayMedicines = safeMedicines.filter((m) => isMedicineScheduledToday(m, currentDayName));
+
+  // Calculate stats dynamically from todayMedicines
+  const takenCount = todayMedicines.filter(
     (m) => getMedicineStatus(m) === "TAKEN",
   ).length;
-  const pendingCount = safeMedicines.filter(
+  const pendingCount = todayMedicines.filter(
     (m) => getMedicineStatus(m) === "PENDING",
   ).length;
-  const missedCount = safeMedicines.filter(
+  const missedCount = todayMedicines.filter(
     (m) => getMedicineStatus(m) === "MISSED",
   ).length;
 
@@ -293,7 +297,7 @@ export default function Reminders({
               <div className="schedule-controls"></div>
             </div>
 
-            {safeMedicines.length === 0 ? (
+            {todayMedicines.length === 0 ? (
               <div className="empty-schedule">
                 <p>
                   {t("dashboard.noMedicinesToday", "No medicines scheduled for today. Add medicines to get started.")}
@@ -303,7 +307,7 @@ export default function Reminders({
               <div className="timeline-wrapper">
                 <div className="timeline-line"></div>
                 <div className="timeline-list">
-                  {safeMedicines.map((med) => {
+                  {todayMedicines.map((med) => {
                     const status = getMedicineStatus(med);
                     const timeInfo = formatTime(med.time);
 
@@ -332,7 +336,15 @@ export default function Reminders({
 
                           {/* Medicine Name and Instructions */}
                           <div className="med-info-block">
-                            <span className="medicine-name">{med.name}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", marginBottom: "4px" }}>
+                              <span className="medicine-name">{med.name}</span>
+                              {med.actualName && med.actualName !== med.name && (
+                                <span className="med-actual-name-chip" style={{ fontSize: "11.5px" }}>
+                                  ({med.actualName})
+                                </span>
+                              )}
+                              <span className="med-days-tag">{formatDaysLabel(med.days)}</span>
+                            </div>
                             <span className="medicine-instructions">
                               <span className="fork-icon">🍴</span>{" "}
                               {med.instructions || "No instructions"}

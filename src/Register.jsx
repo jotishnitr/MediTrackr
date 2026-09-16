@@ -13,6 +13,8 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
     confirmPassword: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -109,18 +111,17 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
       <LanguageSelector variant="auth" />
 
       {/* Brand Header */}
-      <header className="register-header">
-        <span className="logo-plus">
-          <img
-            className="register-page-logo-img"
-            src="icon.png"
-            alt="Register-page-brand-logo"
-          ></img>
-        </span>
-
-        <h1 className="brand-name">MediTrackr</h1>
-        <span className="tagline-badge">PRECISION HEALTH OS</span>
-      </header>
+      <div className="register-header-row">
+        <img
+          className="register-page-logo-img"
+          src="icon.png"
+          alt="Register-page-brand-logo"
+        />
+        <div className="register-brand-title-wrap">
+          <span className="register-brand-name">MediTrackr</span>
+          <span className="register-tagline-badge">PRECISION HEALTH OS</span>
+        </div>
+      </div>
 
       {/* Main Card */}
       <main className="register-card">
@@ -138,6 +139,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
               padding: "10px 14px",
               borderRadius: "8px",
               border: "1px solid rgba(255, 94, 94, 0.2)",
+              fontSize: "14px",
             }}
           >
             {error}
@@ -161,20 +163,20 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
 
         <form className="register-form" onSubmit={handleSubmit}>
           {/* Full Name */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="name">
+          <div className="register-form-group">
+            <label className="register-form-label" htmlFor="name">
               {t("auth.nameLabel", "Full Name")}
             </label>
-            <div className="input-wrapper">
-              <span className="material-symbols-outlined input-icon">
+            <div className="register-input-wrapper">
+              <span className="material-symbols-outlined register-input-icon-left">
                 person
               </span>
               <input
                 type="text"
                 id="name"
                 name="name"
-                className="form-input"
-                placeholder={t("auth.namePlaceholder", "Enter your name")}
+                className="register-form-input"
+                placeholder={t("auth.namePlaceholder", "Enter your full name")}
                 value={formData.name}
                 onChange={handleInputChange}
                 required
@@ -183,20 +185,20 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
           </div>
 
           {/* Email Address */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="email">
+          <div className="register-form-group">
+            <label className="register-form-label" htmlFor="email">
               {t("auth.emailLabel", "Email Address")}
             </label>
-            <div className="input-wrapper">
-              <span className="material-symbols-outlined input-icon">
-                alternate_email
+            <div className="register-input-wrapper">
+              <span className="material-symbols-outlined register-input-icon-left">
+                mail
               </span>
               <input
                 type="email"
                 id="email"
                 name="email"
-                className="form-input"
-                placeholder={t("auth.emailPlaceholder", "name@organization.com")}
+                className="register-form-input"
+                placeholder={t("auth.emailPlaceholder", "name@example.com")}
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -205,71 +207,87 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
           </div>
 
           {/* Password & Confirm Row */}
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label" htmlFor="password">
+          <div className="register-form-row">
+            <div className="register-form-group">
+              <label className="register-form-label" htmlFor="password">
                 {t("auth.passwordLabel", "Password")}
               </label>
-              <div className="input-wrapper">
-                <span className="material-symbols-outlined input-icon">
+              <div className="register-input-wrapper">
+                <span className="material-symbols-outlined register-input-icon-left">
                   lock
                 </span>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
-                  className="form-input"
-                  placeholder="********"
+                  className="register-form-input"
+                  placeholder="••••••••"
                   value={formData.password}
                   onChange={handleInputChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="register-input-icon-right material-symbols-outlined"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "visibility_off" : "visibility"}
+                </button>
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="confirmPassword">
-                {t("auth.confirmPasswordLabel", "Confirm")}
+            <div className="register-form-group">
+              <label className="register-form-label" htmlFor="confirmPassword">
+                {t("auth.confirmPasswordLabel", "Confirm Password")}
               </label>
-              <div className="input-wrapper">
-                <span className="material-symbols-outlined input-icon">
+              <div className="register-input-wrapper">
+                <span className="material-symbols-outlined register-input-icon-left">
                   shield
                 </span>
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
                   name="confirmPassword"
-                  className="form-input"
-                  placeholder="********"
+                  className="register-form-input"
+                  placeholder="••••••••"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="register-input-icon-right material-symbols-outlined"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                >
+                  {showConfirmPassword ? "visibility_off" : "visibility"}
+                </button>
               </div>
             </div>
           </div>
 
           {/* Terms and Privacy Checkbox */}
-          <div className="terms-container">
+          <div className="register-terms-container">
             <input
               type="checkbox"
               id="terms"
-              className="custom-checkbox"
+              className="register-custom-checkbox"
               checked={agreeToTerms}
               onChange={(e) => setAgreeToTerms(e.target.checked)}
             />
-            <label htmlFor="terms" className="terms-text">
+            <label htmlFor="terms" className="register-terms-text">
               I agree to the{" "}
-              <span className="terms-link">Terms of Service</span> and{" "}
-              <span className="terms-link">Privacy Policy</span>.
+              <span className="register-terms-link">Terms of Service</span> and{" "}
+              <span className="register-terms-link">Privacy Policy</span>.
             </label>
           </div>
 
           {/* Submit Button */}
-          <button type="submit" className="submit-btn" disabled={isLoading}>
+          <button type="submit" className="register-submit-btn" disabled={isLoading}>
             <span>{isLoading ? t("auth.signingUp", "Creating...") : t("auth.signUpBtn", "Create Account")}</span>
             {!isLoading && (
-              <span className="material-symbols-outlined btn-arrow">
+              <span className="material-symbols-outlined register-btn-arrow">
                 arrow_forward
               </span>
             )}

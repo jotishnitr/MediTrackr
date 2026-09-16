@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getMedicineStatus } from "./utils/medicineUtils";
+import { getMedicineStatus, formatDaysLabel } from "./utils/medicineUtils";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
@@ -19,9 +19,14 @@ export default function MyMedicines({
   const [searchTerm, setSearchTerm] = useState("");
   const safeMedicines = Array.isArray(medicines) ? medicines.filter(Boolean) : [];
 
-  const filteredMedicines = safeMedicines.filter((med) =>
-    med && med.name && med.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMedicines = safeMedicines.filter((med) => {
+    if (!med) return false;
+    const query = searchTerm.toLowerCase();
+    const nameMatch = med.name && med.name.toLowerCase().includes(query);
+    const actualNameMatch = med.actualName && med.actualName.toLowerCase().includes(query);
+    return nameMatch || actualNameMatch;
+  });
+
   const handleOpenAdd = () => {
     if (typeof onOpenAddMedicine === "function") {
       onOpenAddMedicine();
@@ -136,12 +141,22 @@ export default function MyMedicines({
                   </div>
                 </div>
 
-                <h2>{med.name}</h2>
+                <div className="myMed-title-row">
+                  <h2>{med.name}</h2>
+                  {med.actualName && med.actualName !== med.name && (
+                    <span className="med-actual-name-chip" title="Actual / Generic Name">
+                      ({med.actualName})
+                    </span>
+                  )}
+                </div>
 
-                <p className="med-info">
-                  {med.dosage} {med.unit ? med.unit.toUpperCase() : "MG"} • {med.type}
-                  {med.count !== undefined && med.count !== null && med.count !== "" ? ` • Qty: ${med.count}` : ""}
-                </p>
+                <div className="med-info-row" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "4px" }}>
+                  <p className="med-info" style={{ margin: 0 }}>
+                    {med.dosage} {med.unit ? med.unit.toUpperCase() : "MG"} • {med.type}
+                    {med.count !== undefined && med.count !== null && med.count !== "" ? ` • Qty: ${med.count}` : ""}
+                  </p>
+                  <span className="med-days-tag">{formatDaysLabel(med.days)}</span>
+                </div>
 
                 <div className="card-divider"></div>
 
@@ -149,6 +164,11 @@ export default function MyMedicines({
                   <div>
                     <span className="card-label">{t("medicines.instructions", "INSTRUCTIONS")}</span>
                     <h4>{med.instructions || "None"}</h4>
+                  </div>
+
+                  <div>
+                    <span className="card-label">{t("medicines.schedule", "DAYS")}</span>
+                    <h4>{formatDaysLabel(med.days)}</h4>
                   </div>
 
                   <div>

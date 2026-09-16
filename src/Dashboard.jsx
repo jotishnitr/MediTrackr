@@ -650,8 +650,20 @@ export default function Dashboard({
                         <div className="refill-left">
                           <span className={`refill-dot ${badgeClass}-dot`}></span>
                           <div className="refill-info">
-                            <div className="refill-med-name">{refill.name}</div>
-                            <div className="refill-med-type">{refill.type || "Medicine"}</div>
+                            <div className="refill-med-name">
+                              {refill.name}
+                              {refill.actualName && refill.actualName !== refill.name && (
+                                <span className="med-actual-name-chip" style={{ fontSize: "11px", marginLeft: "6px" }}>
+                                  ({refill.actualName})
+                                </span>
+                              )}
+                            </div>
+                            <div className="refill-med-type">
+                              {refill.type || "Medicine"}
+                              {refill.days && Array.isArray(refill.days) && (
+                                <span> • {formatDaysLabel(refill.days)}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
@@ -851,6 +863,16 @@ export default function Dashboard({
                             <td className="refill-td-name">
                               <span style={{ marginRight: "8px" }}>💊</span>
                               <strong>{item.name}</strong>
+                              {item.actualName && item.actualName !== item.name && (
+                                <span className="med-actual-name-chip" style={{ fontSize: "11px", marginLeft: "6px" }}>
+                                  ({item.actualName})
+                                </span>
+                              )}
+                              {item.days && Array.isArray(item.days) && (
+                                <span className="med-days-tag" style={{ marginLeft: "6px" }}>
+                                  {formatDaysLabel(item.days)}
+                                </span>
+                              )}
                               {item.dosage && (
                                 <span className="refill-dosage-tag">
                                   {item.dosage} {item.unit?.toUpperCase()}

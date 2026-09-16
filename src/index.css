@@ -2765,22 +2765,30 @@ body {
   background: rgba(255, 185, 95, 0.12);
 }
 
-.status-badge.missed {
-  color: #ff8e8e;
-  background: rgba(255, 107, 107, 0.12);
+.myMed-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
+.myMed-title-row h2,
 .medicine-card-myMed h2 {
   color: #ffffff;
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+}
+
+.med-info-row {
+  margin-bottom: 20px;
 }
 
 .med-info {
   color: #9fb0c7;
-  font-size: 18px;
-  margin-bottom: 24px;
+  font-size: 16px;
+  margin-bottom: 0;
 }
 
 .card-divider {

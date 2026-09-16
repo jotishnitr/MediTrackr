@@ -234,6 +234,30 @@
   max-height: 320px;
 }
 
+/* Auth Variant (Login / Register / Forgot Password Pages) */
+.lang-selector-container.auth {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  z-index: 100;
+}
+
+.lang-selector-container.auth .lang-trigger-btn {
+  background: rgba(13, 22, 41, 0.75);
+  border: 1px solid rgba(78, 222, 163, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 8px 14px;
+}
+
+.lang-selector-container.auth .lang-trigger-btn:hover,
+.lang-selector-container.auth.open .lang-trigger-btn {
+  background: rgba(78, 222, 163, 0.15);
+  border-color: #4edea3;
+  box-shadow: 0 4px 20px rgba(78, 222, 163, 0.25);
+}
+
 /* =========================================================
    RESPONSIVE MEDIA QUERIES FOR LANGUAGE SELECTOR
    ========================================================= */
