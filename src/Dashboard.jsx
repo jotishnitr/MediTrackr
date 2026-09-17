@@ -976,13 +976,12 @@ export default function Dashboard({
 
                 <div className="refill-summary-badge-wrap">
                   <span
-                    className={`refill-badge ${
-                      selectedBuyMedicine.remainingDays <= 3
+                    className={`refill-badge ${selectedBuyMedicine.remainingDays <= 3
                         ? "refill-urgent"
                         : selectedBuyMedicine.remainingDays <= 7
-                        ? "refill-warning"
-                        : "refill-normal"
-                    }`}
+                          ? "refill-warning"
+                          : "refill-normal"
+                      }`}
                   >
                     {selectedBuyMedicine.remainingDays === 0
                       ? "Out of stock"

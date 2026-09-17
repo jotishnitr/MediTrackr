@@ -11,6 +11,11 @@
       "smallIcon": "ic_launcher",
       "iconColor": "#2563eb",
       "sound": "notificationsound.mp3"
+    },
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "770843042549-a23osvk5au9hdavm1ere0heehatv409v.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
     }
   }
 }

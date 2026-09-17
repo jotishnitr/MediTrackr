@@ -82,7 +82,7 @@ const googleLogin = async (req, res) => {
             // Generate a random password since password is required in the schema
             const randomPassword = crypto.randomBytes(16).toString("hex");
             const hashedPassword = await bcrypt.hash(randomPassword, 10);
-            
+
             user = await User.create({
                 name: name || "Google User",
                 email: email,
@@ -94,10 +94,10 @@ const googleLogin = async (req, res) => {
                 userId: user._id,
                 browserAlerts: true,
                 notificationSound: true,
-            }).catch(() => {});
+            }).catch(() => { });
 
             // Send welcome email asynchronously without blocking registration
-            sendWelcomeEmail(user.name, user.email).catch(() => {});
+            sendWelcomeEmail(user.name, user.email).catch(() => { });
         }
 
         // Generate the SAME JWT that the normal login generates
@@ -122,12 +122,6 @@ const googleLogin = async (req, res) => {
         }).status(200).json({
             success: true,
             message: "Login successful",
-            token: token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-            }
         });
 
     } catch (err) {
@@ -135,4 +129,4 @@ const googleLogin = async (req, res) => {
         res.status(500).json({ success: false, message: "Invalid Google credential" });
     }
 }
-module.exports = { googleLogin };
+module.exports = { googleLogin };

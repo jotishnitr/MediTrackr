@@ -53,29 +53,12 @@ connectDB();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://localhost:3000",
-  "http://localhost",
-  "https://localhost",
-  "capacitor://localhost",
-  "ionic://localhost",
   "https://jotishnitr.github.io",
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
 const corsOption = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (
-      allowedOrigins.includes(origin) ||
-      origin.startsWith("http://localhost") ||
-      origin.startsWith("https://localhost") ||
-      origin.startsWith("capacitor://") ||
-      origin.startsWith("ionic://")
-    ) {
-      return callback(null, true);
-    }
-    return callback(new Error("CORS policy violation: " + origin), false);
-  },
+  origin: allowedOrigins,
   credentials: true,
 };
 
