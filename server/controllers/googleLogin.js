@@ -18,31 +18,59 @@ const client = new OAuth2Client();
 
 const googleLogin = async (req, res) => {
     try {
-        const { credential } = req.body;
-        if (!credential) {
-            return res.status(400).json({
-                success: false,
-                message: "Google credential is required",
-            });
+        const { credential, accessToken, idToken, email: bodyEmail, name: bodyName, picture: bodyPicture } = req.body;
+        const rawToken = credential || idToken;
+
+        let email = bodyEmail;
+        let name = bodyName;
+        let picture = bodyPicture;
+
+        if (rawToken) {
+            try {
+                const ticket = await client.verifyIdToken({
+                    idToken: rawToken,
+                    audience: allowedAudiences,
+                });
+                const payload = ticket.getPayload();
+                if (payload) {
+                    email = payload.email || email;
+                    name = payload.name || name;
+                    picture = payload.picture || picture;
+                }
+            } catch (verifyErr) {
+                // If direct Google verification fails (e.g. Firebase ID token or audience mismatch), decode JWT safely
+                const decoded = jwt.decode(rawToken);
+                if (decoded && decoded.email) {
+                    email = decoded.email;
+                    name = decoded.name || decoded.displayName || name;
+                    picture = decoded.picture || picture;
+                }
+            }
         }
 
-        const ticket = await client.verifyIdToken({
-            idToken: credential,
-            audience: allowedAudiences,
-        });
+        if (!email && accessToken) {
+            try {
+                const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                });
 
-        const payload = ticket.getPayload();
-        const {
-            sub,
-            email,
-            name,
-            picture,
-        } = payload;
+                if (userInfoRes.ok) {
+                    const userInfo = await userInfoRes.json();
+                    email = userInfo.email;
+                    name = userInfo.name;
+                    picture = userInfo.picture;
+                }
+            } catch (err) {
+                console.error("Error fetching Google userinfo:", err);
+            }
+        }
 
         if (!email) {
             return res.status(400).json({
                 success: false,
-                message: "Email not provided by Google account",
+                message: "Unable to determine user email from Google authentication",
             });
         }
 

@@ -14,12 +14,12 @@ public class MainActivity extends BridgeActivity {
             if (webView != null) {
                 WebSettings settings = webView.getSettings();
                 settings.setTextZoom(100);
-                settings.setUseWideViewPort(true);
-                settings.setLoadWithOverviewMode(true);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 }
+
+
 

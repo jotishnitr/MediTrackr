@@ -7276,16 +7276,18 @@ body {
   .reminders,
   .health-log,
   .ai-assistant {
-    padding-top: 72px;
-    padding-bottom: 30px;
+    padding-top: calc(76px + env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .dashboard-header,
   .med-header,
   .search-header,
   .reminders-header {
-    padding: 12px 14px;
-    gap: 10px;
+    position: relative !important;
+    top: auto !important;
+    padding: 14px 16px;
+    gap: 12px;
   }
 
   .dashboard-title,
