@@ -18,8 +18,6 @@ import React from "react";
 import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { subscribeUser } from "./utils/pushNotification";
-import { initNotificationChannel, setupNotificationListeners } from "./utils/notificationUtils";
-import { getAuthToken, removeAuthToken } from "./utils/authStorage";
 
 // Mapping between routes and section page names
 const pathToPageMap = {
@@ -181,10 +179,6 @@ export default function App() {
     }
 
     init();
-    initNotificationChannel();
-    setupNotificationListeners((action) => {
-      navigate("/reminders");
-    });
   }, []);
 
   React.useEffect(() => {
@@ -218,12 +212,12 @@ export default function App() {
   }, []);
 
   const [isAuthenticated, setIsAuthenticated] = React.useState(() => {
-    return Boolean(getAuthTokenSync());
+    return Boolean(localStorage.getItem("authToken"));
   });
 
   // Helper to guard auth-required actions
   const requireAuth = (callback) => {
-    const hasToken = Boolean(getAuthTokenSync());
+    const hasToken = Boolean(localStorage.getItem("authToken"));
     if (!isAuthenticated && !hasToken) {
       navigate("/login");
       return false;
@@ -239,22 +233,11 @@ export default function App() {
 
   React.useEffect(() => {
     async function restoreSession() {
-      const token = await getAuthToken();
-      if (!token) {
-        setIsAuthenticated(false);
-        return;
-      }
-
-      setIsAuthenticated(true);
-
       try {
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/getCurrentUser`,
           {
             credentials: "include",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
           },
         );
         const data = await response.json().catch(() => ({}));
@@ -278,7 +261,7 @@ export default function App() {
             navigate("/dashboard");
           }
         } else if (response.status === 401) {
-          await removeAuthToken();
+          localStorage.removeItem("authToken");
           setIsAuthenticated(false);
           if (path === "/") {
             navigate("/dashboard");
@@ -286,8 +269,6 @@ export default function App() {
         }
       } catch (err) {
         console.error("Session restore error:", err);
-        // Keep authenticated on network failures if token exists
-        setIsAuthenticated(true);
       }
     }
 

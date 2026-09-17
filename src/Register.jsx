@@ -1,13 +1,9 @@
 import React, { useState } from "react";
 import "./Register.css";
 import { useGoogleLogin } from "@react-oauth/google";
-import { Capacitor } from "@capacitor/core";
-import { performNativeGoogleSignIn } from "./utils/googleAuth";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
-
-import { setAuthToken } from "./utils/authStorage";
 
 export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthenticated, setProfileDetails }) {
   const { t } = useTranslation();
@@ -42,7 +38,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
       const data = await response.json().catch(() => ({}));
       if (response.ok && data.success) {
         if (data.token) {
-          await setAuthToken(data.token);
+          localStorage.setItem("authToken", data.token);
         }
         if (data.user && typeof setProfileDetails === "function") {
           setProfileDetails((prev) => ({
@@ -70,37 +66,15 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
     }
   };
 
-  const webGoogleRegister = useGoogleLogin({
+  const handleGoogleClick = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       authenticateWithBackend({ accessToken: tokenResponse.access_token });
     },
     onError: (err) => {
-      console.error("Web Google Register Error:", err);
+      console.error("Google Register Error:", err);
       setError("Google registration was cancelled or failed.");
     },
   });
-
-  const handleGoogleClick = async () => {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        setIsLoading(true);
-        setError("");
-        const nativeResult = await performNativeGoogleSignIn();
-        if (nativeResult) {
-          await authenticateWithBackend(nativeResult);
-        }
-      } catch (err) {
-        console.error("Native Google Register Error:", err);
-        if (err?.message !== "SIGN_IN_CANCELED" && err?.code !== "SIGN_IN_CANCELED") {
-          setError(err?.message || "Google Sign-In failed on device.");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      webGoogleRegister();
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

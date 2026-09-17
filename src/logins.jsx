@@ -1,13 +1,9 @@
 import React, { useState } from "react";
 import "./logins.css";
 import { useGoogleLogin } from "@react-oauth/google";
-import { Capacitor } from "@capacitor/core";
-import { performNativeGoogleSignIn } from "./utils/googleAuth";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
-
-import { setAuthToken } from "./utils/authStorage";
 
 export default function Login({
   onSignUpRedirect,
@@ -43,11 +39,10 @@ export default function Login({
       });
 
       const data = await response.json().catch(() => ({}));
-      console.log("FULL LOGIN RESPONSE DATA:", data);
 
       if (response.ok && data.success) {
         if (data.token) {
-          await setAuthToken(data.token);
+          localStorage.setItem("authToken", data.token);
         }
         if (data.user && typeof setProfileDetails === "function") {
           setProfileDetails((prev) => ({
@@ -68,47 +63,22 @@ export default function Login({
         setError(data.message || "Google login failed.");
       }
     } catch (err) {
-      console.error("CRITICAL GOOGLE LOGIN ERROR:", err);
-      if (err && typeof err === 'object') {
-        console.error("Error details:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
-      }
-      setError(err?.message ? `Login failed: ${err.message}` : "Google login failed. Please check your connection.");
+      console.error("Google login error:", err);
+      setError(err?.message || "Google login failed. Please check your connection.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const webGoogleLogin = useGoogleLogin({
+  const handleGoogleClick = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       authenticateWithBackend({ accessToken: tokenResponse.access_token });
     },
     onError: (err) => {
-      console.error("Web Google Login Error:", err);
+      console.error("Google Login Error:", err);
       setError("Google login was cancelled or failed.");
     },
   });
-
-  const handleGoogleClick = async () => {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        setIsLoading(true);
-        setError("");
-        const nativeResult = await performNativeGoogleSignIn();
-        if (nativeResult) {
-          await authenticateWithBackend(nativeResult);
-        }
-      } catch (err) {
-        console.error("Native Google Sign In Error:", err);
-        if (err?.message !== "SIGN_IN_CANCELED" && err?.code !== "SIGN_IN_CANCELED") {
-          setError(err?.message || "Google Sign-In failed on device.");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      webGoogleLogin();
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

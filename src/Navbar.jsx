@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
-import { removeAuthToken } from "./utils/authStorage";
 
 export default function Navbar({
   currentPage,
@@ -268,7 +267,7 @@ export default function Navbar({
               } catch (err) {
                 console.error("Logout failed:", err);
               } finally {
-                await removeAuthToken();
+                localStorage.removeItem("authToken");
                 if (typeof setIsAuthenticated === "function") {
                   setIsAuthenticated(false);
                 }

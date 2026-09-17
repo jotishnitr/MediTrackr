@@ -3,12 +3,6 @@ import { getMedicineStatus, formatDaysLabel, isMedicineScheduledToday } from "./
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
-import {
-  requestPermission,
-  scheduleReminder,
-  cancelReminder,
-  rescheduleAll,
-} from "./utils/notificationUtils";
 
 export default function Reminders({
   medicines,
@@ -135,12 +129,6 @@ export default function Reminders({
     }
     const updatedMedicine = await response.json();
     if (!updatedMedicine || !updatedMedicine._id) return;
-
-    if (updatedMedicine.reminder) {
-      await scheduleReminder(updatedMedicine);
-    } else {
-      await cancelReminder(updatedMedicine._id);
-    }
 
     setMedicines((prev) =>
       (Array.isArray(prev) ? prev.filter(Boolean) : []).map((medicine) =>
