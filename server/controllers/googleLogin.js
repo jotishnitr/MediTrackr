@@ -18,6 +18,8 @@ const client = new OAuth2Client();
 
 const googleLogin = async (req, res) => {
     try {
+        console.log("CRITICAL GOOGLE LOGIN: Received request from origin:", req.headers.origin || "no-origin");
+        console.log("CRITICAL GOOGLE LOGIN: Payload keys:", Object.keys(req.body || {}));
         const { credential, accessToken, idToken, email: bodyEmail, name: bodyName, picture: bodyPicture } = req.body;
         const rawToken = credential || idToken;
 

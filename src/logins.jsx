@@ -53,8 +53,11 @@ export default function Login({
         setError(data.message || "Google login failed.");
       }
     } catch (err) {
-      console.error(err);
-      setError("Google login failed. Please check your connection.");
+      console.error("CRITICAL GOOGLE LOGIN ERROR:", err);
+      if (err && typeof err === 'object') {
+        console.error("Error details:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
+      }
+      setError(err?.message ? `Login failed: ${err.message}` : "Google login failed. Please check your connection.");
     } finally {
       setIsLoading(false);
     }

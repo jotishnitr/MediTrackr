@@ -51,14 +51,8 @@ const app = express();
 
 connectDB();
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://jotishnitr.github.io",
-  process.env.CLIENT_URL,
-].filter(Boolean);
-
 const corsOption = {
-  origin: allowedOrigins,
+  origin: true, // Reflect request origin to allow Capacitor (capacitor://, https://localhost, etc.) & Web
   credentials: true,
 };
 
