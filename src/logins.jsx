@@ -39,8 +39,11 @@ export default function Login({
         body: JSON.stringify(authPayload),
       });
 
-      const data = await response.json();
-      if (data.success) {
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
+        }
         if (typeof setIsAuthenticated === "function") {
           setIsAuthenticated(true);
         }
@@ -53,8 +56,8 @@ export default function Login({
         setError(data.message || "Google login failed.");
       }
     } catch (err) {
-      console.error(err);
-      setError("Google login failed. Please check your connection.");
+      console.error("Authentication backend error:", err);
+      setError(err?.message || "Google login failed. Please check your connection.");
     } finally {
       setIsLoading(false);
     }

@@ -37,8 +37,11 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
         body: JSON.stringify(authPayload),
       });
 
-      const data = await response.json();
-      if (data.success) {
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
+        }
         if (typeof setIsAuthenticated === "function") {
           setIsAuthenticated(true);
         }
@@ -51,8 +54,8 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
         setError(data.message || "Google registration failed.");
       }
     } catch (err) {
-      console.error(err);
-      setError("Google registration failed. Please check connection.");
+      console.error("Register backend error:", err);
+      setError(err?.message || "Google registration failed. Please check connection.");
     } finally {
       setIsLoading(false);
     }

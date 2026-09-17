@@ -122,6 +122,12 @@ const googleLogin = async (req, res) => {
         }).status(200).json({
             success: true,
             message: "Login successful",
+            token: token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+            }
         });
 
     } catch (err) {
