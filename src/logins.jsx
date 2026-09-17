@@ -14,6 +14,7 @@ export default function Login({
   onForgotPasswordRedirect,
   setCurrentPage,
   setIsAuthenticated,
+  setProfileDetails,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -47,6 +48,13 @@ export default function Login({
       if (response.ok && data.success) {
         if (data.token) {
           await setAuthToken(data.token);
+        }
+        if (data.user && typeof setProfileDetails === "function") {
+          setProfileDetails((prev) => ({
+            ...prev,
+            name: data.user.name || prev.name,
+            email: data.user.email || prev.email,
+          }));
         }
         if (typeof setIsAuthenticated === "function") {
           setIsAuthenticated(true);

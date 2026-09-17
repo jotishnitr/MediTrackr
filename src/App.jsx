@@ -217,13 +217,19 @@ export default function App() {
     }
   }, []);
 
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(() => {
+    return Boolean(getAuthTokenSync());
+  });
 
   // Helper to guard auth-required actions
   const requireAuth = (callback) => {
-    if (!isAuthenticated) {
+    const hasToken = Boolean(getAuthTokenSync());
+    if (!isAuthenticated && !hasToken) {
       navigate("/login");
       return false;
+    }
+    if (!isAuthenticated && hasToken) {
+      setIsAuthenticated(true);
     }
     if (typeof callback === "function") {
       callback();
@@ -238,6 +244,8 @@ export default function App() {
         setIsAuthenticated(false);
         return;
       }
+
+      setIsAuthenticated(true);
 
       try {
         const response = await fetch(
@@ -278,13 +286,13 @@ export default function App() {
         }
       } catch (err) {
         console.error("Session restore error:", err);
-        // If offline or network glitch, maintain authentication state with saved token
+        // Keep authenticated on network failures if token exists
         setIsAuthenticated(true);
       }
     }
 
     restoreSession();
-  }, [isAuthenticated]);
+  }, []);
 
   const [medicines, setMedicines] = React.useState([]);
   React.useEffect(() => {
@@ -581,6 +589,7 @@ export default function App() {
                 setCurrentPage={setCurrentPage}
                 onSignInRedirect={() => setCurrentPage("Login")}
                 setIsAuthenticated={setIsAuthenticated}
+                setProfileDetails={setProfileDetails}
               />
             }
           />
@@ -592,6 +601,7 @@ export default function App() {
                 onSignUpRedirect={() => setCurrentPage("Register")}
                 onForgotPasswordRedirect={() => setCurrentPage("ForgotPassword")}
                 setIsAuthenticated={setIsAuthenticated}
+                setProfileDetails={setProfileDetails}
               />
             }
           />

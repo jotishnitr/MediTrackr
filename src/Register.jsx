@@ -9,7 +9,7 @@ import LanguageSelector from "./LanguageSelector";
 
 import { setAuthToken } from "./utils/authStorage";
 
-export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthenticated }) {
+export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthenticated, setProfileDetails }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -43,6 +43,13 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
       if (response.ok && data.success) {
         if (data.token) {
           await setAuthToken(data.token);
+        }
+        if (data.user && typeof setProfileDetails === "function") {
+          setProfileDetails((prev) => ({
+            ...prev,
+            name: data.user.name || prev.name,
+            email: data.user.email || prev.email,
+          }));
         }
         if (typeof setIsAuthenticated === "function") {
           setIsAuthenticated(true);
