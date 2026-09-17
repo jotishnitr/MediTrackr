@@ -19,6 +19,7 @@ import { useLocation, useNavigate, Routes, Route, Navigate } from "react-router-
 import { AnimatePresence } from "framer-motion";
 import { subscribeUser } from "./utils/pushNotification";
 import { initNotificationChannel, setupNotificationListeners } from "./utils/notificationUtils";
+import { getAuthToken, removeAuthToken } from "./utils/authStorage";
 
 // Mapping between routes and section page names
 const pathToPageMap = {
@@ -231,13 +232,24 @@ export default function App() {
   };
 
   React.useEffect(() => {
-    async function getCurrentUser() {
+    async function restoreSession() {
+      const token = await getAuthToken();
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
+      }
+
       try {
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/getCurrentUser`,
-          { credentials: "include" },
+          {
+            credentials: "include",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
         const path = location.pathname.toLowerCase();
         const isAuthRoute =
           path.includes("login") ||
@@ -245,7 +257,7 @@ export default function App() {
           path.includes("forgot-password") ||
           path.includes("reset-password");
 
-        if (data.success) {
+        if (response.ok && data.success) {
           setIsAuthenticated(true);
           if (data.user?.name) {
             setProfileDetails((prev) => ({
@@ -257,23 +269,22 @@ export default function App() {
           if (isAuthRoute || path === "/") {
             navigate("/dashboard");
           }
-        } else {
+        } else if (response.status === 401) {
+          await removeAuthToken();
           setIsAuthenticated(false);
-          // If on root, route to dashboard without redirecting unauthenticated users to login
           if (path === "/") {
             navigate("/dashboard");
           }
         }
       } catch (err) {
-        setIsAuthenticated(false);
-        const path = location.pathname.toLowerCase();
-        if (path === "/") {
-          navigate("/dashboard");
-        }
+        console.error("Session restore error:", err);
+        // If offline or network glitch, maintain authentication state with saved token
+        setIsAuthenticated(true);
       }
     }
-    getCurrentUser();
-  }, []);
+
+    restoreSession();
+  }, [isAuthenticated]);
 
   const [medicines, setMedicines] = React.useState([]);
   React.useEffect(() => {

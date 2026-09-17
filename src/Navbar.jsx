@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
+import { removeAuthToken } from "./utils/authStorage";
 
 export default function Navbar({
   currentPage,
@@ -257,7 +258,7 @@ export default function Navbar({
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                const response = await fetch(
+                await fetch(
                   `${import.meta.env.VITE_API_URL}/logout`,
                   {
                     method: "POST",
@@ -267,6 +268,7 @@ export default function Navbar({
               } catch (err) {
                 console.error("Logout failed:", err);
               } finally {
+                await removeAuthToken();
                 if (typeof setIsAuthenticated === "function") {
                   setIsAuthenticated(false);
                 }

@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
 
+import { setAuthToken } from "./utils/authStorage";
+
 export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthenticated }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -37,8 +39,11 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
         body: JSON.stringify(authPayload),
       });
 
-      const data = await response.json();
-      if (data.success) {
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        if (data.token) {
+          await setAuthToken(data.token);
+        }
         if (typeof setIsAuthenticated === "function") {
           setIsAuthenticated(true);
         }
@@ -51,7 +56,7 @@ export default function Register({ onSignInRedirect, setCurrentPage, setIsAuthen
         setError(data.message || "Google registration failed.");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Google registration failed:", err);
       setError("Google registration failed. Please check connection.");
     } finally {
       setIsLoading(false);

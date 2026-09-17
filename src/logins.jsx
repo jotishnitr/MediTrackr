@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
 
+import { setAuthToken } from "./utils/authStorage";
+
 export default function Login({
   onSignUpRedirect,
   onForgotPasswordRedirect,
@@ -39,8 +41,13 @@ export default function Login({
         body: JSON.stringify(authPayload),
       });
 
-      const data = await response.json();
-      if (data.success) {
+      const data = await response.json().catch(() => ({}));
+      console.log("FULL LOGIN RESPONSE DATA:", data);
+
+      if (response.ok && data.success) {
+        if (data.token) {
+          await setAuthToken(data.token);
+        }
         if (typeof setIsAuthenticated === "function") {
           setIsAuthenticated(true);
         }
@@ -132,17 +139,20 @@ export default function Login({
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        if (data.token) {
+          await setAuthToken(data.token);
+        }
+        if (typeof setIsAuthenticated === "function") {
+          setIsAuthenticated(true);
+        }
+        setSuccess("Welcome back! Redirecting...");
+        setCurrentPage("Dashboard");
+        navigate("/dashboard");
+      } else {
         throw new Error(data.message || "Invalid credentials.");
       }
-
-      if (typeof setIsAuthenticated === "function") {
-        setIsAuthenticated(true);
-      }
-      setSuccess("Welcome back! Redirecting...");
-      setCurrentPage("Dashboard");
     } catch (err) {
       setError(
         err.message || "Something went wrong. Please check your connection.",
