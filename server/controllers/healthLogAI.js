@@ -99,7 +99,9 @@ const healthLogAI = async (req, res) => {
       heartRate: todayLog.heartRate ? `${todayLog.heartRate} bpm` : "Not recorded",
       sleepHours: todayLog.sleepHours ? `${todayLog.sleepHours} hrs` : "Not recorded",
       weight: todayLog.weight ? `${todayLog.weight} kg` : "Not recorded",
-      waterIntake: todayLog.waterIntake ? `${todayLog.waterIntake} L` : "Not recorded",
+      waterIntake: todayLog.waterIntake
+        ? `${todayLog.waterIntake} ml (${(todayLog.waterIntake / 1000).toFixed(1)} L)`
+        : "Not recorded",
       bloodSugar: todayLog.bloodSugar
         ? `${todayLog.bloodSugar} mg/dL (${todayLog.bloodSugarContext || "General"})`
         : "Not recorded",

@@ -988,43 +988,6 @@ export default function HealthLog({
               <h3 className="ai-analyst-title">MediTrackr Health Analyst</h3>
             </div>
 
-            {/* Provider Info Banner & Copy Action */}
-            {aiSummarization?.providerUsed && (
-              <div className="ai-provider-banner">
-                <div className="ai-provider-badge">
-                  <span className="ai-provider-dot"></span>
-                  <span className="ai-provider-text">
-                    Analyzed with <strong>{aiSummarization.providerUsed}</strong>
-                  </span>
-                </div>
-                {aiSummarization?.summary && (
-                  <button
-                    type="button"
-                    className={`ai-copy-btn ${copiedSummary ? "copied" : ""}`}
-                    onClick={handleCopySummary}
-                    title="Copy AI Summary to Clipboard"
-                  >
-                    {copiedSummary ? (
-                      <>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
-                        <span>Copy</span>
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            )}
-
             {/* Summary Body Container */}
             <div className="ai-summary-content-area">
               {isGeneratingAI ? (
@@ -1047,6 +1010,32 @@ export default function HealthLog({
                 </div>
               ) : aiSummarization?.summary ? (
                 <div className="ai-summary-markdown-wrapper">
+                  <div className="ai-summary-top-bar">
+                    <span className="ai-summary-label">Today's Health Breakdown</span>
+                    <button
+                      type="button"
+                      className={`ai-copy-btn ${copiedSummary ? "copied" : ""}`}
+                      onClick={handleCopySummary}
+                      title="Copy AI Summary to Clipboard"
+                    >
+                      {copiedSummary ? (
+                        <>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          <span>Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
