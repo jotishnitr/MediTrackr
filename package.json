@@ -5,6 +5,7 @@
   "type": "module",
   "homepage": "https://jotishnitr.github.io/MediTrackr",
   "scripts": {
+    "start": "node server/server.js",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",

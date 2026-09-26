@@ -1,4 +1,6 @@
 // server file connection all routes
+const path = require("node:path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 require("dotenv").config();
 const dns = require("node:dns");
 if (dns.setDefaultResultOrder) {
