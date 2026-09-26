@@ -43,7 +43,7 @@ export default function AiAssistance({
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
-  
+
   // Track action execution states by message index: { [index]: { status: 'executed' | 'discarded', loading: boolean } }
   const [actionStates, setActionStates] = useState({});
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -134,9 +134,8 @@ export default function AiAssistance({
           setAdvisorMessages([
             {
               sender: "assistant",
-              text: `Hello ${
-                getUserDisplayName(profileDetails?.name)
-              }! I am your **Health Advisor**. How can I assist with your health questions or document reviews today?`,
+              text: `Hello ${getUserDisplayName(profileDetails?.name)
+                }! I am your **Health Advisor**. How can I assist with your health questions or document reviews today?`,
               time: getCurrentTime(),
             },
           ]);
@@ -159,22 +158,23 @@ export default function AiAssistance({
       if (response.ok) {
         const data = await response.json();
         if (data.messages && data.messages.length > 0) {
-          const formatted = data.messages.map((m) => ({
+          const formatted = data.messages.map((m, idx) => ({
+            id: m._id || `${m.timeStamp || idx}`,
             sender: m.role === "user" ? "user" : "assistant",
             text: m.text,
             action: m.action || null,
             actionData: m.actionData || null,
             requiresConfirmation: Boolean(m.action),
             time: getCurrentTime(m.timeStamp),
+            rawTimeStamp: m.timeStamp,
           }));
           setCopilotMessages(formatted);
         } else {
           setCopilotMessages([
             {
               sender: "assistant",
-              text: `👋 Hi ${
-                getUserDisplayName(profileDetails?.name)
-              }! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
+              text: `👋 Hi ${getUserDisplayName(profileDetails?.name)
+                }! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
               time: getCurrentTime(),
             },
           ]);
@@ -240,9 +240,8 @@ export default function AiAssistance({
           setAdvisorMessages([
             {
               sender: "assistant",
-              text: `Hello ${
-                getUserDisplayName(profileDetails?.name)
-              }! How can I help you today?`,
+              text: `Hello ${getUserDisplayName(profileDetails?.name)
+                }! How can I help you today?`,
               time: getCurrentTime(),
             },
           ]);
@@ -305,11 +304,11 @@ export default function AiAssistance({
       image: isImg ? imagePreview : null,
       fileInfo: selectedImage
         ? {
-            name: selectedImage.name,
-            size: selectedImage.size,
-            type: selectedImage.type,
-            isImage: isImg,
-          }
+          name: selectedImage.name,
+          size: selectedImage.size,
+          type: selectedImage.type,
+          isImage: isImg,
+        }
         : null,
     };
 
@@ -429,9 +428,11 @@ export default function AiAssistance({
             }
           }
 
+          const newRawTime = new Date().toISOString();
           setCopilotMessages((prev) => [
             ...prev,
             {
+              id: Date.now().toString(),
               sender: "assistant",
               text: finalReply,
               action: data.action,
@@ -439,6 +440,7 @@ export default function AiAssistance({
               requiresConfirmation: data.requiresConfirmation,
               usedModel: data.usedModel,
               time: getCurrentTime(),
+              rawTimeStamp: newRawTime,
             },
           ]);
         } else {
@@ -525,11 +527,26 @@ export default function AiAssistance({
     }
   };
 
-  const handleDiscardAction = (msgIndex) => {
-    setActionStates((prev) => ({
-      ...prev,
-      [msgIndex]: { status: "discarded", loading: false },
-    }));
+  const handleDiscardAction = async (msgIndex) => {
+    const targetMsg = copilotMessages[msgIndex];
+
+    // Remove from UI state immediately
+    setCopilotMessages((prev) => prev.filter((_, idx) => idx !== msgIndex));
+
+    // Delete message from DB using existing deleteCopilotHistory endpoint
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/getCopilotHistory`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId: targetMsg?.id,
+          timeStamp: targetMsg?.rawTimeStamp,
+        }),
+      });
+    } catch (err) {
+      console.warn("Failed to delete discarded action from DB:", err);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -759,10 +776,10 @@ export default function AiAssistance({
               {msg.fileInfo.name.endsWith(".pdf")
                 ? "picture_as_pdf"
                 : msg.fileInfo.name.endsWith(".doc") || msg.fileInfo.name.endsWith(".docx")
-                ? "description"
-                : msg.fileInfo.name.endsWith(".csv")
-                ? "table_view"
-                : "text_snippet"}
+                  ? "description"
+                  : msg.fileInfo.name.endsWith(".csv")
+                    ? "table_view"
+                    : "text_snippet"}
             </span>
             <div className="message-doc-meta">
               <span className="message-doc-name">{msg.fileInfo.name}</span>
@@ -885,8 +902,8 @@ export default function AiAssistance({
                     {msg.sender === "user"
                       ? "YOU"
                       : activeMode === "advisor"
-                      ? "HEALTH ADVISOR"
-                      : "COPILOT"}
+                        ? "HEALTH ADVISOR"
+                        : "COPILOT"}
                   </span>
                   <span className="time-stamp">{msg.time}</span>
                 </div>
@@ -1024,8 +1041,8 @@ export default function AiAssistance({
                   isListening
                     ? `🎙️ Listening in ${currentSpeechLang?.nativeName || "English"}... Speak now`
                     : activeMode === "advisor"
-                    ? "Ask Health Advisor about symptoms, medicines, lab reports..."
-                    : "Tell Copilot to add medicines, log vitals, optimize schedule..."
+                      ? "Ask Health Advisor about symptoms, medicines, lab reports..."
+                      : "Tell Copilot to add medicines, log vitals, optimize schedule..."
                 }
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
