@@ -333,9 +333,21 @@ export default function App() {
   const [sleepHours, setSleepHours] = React.useState(null);
   const [bloodPressure, setBloodPressure] = React.useState(null);
   const [weight, setWeight] = React.useState(null);
+  const [waterIntake, setWaterIntake] = React.useState(0);
+  const [heartRate, setHeartRate] = React.useState(null);
+  const [bodyTemperature, setBodyTemperature] = React.useState(null);
+  const [bloodSugar, setBloodSugar] = React.useState(null);
+  const [bloodSugarContext, setBloodSugarContext] = React.useState("");
+  const [mood, setMood] = React.useState("");
+  const [stressLevel, setStressLevel] = React.useState(null);
+  const [energyLevel, setEnergyLevel] = React.useState("");
+  const [painLevel, setPainLevel] = React.useState(0);
+  const [activityLevel, setActivityLevel] = React.useState("");
+  const [lifestyleTags, setLifestyleTags] = React.useState([]);
   const [selectedSymptoms, setSelectedSymptoms] = React.useState([]);
   const [notes, setNotes] = React.useState("");
   const [lastSaved, setLastSaved] = React.useState("");
+  const [aiSummarization, setAiSummarization] = React.useState(null);
 
   async function getHealthLog() {
     try {
@@ -350,26 +362,62 @@ export default function App() {
         setSleepHours(null);
         setBloodPressure(null);
         setWeight(null);
+        setWaterIntake(0);
+        setHeartRate(null);
+        setBodyTemperature(null);
+        setBloodSugar(null);
+        setBloodSugarContext("");
+        setMood("");
+        setStressLevel(null);
+        setEnergyLevel("");
+        setPainLevel(0);
+        setActivityLevel("");
+        setLifestyleTags([]);
         setSelectedSymptoms([]);
         setNotes("");
         setLastSaved("");
+        setAiSummarization(null);
         return;
       }
 
       setSleepHours(data.sleepHours ?? null);
       setBloodPressure(data.bloodPressure || null);
       setWeight(data.weight ?? null);
+      setWaterIntake(data.waterIntake ?? 0);
+      setHeartRate(data.heartRate ?? null);
+      setBodyTemperature(data.bodyTemperature ?? null);
+      setBloodSugar(data.bloodSugar ?? null);
+      setBloodSugarContext(data.bloodSugarContext || "");
+      setMood(data.mood || "");
+      setStressLevel(data.stressLevel ?? null);
+      setEnergyLevel(data.energyLevel || "");
+      setPainLevel(data.painLevel ?? 0);
+      setActivityLevel(data.activityLevel || "");
+      setLifestyleTags(data.lifestyleTags || []);
       setSelectedSymptoms(data.symptoms || []);
       setNotes(data.notes || "");
       setLastSaved(data.date || "");
+      setAiSummarization(data.AIsummarization || null);
     } catch (err) {
       console.error("Failed to load health log:", err);
       setSleepHours(null);
       setBloodPressure(null);
       setWeight(null);
+      setWaterIntake(0);
+      setHeartRate(null);
+      setBodyTemperature(null);
+      setBloodSugar(null);
+      setBloodSugarContext("");
+      setMood("");
+      setStressLevel(null);
+      setEnergyLevel("");
+      setPainLevel(0);
+      setActivityLevel("");
+      setLifestyleTags([]);
       setSelectedSymptoms([]);
       setNotes("");
       setLastSaved("");
+      setAiSummarization(null);
     }
   }
 
@@ -538,12 +586,36 @@ export default function App() {
                 setBloodPressure={setBloodPressure}
                 weight={weight}
                 setWeight={setWeight}
+                waterIntake={waterIntake}
+                setWaterIntake={setWaterIntake}
+                heartRate={heartRate}
+                setHeartRate={setHeartRate}
+                bodyTemperature={bodyTemperature}
+                setBodyTemperature={setBodyTemperature}
+                bloodSugar={bloodSugar}
+                setBloodSugar={setBloodSugar}
+                bloodSugarContext={bloodSugarContext}
+                setBloodSugarContext={setBloodSugarContext}
+                mood={mood}
+                setMood={setMood}
+                stressLevel={stressLevel}
+                setStressLevel={setStressLevel}
+                energyLevel={energyLevel}
+                setEnergyLevel={setEnergyLevel}
+                painLevel={painLevel}
+                setPainLevel={setPainLevel}
+                activityLevel={activityLevel}
+                setActivityLevel={setActivityLevel}
+                lifestyleTags={lifestyleTags}
+                setLifestyleTags={setLifestyleTags}
                 selectedSymptoms={selectedSymptoms}
                 setSelectedSymptoms={setSelectedSymptoms}
                 notes={notes}
                 setNotes={setNotes}
                 lastSaved={lastSaved}
                 setLastSaved={setLastSaved}
+                aiSummarization={aiSummarization}
+                setAiSummarization={setAiSummarization}
                 requireAuth={requireAuth}
                 setIsAuthenticated={setIsAuthenticated}
                 unreadNotificationsCount={unreadNotificationsCount}

@@ -89,27 +89,33 @@ const gemini_models = [
 
 // OpenRouter Free Text/Chat models for app assistance
 const openrouter_models = [
-  "inclusionai/ling-3.0-flash-vl:free",
-  "nex-agi/nex-n2.5-mini:free",
-  "nex-agi/nex-n2.5-pro:free",
-  "inclusionai/ling-3.0-flash-sante:free",
-  "inclusionai/ling-3.0-flash-fin:free",
-  "dots-studio/dots-3-note-preview:free",
-  "dots-studio/dots3-note-preview:free",
-  "liquidai/lfm2.5-2.6b:free",
-  "nvidia/nemotron-3.5-lightning:free",
-  "thinking-machines/inkling-small:free",
-  "thinking-machines/inkling:free",
-  "poolside/laguna-s2.1:free",
-  "poolside/laguna-xs2.1:free",
-  "cohere/north-mini-code:free",
-  "nvidia/nemotron-3.5-content-safety:free",
-  "nvidia/nemotron-3-ultra:free",
-  "nvidia/nemotron-3-nano-omni:free",
-  "google/gemma-4-26b-a4b:free",
-  "google/gemma-4-31b:free",
-  "nvidia/nemotron-3-super:free",
-];
+  "Space Bunny Alpha",
+  "Nemotron 3 Ultra (free)",
+  "Ling 3.0 Flash Fin (free)",
+  "Laguna S 2.1 (free)",
+  "Dots3-Note Preview (free)",
+  "Nemotron 3.5 Lightning (free)",
+  "Inkling (free)",
+  "Nemotron 3 Super (free)",
+  "Ling 3.0 Flash Sante (free)",
+  "North Mini Code (free)",
+  "Inkling Small (free)",
+  "Laguna XS 2.1 (free)",
+  "Qwen3.8 27B (free)",
+  "Nemotron 3 Nano Omni (free)",
+  "LFM2.5-2.6B (free)",
+  "Nemotron 3.5 Content Safety (free)",
+  "Llama Nemotron Rerank VL 1B V2 (free)",
+  "Gemma 4 26B A4B (free)",
+  "Llama Nemotron Embed VL 1B V2 (free)",
+  "Nemotron 3 Embed 1B (free)",
+  "Gemma 4 31B (free)",
+  "Ming Image 0.1 Design",
+  "Dots3-Note Preview (free)",
+  "Nemotron 3 Nano Omni (free)",
+  "LFM2.5-Embedding-350M (free)"
+]
+
 
 const withTimeout = (promise, ms = 30000) => {
   let timeoutId;

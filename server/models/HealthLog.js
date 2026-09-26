@@ -33,6 +33,55 @@ const healthLogSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  waterIntake: {
+    type: Number,
+    default: 0,
+  },
+  heartRate: {
+    type: Number,
+    default: null,
+  },
+  bodyTemperature: {
+    type: Number,
+    default: null,
+  },
+  bloodSugar: {
+    type: Number,
+    default: null,
+  },
+  bloodSugarContext: {
+    type: String,
+    default: "",
+  },
+  mood: {
+    type: String,
+    default: "",
+  },
+  stressLevel: {
+    type: Number,
+    default: null,
+  },
+  energyLevel: {
+    type: String,
+    default: "",
+  },
+  painLevel: {
+    type: Number,
+    default: 0,
+  },
+  activityLevel: {
+    type: String,
+    default: "",
+  },
+  lifestyleTags: {
+    type: [String],
+    default: [],
+  },
+  AIsummarization: {
+    summary: String,
+    providerUsed: String,
+
+  },
 });
 
 module.exports = mongoose.model("HealthLog", healthLogSchema);

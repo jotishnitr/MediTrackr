@@ -2,8 +2,7 @@ const HealthLog = require("../models/HealthLog");
 
 const healthLog = async (req, res) => {
   try {
-    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
-    const todayIST = now.toISOString().split("T")[0];
+    const todayIST = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
     const todayUTC = new Date().toISOString().split("T")[0];
 
     const todayLog = await HealthLog.findOne({
