@@ -33,7 +33,7 @@ export default function AiAssistance({
   const [copilotMessages, setCopilotMessages] = useState([
     {
       sender: "assistant",
-      text: `👋 Hi ${getUserDisplayName(profileDetails?.name)}! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
+      text: `👋 Hi ${getUserDisplayName(profileDetails?.name)}! I am your **MediTrackr Copilot**.\n\nI can directly extract, structure, and schedule your health actions. Try saying:\n- *"Add 500mg Amoxicillin capsule at 08:00 after food"*\n- *"Log my vitals: BP 120/80, Heart Rate 72 bpm, 7.5 hours sleep, and mild headache"*\n- *"Optimize my medication timetable for morning and evening"*`,
       time: getCurrentTime(),
     },
   ]);
@@ -496,7 +496,7 @@ export default function AiAssistance({
           });
         }
       } else if (action === "LOG_HEALTH_VITALS" && actionData?.data) {
-        // Save health log via healthLog controller
+        // Save health log via healthLog controller with full biomarker schema
         const v = actionData.data;
         await fetch(`${import.meta.env.VITE_API_URL}/healthLog`, {
           method: "POST",
@@ -505,9 +505,20 @@ export default function AiAssistance({
           body: JSON.stringify({
             date: v.date || new Date().toISOString().split("T")[0],
             bloodPressure: v.bloodPressure || "0/0",
-            sleepHours: v.sleepHours || 0,
-            weight: v.weight || 0,
-            symptoms: v.symptoms || [],
+            sleepHours: v.sleepHours !== undefined && v.sleepHours !== null ? Number(v.sleepHours) : 0,
+            weight: v.weight !== undefined && v.weight !== null ? Number(v.weight) : 0,
+            waterIntake: v.waterIntake !== undefined && v.waterIntake !== null ? Number(v.waterIntake) : 0,
+            heartRate: v.heartRate !== undefined && v.heartRate !== null ? Number(v.heartRate) : null,
+            bodyTemperature: v.bodyTemperature !== undefined && v.bodyTemperature !== null ? Number(v.bodyTemperature) : null,
+            bloodSugar: v.bloodSugar !== undefined && v.bloodSugar !== null ? Number(v.bloodSugar) : null,
+            bloodSugarContext: v.bloodSugarContext || "",
+            mood: v.mood || "",
+            stressLevel: v.stressLevel !== undefined && v.stressLevel !== null ? Number(v.stressLevel) : null,
+            energyLevel: v.energyLevel || "",
+            painLevel: v.painLevel !== undefined && v.painLevel !== null ? Number(v.painLevel) : 0,
+            activityLevel: v.activityLevel || "",
+            lifestyleTags: Array.isArray(v.lifestyleTags) ? v.lifestyleTags : [],
+            symptoms: Array.isArray(v.symptoms) ? v.symptoms : [],
             notes: v.notes || "",
           }),
         });
@@ -588,7 +599,7 @@ export default function AiAssistance({
   const copilotChips = [
     { text: "📊 Generate Health Report", action: "Analyze my health logs, active medicines, and profile, and generate a comprehensive health report for me." },
     { text: "Add 500mg Amoxicillin", action: "Add 500mg Amoxicillin Oral Tablet at 08:00 with food" },
-    { text: "Log BP & Vitals", action: "Log my vitals: Blood Pressure 120/80, 7.5 hours sleep, and weight 70kg" },
+    { text: "Log BP & Vitals", action: "Log my vitals: Blood Pressure 120/80, Heart Rate 72 bpm, 7.5 hours sleep, and weight 70kg" },
     { text: "Optimize Schedule", action: "Optimize my daily medication schedule for morning, afternoon, and bedtime" },
   ];
 
@@ -683,14 +694,46 @@ export default function AiAssistance({
                 <span style={{ color: "#4edea3" }}>BP: {msg.actionData.data.bloodPressure || "N/A"}</span>
               </div>
               <div className="action-item-tags">
+                {msg.actionData.data.heartRate && (
+                  <span className="action-tag">❤️ {msg.actionData.data.heartRate} bpm</span>
+                )}
+                {msg.actionData.data.bloodSugar && (
+                  <span className="action-tag">
+                    🩸 {msg.actionData.data.bloodSugar} mg/dL {msg.actionData.data.bloodSugarContext ? `(${msg.actionData.data.bloodSugarContext})` : ""}
+                  </span>
+                )}
+                {msg.actionData.data.bodyTemperature && (
+                  <span className="action-tag">🌡️ {msg.actionData.data.bodyTemperature} °F</span>
+                )}
                 {msg.actionData.data.sleepHours && (
                   <span className="action-tag">💤 {msg.actionData.data.sleepHours} hrs sleep</span>
                 )}
                 {msg.actionData.data.weight && (
                   <span className="action-tag">⚖️ {msg.actionData.data.weight} kg</span>
                 )}
+                {msg.actionData.data.waterIntake > 0 && (
+                  <span className="action-tag">💧 {msg.actionData.data.waterIntake} ml</span>
+                )}
+                {msg.actionData.data.mood && (
+                  <span className="action-tag">😄 {msg.actionData.data.mood}</span>
+                )}
+                {msg.actionData.data.energyLevel && (
+                  <span className="action-tag">⚡ {msg.actionData.data.energyLevel} Energy</span>
+                )}
+                {msg.actionData.data.stressLevel !== null && msg.actionData.data.stressLevel !== undefined && (
+                  <span className="action-tag">😓 Stress: {msg.actionData.data.stressLevel}/10</span>
+                )}
+                {msg.actionData.data.painLevel > 0 && (
+                  <span className="action-tag">🩹 Pain: {msg.actionData.data.painLevel}/10</span>
+                )}
+                {msg.actionData.data.activityLevel && (
+                  <span className="action-tag">🏃 {msg.actionData.data.activityLevel}</span>
+                )}
+                {msg.actionData.data.lifestyleTags?.map((tag, i) => (
+                  <span key={`life-${i}`} className="action-tag">🏷️ {tag}</span>
+                ))}
                 {msg.actionData.data.symptoms?.map((s, i) => (
-                  <span key={i} className="action-tag">⚠️ {s}</span>
+                  <span key={`symp-${i}`} className="action-tag">⚠️ {s}</span>
                 ))}
               </div>
               {msg.actionData.data.notes && (

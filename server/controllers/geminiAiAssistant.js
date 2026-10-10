@@ -13,7 +13,7 @@ APP FEATURES:
 5. Notifications: Bell icon on header for real-time medication alerts, family updates, and "Mark all as read" button.
 6. Family Connections: Link family members via email in Health Profile / Settings to receive alerts & synchronize medicine logs.
 7. Search Medicines: FDA-verified drug info — generic name, route, manufacturer, usage.
-8. Health Log: log symptoms + vitals (sleep, BP, weight). Save Daily Log.
+8. Health Log: comprehensive tracker for daily vitals & biomarkers (Blood Pressure, Heart Rate, Blood Sugar w/ context, Body Temperature, Sleep Hours, Weight, Water Intake), emotional wellness (Mood, Stress Level, Energy Level), Pain Level, Activity Level, Lifestyle Tags (Caffeine, Alcohol, Fasted, Clean Eating, etc.), Symptoms checklist, and clinical notes. Includes AI-powered daily health summarization. Save Daily Log.
 9. Profile: age, blood type, height, weight, allergies/conditions, emergency contact, family members.
 10. AI Advisor & Copilot: sidebar section for health Q&A, symptom discussion, document analysis, and automated copilot actions.
 11. Contact Support & Founder:

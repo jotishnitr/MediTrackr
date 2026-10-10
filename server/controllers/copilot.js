@@ -102,8 +102,26 @@ JSON Schema (for Family Member):
 --------------------------------------------------
 2. FUNCTION: LOG DAILY HEALTH VITALS & SYMPTOMS (Health Log)
 --------------------------------------------------
-Trigger: User provides vitals (BP reading, sleep hours, weight, symptoms, vitals report).
-Instruction: Extract health log data matching the HealthLog model.
+Trigger: User provides health vitals, biomarkers, symptoms, daily habits, or a vitals slip/lab report (e.g. BP reading, heart rate, blood sugar, body temp, sleep hours, weight, water intake, mood, stress/energy/pain levels, physical activity, lifestyle tags, symptoms, notes).
+Instruction:
+- Extract all health metrics, biomarkers, emotional wellness, and lifestyle factors matching the complete MediTrackr HealthLog model.
+- If the user asks what vitals/health metrics they can log or share, outline the full comprehensive list:
+  1. Blood Pressure: e.g., 120/80 mmHg
+  2. Heart Rate / Pulse: e.g., 72 bpm
+  3. Blood Sugar / Glucose: e.g., 110 mg/dL (along with context: Fasting, Post-Meal, Random, Bedtime)
+  4. Body Temperature: e.g., 98.6 °F
+  5. Sleep Duration: e.g., 7.5 hours
+  6. Weight: e.g., 70 kg
+  7. Water Intake / Hydration: e.g., 2000 ml or 8 glasses (1 glass ≈ 250ml)
+  8. Mood: Great 😄, Good 🙂, Okay 😐, Stressed 😓, Down 😔
+  9. Stress Level: 1-10 scale
+  10. Energy Level: Low 🪫, Moderate 🔋, High ⚡, Peak 🚀
+  11. Pain Level: 0-10 scale
+  12. Activity & Exercise Level: No Exercise 🛋️, Light Walk 🚶, Moderate Workout 🏃, Intense Training 🏋️
+  13. Lifestyle & Diet Factors: Caffeine ☕, Alcohol 🍷, High Salt 🧂, Late Meal 🌙, Fasted ⏳, High Sugar 🍬, Nicotine 🚬, Clean Eating 🥗
+  14. Symptoms: Headache, Fatigue, Nausea, Dizziness, Pain, Fever, Cough, Insomnia, Chills, Congestion, Sore Throat, Anxiety, etc.
+  15. Clinical Notes & Observations
+- Provide clean, valid JSON format matching the schema below.
 
 JSON Schema:
 \`\`\`json
@@ -112,8 +130,19 @@ JSON Schema:
   "data": {
     "date": "string (YYYY-MM-DD format, defaults to today)",
     "bloodPressure": "string (e.g., '120/80' or '0/0')",
-    "sleepHours": "number (e.g., 7.5)",
-    "weight": "number (in kg, e.g., 68.5)",
+    "heartRate": "number or null (in bpm, e.g., 72)",
+    "bloodSugar": "number or null (in mg/dL, e.g., 110)",
+    "bloodSugarContext": "string (enum: ['Fasting', 'Post-Meal', 'Random', 'Bedtime', ''])",
+    "bodyTemperature": "number or null (in °F, e.g., 98.6)",
+    "sleepHours": "number or null (e.g., 7.5)",
+    "weight": "number or null (in kg, e.g., 68.5)",
+    "waterIntake": "number (in ml, e.g., 2000. Note: 1 glass ≈ 250ml)",
+    "mood": "string (enum: ['Great', 'Good', 'Okay', 'Stressed', 'Down', ''])",
+    "stressLevel": "number or null (scale 1-10, e.g., 3)",
+    "energyLevel": "string (enum: ['Low', 'Moderate', 'High', 'Peak', ''])",
+    "painLevel": "number (scale 0-10, default 0)",
+    "activityLevel": "string (enum: ['No Exercise', 'Light Walk', 'Moderate Workout', 'Intense Training', ''])",
+    "lifestyleTags": ["string (enum: ['Caffeine', 'Alcohol', 'High Salt', 'Late Meal', 'Fasted', 'High Sugar', 'Nicotine', 'Clean Eating'])"],
     "symptoms": ["string (e.g., 'Headache', 'Fever', 'Fatigue')"],
     "notes": "string (observations or notes)"
   }
@@ -149,8 +178,8 @@ Instruction:
   # 📋 MediTrackr Health & Medication Summary Report
   - **Patient / Family Profile**: Full Name, Age, Blood Group, Height, Weight, Known Allergies, and Chronic Conditions.
   - **Active Medication Regimen**: All scheduled medicines, dosages, form/type, timing (24-hour format), and special instructions.
-  - **Recent Vitals & Symptom Logs**: Summary of recorded Blood Pressure readings, Sleep Hours, Weight changes, and logged symptoms.
-  - **Health Insights & Routine Analysis**: Observations on dosage schedules, blood pressure trends, sleep health, and lifestyle tips.
+  - **Recent Vitals, Biomarkers & Lifestyle Logs**: Summary of recorded Blood Pressure readings, Heart Rate (bpm), Blood Sugar (with Fasting/Post-Meal context), Body Temperature, Sleep Hours, Weight trends, Water Intake (hydration), Mood & Energy, Stress & Pain levels, Activity level, Lifestyle factors (Caffeine, Alcohol, Diet, etc.), and logged symptoms.
+  - **Health Insights & Routine Analysis**: Observations on dosage schedules, blood pressure and glucose trends, heart rate stability, sleep and hydration health, lifestyle influences, and actionable wellness tips.
   - **Physician Discussion Points**: Key questions or notes to share with their healthcare provider during their next consultation.
   - End with the standard medical advisory disclaimer.
 
@@ -185,12 +214,12 @@ const geminiTools = [
   {
     functionDeclarations: [
       { name: "getMedicines", description: "Fetch all medicines and schedule for the current user", parameters: { type: "OBJECT", properties: {} } },
-      { name: "getHealthLog", description: "Fetch latest health logs and vitals for the current user", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getHealthLog", description: "Fetch latest health logs, vitals, and biomarkers (BP, heart rate, blood sugar, temperature, sleep, hydration, mood, symptoms, lifestyle) for the current user", parameters: { type: "OBJECT", properties: {} } },
       { name: "getHealthProfile", description: "Fetch current user health profile (allergies, blood group, medical conditions)", parameters: { type: "OBJECT", properties: {} } },
       { name: "getUserProfile", description: "Fetch basic user profile information for the current user", parameters: { type: "OBJECT", properties: {} } },
       { name: "getFamilyMembers", description: "Fetch all connected family members with their names, emails, and user IDs", parameters: { type: "OBJECT", properties: {} } },
       { name: "getFamilyMemberMedicines", description: "Fetch active medicines and schedules for all connected family members", parameters: { type: "OBJECT", properties: {} } },
-      { name: "getFamilyMemberHealthLog", description: "Fetch recent health logs, blood pressure, sleep, and symptoms for connected family members", parameters: { type: "OBJECT", properties: {} } },
+      { name: "getFamilyMemberHealthLog", description: "Fetch recent health logs, vitals, and biomarkers (BP, heart rate, blood sugar, sleep, symptoms, lifestyle) for connected family members", parameters: { type: "OBJECT", properties: {} } },
       { name: "getFamilyMemberHealthProfile", description: "Fetch health profiles, blood groups, allergies, and conditions for connected family members", parameters: { type: "OBJECT", properties: {} } },
       { name: "getFamilyMemberUserProfile", description: "Fetch user profiles and contact info for connected family members", parameters: { type: "OBJECT", properties: {} } }
     ]
@@ -200,12 +229,12 @@ const geminiTools = [
 // Tool definitions for OpenRouter
 const openrouterTools = [
   { type: "function", function: { name: "getMedicines", description: "Fetch all medicines and schedule for the current user", parameters: { type: "object", properties: {} } } },
-  { type: "function", function: { name: "getHealthLog", description: "Fetch latest health logs and vitals for the current user", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getHealthLog", description: "Fetch latest health logs, vitals, and biomarkers (BP, heart rate, blood sugar, temperature, sleep, hydration, mood, symptoms, lifestyle) for the current user", parameters: { type: "object", properties: {} } } },
   { type: "function", function: { name: "getHealthProfile", description: "Fetch current user health profile (allergies, blood group, medical conditions)", parameters: { type: "object", properties: {} } } },
   { type: "function", function: { name: "getUserProfile", description: "Fetch basic user profile information for the current user", parameters: { type: "object", properties: {} } } },
   { type: "function", function: { name: "getFamilyMembers", description: "Fetch all connected family members with their names, emails, and user IDs", parameters: { type: "object", properties: {} } } },
   { type: "function", function: { name: "getFamilyMemberMedicines", description: "Fetch active medicines and schedules for all connected family members", parameters: { type: "object", properties: {} } } },
-  { type: "function", function: { name: "getFamilyMemberHealthLog", description: "Fetch recent health logs, blood pressure, sleep, and symptoms for connected family members", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "getFamilyMemberHealthLog", description: "Fetch recent health logs, vitals, and biomarkers (BP, heart rate, blood sugar, sleep, symptoms, lifestyle) for connected family members", parameters: { type: "object", properties: {} } } },
   { type: "function", function: { name: "getFamilyMemberHealthProfile", description: "Fetch health profiles, blood groups, allergies, and conditions for connected family members", parameters: { type: "object", properties: {} } } },
   { type: "function", function: { name: "getFamilyMemberUserProfile", description: "Fetch user profiles and contact info for connected family members", parameters: { type: "object", properties: {} } } }
 ];
