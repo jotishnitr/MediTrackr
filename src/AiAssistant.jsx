@@ -158,16 +158,26 @@ export default function AiAssistance({
       if (response.ok) {
         const data = await response.json();
         if (data.messages && data.messages.length > 0) {
-          const formatted = data.messages.map((m, idx) => ({
-            id: m._id || `${m.timeStamp || idx}`,
-            sender: m.role === "user" ? "user" : "assistant",
-            text: m.text,
-            action: m.action || null,
-            actionData: m.actionData || null,
-            requiresConfirmation: Boolean(m.action),
-            time: getCurrentTime(m.timeStamp),
-            rawTimeStamp: m.timeStamp,
-          }));
+          const initialActionStates = {};
+          const formatted = data.messages.map((m, idx) => {
+            const hasAction = Boolean(m.action);
+            const status = m.actionStatus || (hasAction ? "pending" : null);
+            if (hasAction && status) {
+              initialActionStates[idx] = { status, loading: false };
+            }
+            return {
+              id: m._id || `${m.timeStamp || idx}`,
+              sender: m.role === "user" ? "user" : "assistant",
+              text: m.text,
+              action: m.action || null,
+              actionData: m.actionData || null,
+              actionStatus: status,
+              requiresConfirmation: Boolean(m.action) && status !== "executed" && status !== "discarded",
+              time: getCurrentTime(m.timeStamp),
+              rawTimeStamp: m.timeStamp,
+            };
+          });
+          setActionStates(initialActionStates);
           setCopilotMessages(formatted);
         } else {
           setCopilotMessages([
@@ -428,21 +438,34 @@ export default function AiAssistance({
             }
           }
 
-          const newRawTime = new Date().toISOString();
-          setCopilotMessages((prev) => [
-            ...prev,
-            {
-              id: Date.now().toString(),
-              sender: "assistant",
-              text: finalReply,
-              action: data.action,
-              actionData: data.actionData,
-              requiresConfirmation: data.requiresConfirmation,
-              usedModel: data.usedModel,
-              time: getCurrentTime(),
-              rawTimeStamp: newRawTime,
-            },
-          ]);
+          const newRawTime = data.timeStamp || new Date().toISOString();
+          const newMsgId = data.messageId || Date.now().toString();
+          const initialStatus = data.actionStatus || (data.action ? "pending" : null);
+
+          setCopilotMessages((prev) => {
+            const newIndex = prev.length;
+            if (data.action && initialStatus) {
+              setActionStates((states) => ({
+                ...states,
+                [newIndex]: { status: initialStatus, loading: false },
+              }));
+            }
+            return [
+              ...prev,
+              {
+                id: newMsgId,
+                sender: "assistant",
+                text: finalReply,
+                action: data.action,
+                actionData: data.actionData,
+                actionStatus: initialStatus,
+                requiresConfirmation: data.requiresConfirmation,
+                usedModel: data.usedModel,
+                time: getCurrentTime(newRawTime),
+                rawTimeStamp: newRawTime,
+              },
+            ];
+          });
         } else {
           throw new Error("Copilot request failed");
         }
@@ -524,10 +547,40 @@ export default function AiAssistance({
         });
       }
 
+      // 1. Update in-memory UI action state
       setActionStates((prev) => ({
         ...prev,
         [msgIndex]: { status: "executed", loading: false },
       }));
+
+      setCopilotMessages((prev) => {
+        const next = [...prev];
+        if (next[msgIndex]) {
+          next[msgIndex] = {
+            ...next[msgIndex],
+            actionStatus: "executed",
+            requiresConfirmation: false,
+          };
+        }
+        return next;
+      });
+
+      // 2. Persist confirmed/executed status into database
+      const targetMsg = copilotMessages[msgIndex];
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/getCopilotHistory`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messageId: targetMsg?.id,
+            timeStamp: targetMsg?.rawTimeStamp,
+            actionStatus: "executed",
+          }),
+        });
+      } catch (dbErr) {
+        console.warn("Failed to persist copilot confirmation in DB:", dbErr);
+      }
     } catch (err) {
       console.error("Action execution failed:", err);
       alert("Failed to complete action. Please check your network and try again.");
@@ -624,8 +677,8 @@ export default function AiAssistance({
 
     if (!hasMedicines && !hasVitals) return null;
 
-    const actionState = actionStates[msgIndex];
-    if (actionState?.status === "discarded") {
+    const actionState = actionStates[msgIndex] || (msg.actionStatus ? { status: msg.actionStatus } : null);
+    if (actionState?.status === "discarded" || msg.actionStatus === "discarded") {
       return (
         <div className="action-discarded-msg">
           <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>close</span>
@@ -634,7 +687,7 @@ export default function AiAssistance({
       );
     }
 
-    if (actionState?.status === "executed") {
+    if (actionState?.status === "executed" || msg.actionStatus === "executed") {
       return (
         <div className="action-executed-msg">
           <span className="material-symbols-outlined">check_circle</span>
@@ -857,7 +910,7 @@ export default function AiAssistance({
         )}
 
         {/* Render Option 2 Confirmation Card for Copilot */}
-        {msg.requiresConfirmation && renderActionPreviewCard(msg, index)}
+        {(msg.requiresConfirmation || msg.action) && renderActionPreviewCard(msg, index)}
       </>
     );
   };

@@ -18,6 +18,11 @@ const messageSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: null,
   },
+  actionStatus: {
+    type: String,
+    enum: ["pending", "executed", "discarded", null],
+    default: null,
+  },
   timeStamp: {
     type: Date,
     default: Date.now,

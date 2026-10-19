@@ -581,6 +581,10 @@ const copilot = async (req, res) => {
     const action = parsedData?.action || null;
     const hasAction = action === "ADD_MEDICINES" || action === "LOG_HEALTH_VITALS";
 
+    const initialActionStatus = hasAction ? "pending" : null;
+    let savedMessageId = null;
+    let savedTimeStamp = null;
+
     // Save interaction to CopilotHistory
     if (userId) {
       try {
@@ -598,9 +602,16 @@ const copilot = async (req, res) => {
           text: aiResponse,
           action,
           actionData: parsedData,
+          actionStatus: initialActionStatus,
           timeStamp: new Date(),
         });
         await copilotDoc.save();
+
+        const savedMsg = copilotDoc.messages[copilotDoc.messages.length - 1];
+        if (savedMsg) {
+          savedMessageId = savedMsg._id;
+          savedTimeStamp = savedMsg.timeStamp;
+        }
       } catch (historyErr) {
         console.warn("[CopilotHistory] Failed to save history:", historyErr.message);
       }
@@ -611,6 +622,9 @@ const copilot = async (req, res) => {
       requiresConfirmation: hasAction,
       action,
       actionData: parsedData,
+      actionStatus: initialActionStatus,
+      messageId: savedMessageId,
+      timeStamp: savedTimeStamp,
       reply: aiResponse,
       usedModel,
       providerUsed
